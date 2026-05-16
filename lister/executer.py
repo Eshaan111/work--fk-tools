@@ -53,7 +53,6 @@ def run_playback():
                 print(f"Waiting for color at ({x}, {y})...")
                 
                 while not color_matches(get_current_color(x, y), target, TOLERANCE):
-                    # Check if we have exceeded the 20-second limit
                     if (time.time() - start_wait_time) > TIMEOUT_LIMIT:
                         print(f"[!] TIMEOUT: Color not found at ({x}, {y}) after {TIMEOUT_LIMIT}s. Aborting run.")
                         aborted = True
@@ -66,9 +65,21 @@ def run_playback():
             elif etype == "click":
                 pyautogui.click(event['x'], event['y'])
             
+            # --- NEW CLICK & DRAG HANDLING ---
+            elif etype == "mouse_down":
+                pyautogui.mouseDown(event['x'], event['y'])
+            
+            elif etype == "mouse_up":
+                pyautogui.mouseUp(event['x'], event['y'])
+            
+            # --- NEW HOTKEY HANDLING ---
+            elif etype == "hotkey":
+                pyautogui.hotkey(event['modifier'], event['key'])
+                print(f"Executed hotkey: {event['modifier']} + {event['key']}")
+            
             elif etype == "key":
                 val = str(event.get('value', ''))
-                if val in ["None", ";"] or "Key.shift" in val: continue
+                if val in ["None", ";"] or "Key.shift" in val or "Key.ctrl" in val: continue
                 
                 if val == "_" or "underscore" in val:
                     pyautogui.write(generate_random_code(CODE_LENGTH), interval=0)

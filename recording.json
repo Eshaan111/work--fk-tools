@@ -1,797 +1,387 @@
 [
     {
-        "type": "click",
-        "x": 1208,
-        "y": 1053,
-        "target_color": null,
-        "delay": 1.174
+        "type": "mouse_down",
+        "x": 452,
+        "y": 757,
+        "delay": 0.771
     },
     {
-        "type": "click",
-        "x": 1060,
-        "y": 128,
-        "target_color": null,
-        "delay": 1.458
+        "type": "mouse_up",
+        "x": 453,
+        "y": 757,
+        "delay": 0.06
     },
     {
-        "type": "key",
-        "value": ";",
-        "delay": 3.696
+        "type": "mouse_down",
+        "x": 1064,
+        "y": 66,
+        "delay": 1.324
     },
     {
-        "type": "click",
-        "x": 476,
-        "y": 815,
-        "target_color": null,
-        "delay": 1.102
+        "type": "mouse_up",
+        "x": 1064,
+        "y": 66,
+        "delay": 0.061
     },
     {
-        "type": "key",
-        "value": "Key.shift_r",
-        "delay": 1.599
+        "type": "hotkey",
+        "modifier": "ctrl",
+        "key": "c",
+        "delay": 0.312
     },
     {
-        "type": "pixel_watcher",
-        "x": 604,
-        "y": 634,
-        "target_color": [
-            25,
-            25,
-            25
-        ],
-        "delay": 0.055
+        "type": "mouse_down",
+        "x": 1301,
+        "y": 61,
+        "delay": 0.615
     },
     {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.966
+        "type": "mouse_up",
+        "x": 1301,
+        "y": 61,
+        "delay": 0.06
     },
     {
-        "type": "key",
-        "value": "Key.down",
-        "delay": 3.506
+        "type": "mouse_down",
+        "x": 1124,
+        "y": 622,
+        "delay": 1.268
     },
     {
-        "type": "key",
-        "value": "Key.f2",
-        "delay": 0.478
+        "type": "mouse_up",
+        "x": 1124,
+        "y": 623,
+        "delay": 0.06
     },
     {
-        "type": "key",
-        "value": "Key.right",
-        "delay": 0.249
-    },
-    {
-        "type": "key",
-        "value": "Key.space",
-        "delay": 0.288
-    },
-    {
-        "type": "key",
-        "value": "Key.shift",
-        "delay": 0.159
-    },
-    {
-        "type": "key",
-        "value": "G",
-        "delay": 0.196
-    },
-    {
-        "type": "key",
-        "value": "E",
-        "delay": 0.205
-    },
-    {
-        "type": "key",
-        "value": "N",
-        "delay": 0.196
-    },
-    {
-        "type": "key",
-        "value": "Z",
-        "delay": 0.127
+        "type": "hotkey",
+        "modifier": "ctrl",
+        "key": "v",
+        "delay": 1.366
     },
     {
         "type": "key",
         "value": "Key.enter",
-        "delay": 0.286
-    },
-    {
-        "type": "key",
-        "value": "Key.enter",
-        "delay": 0.617
-    },
-    {
-        "type": "key",
-        "value": "1",
-        "delay": 0.311
+        "delay": 0.837
     },
     {
         "type": "key",
         "value": "\\",
-        "delay": 0.138
+        "delay": 0.013
+    },
+    {
+        "type": "mouse_down",
+        "x": 826,
+        "y": 430,
+        "delay": 2.967
+    },
+    {
+        "type": "mouse_up",
+        "x": 826,
+        "y": 430,
+        "delay": 0.073
+    },
+    {
+        "type": "mouse_down",
+        "x": 300,
+        "y": 20,
+        "delay": 1.629
+    },
+    {
+        "type": "mouse_up",
+        "x": 300,
+        "y": 20,
+        "delay": 0.108
     },
     {
         "type": "key",
-        "value": "Key.enter",
-        "delay": 1.191
-    },
-    {
-        "type": "key",
-        "value": "Key.enter",
-        "delay": 0.13
-    },
-    {
-        "type": "click",
-        "x": 257,
-        "y": 442,
-        "target_color": null,
-        "delay": 2.196
-    },
-    {
-        "type": "key",
-        "value": ";",
-        "delay": 1.238
-    },
-    {
-        "type": "click",
-        "x": 490,
-        "y": 826,
-        "target_color": null,
-        "delay": 0.042
-    },
-    {
-        "type": "key",
-        "value": "Key.shift_r",
-        "delay": 1.164
-    },
-    {
-        "type": "pixel_watcher",
-        "x": 700,
-        "y": 624,
-        "target_color": [
-            25,
-            25,
-            25
-        ],
-        "delay": 0.128
-    },
-    {
-        "type": "key",
-        "value": "2",
-        "delay": 0.857
-    },
-    {
-        "type": "key",
-        "value": "Key.enter",
-        "delay": 0.098
-    },
-    {
-        "type": "click",
-        "x": 344,
-        "y": 450,
-        "target_color": null,
-        "delay": 2.073
-    },
-    {
-        "type": "key",
-        "value": ";",
-        "delay": 1.049
-    },
-    {
-        "type": "click",
-        "x": 498,
-        "y": 820,
-        "target_color": null,
-        "delay": 0.121
-    },
-    {
-        "type": "key",
-        "value": "Key.shift_r",
-        "delay": 0.791
-    },
-    {
-        "type": "pixel_watcher",
-        "x": 465,
-        "y": 620,
-        "target_color": [
-            25,
-            25,
-            25
-        ],
-        "delay": 0.143
-    },
-    {
-        "type": "key",
-        "value": "3",
-        "delay": 0.66
-    },
-    {
-        "type": "key",
-        "value": "Key.enter",
-        "delay": 0.084
-    },
-    {
-        "type": "click",
-        "x": 441,
-        "y": 441,
-        "target_color": null,
-        "delay": 2.288
-    },
-    {
-        "type": "key",
-        "value": ";",
-        "delay": 1.12
-    },
-    {
-        "type": "click",
-        "x": 492,
-        "y": 820,
-        "target_color": null,
-        "delay": 0.122
-    },
-    {
-        "type": "key",
-        "value": "Key.shift_r",
-        "delay": 1.606
-    },
-    {
-        "type": "pixel_watcher",
-        "x": 555,
-        "y": 584,
-        "target_color": [
-            25,
-            25,
-            25
-        ],
-        "delay": 0.168
-    },
-    {
-        "type": "key",
-        "value": "4",
-        "delay": 0.553
-    },
-    {
-        "type": "key",
-        "value": "Key.enter",
-        "delay": 0.554
-    },
-    {
-        "type": "click",
-        "x": 531,
-        "y": 449,
-        "target_color": null,
-        "delay": 2.408
-    },
-    {
-        "type": "key",
-        "value": ";",
-        "delay": 0.822
-    },
-    {
-        "type": "click",
-        "x": 510,
-        "y": 816,
-        "target_color": null,
-        "delay": 0.104
-    },
-    {
-        "type": "key",
-        "value": "Key.shift_r",
-        "delay": 1.133
-    },
-    {
-        "type": "pixel_watcher",
-        "x": 680,
-        "y": 605,
-        "target_color": [
-            25,
-            25,
-            25
-        ],
-        "delay": 0.123
-    },
-    {
-        "type": "key",
-        "value": "5",
-        "delay": 1.342
-    },
-    {
-        "type": "key",
-        "value": "Key.enter",
-        "delay": 0.758
-    },
-    {
-        "type": "click",
-        "x": 514,
-        "y": 359,
-        "target_color": null,
-        "delay": 4.298
-    },
-    {
-        "type": "key",
-        "value": "Key.shift_r",
-        "delay": 1.818
-    },
-    {
-        "type": "pixel_watcher",
-        "x": 1800,
-        "y": 211,
-        "target_color": [
-            81,
-            163,
-            81
-        ],
-        "delay": 0.148
-    },
-    {
-        "type": "pixel_watcher",
-        "x": 1780,
-        "y": 224,
-        "target_color": [
-            81,
-            163,
-            81
-        ],
-        "delay": 0.616
-    },
-    {
-        "type": "click",
-        "x": 528,
-        "y": 520,
-        "target_color": null,
-        "delay": 2.44
-    },
-    {
-        "type": "key",
-        "value": "Key.shift",
-        "delay": 1.175
-    },
-    {
-        "type": "key",
-        "value": "X",
-        "delay": 0.072
-    },
-    {
-        "type": "key",
-        "value": "L",
-        "delay": 0.08
-    },
-    {
-        "type": "key",
-        "value": "-",
-        "delay": 0.316
-    },
-    {
-        "type": "key",
-        "value": "Key.shift",
-        "delay": 0.467
-    },
-    {
-        "type": "key",
-        "value": "S",
-        "delay": 0.132
+        "value": "c",
+        "delay": 0.506
     },
     {
         "type": "key",
         "value": "h",
-        "delay": 0.125
-    },
-    {
-        "type": "key",
-        "value": "o",
-        "delay": 0.146
-    },
-    {
-        "type": "key",
-        "value": "r",
-        "delay": 0.409
-    },
-    {
-        "type": "key",
-        "value": "t",
-        "delay": 0.177
-    },
-    {
-        "type": "key",
-        "value": "s",
-        "delay": 0.168
-    },
-    {
-        "type": "key",
-        "value": "-",
-        "delay": 0.359
-    },
-    {
-        "type": "key",
-        "value": "Key.shift",
-        "delay": 0.125
-    },
-    {
-        "type": "key",
-        "value": "M",
-        "delay": 0.11
-    },
-    {
-        "type": "key",
-        "value": "e",
-        "delay": 0.209
-    },
-    {
-        "type": "key",
-        "value": "n",
-        "delay": 0.064
-    },
-    {
-        "type": "key",
-        "value": "-",
-        "delay": 0.542
-    },
-    {
-        "type": "key",
-        "value": "Key.shift",
-        "delay": 0.17
-    },
-    {
-        "type": "key",
-        "value": "B",
-        "delay": 0.229
-    },
-    {
-        "type": "key",
-        "value": "0",
-        "delay": 0.403
-    },
-    {
-        "type": "key",
-        "value": "1",
-        "delay": 0.107
-    },
-    {
-        "type": "key",
-        "value": "-",
-        "delay": 0.105
-    },
-    {
-        "type": "key",
-        "value": "Key.shift",
-        "delay": 0.175
-    },
-    {
-        "type": "key",
-        "value": "_",
-        "delay": 0.12
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.717
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.188
-    },
-    {
-        "type": "key",
-        "value": "1",
-        "delay": 0.517
-    },
-    {
-        "type": "key",
-        "value": "2",
-        "delay": 0.227
-    },
-    {
-        "type": "key",
-        "value": "9",
-        "delay": 0.159
-    },
-    {
-        "type": "key",
-        "value": "9",
-        "delay": 0.145
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.12
-    },
-    {
-        "type": "key",
-        "value": "2",
-        "delay": 0.683
-    },
-    {
-        "type": "key",
-        "value": "5",
-        "delay": 0.947
-    },
-    {
-        "type": "key",
-        "value": "9",
-        "delay": 0.426
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.15
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.206
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.612
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.195
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.21
-    },
-    {
-        "type": "key",
-        "value": "5",
-        "delay": 1.134
-    },
-    {
-        "type": "key",
-        "value": "0",
-        "delay": 0.455
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.14
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.528
-    },
-    {
-        "type": "key",
-        "value": "3",
-        "delay": 0.904
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.125
-    },
-    {
-        "type": "key",
-        "value": "3",
-        "delay": 0.146
-    },
-    {
-        "type": "key",
-        "value": "5",
-        "delay": 0.592
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.152
-    },
-    {
-        "type": "key",
-        "value": "2",
-        "delay": 0.313
-    },
-    {
-        "type": "key",
-        "value": "7",
-        "delay": 0.281
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.155
-    },
-    {
-        "type": "key",
-        "value": "2",
-        "delay": 0.356
-    },
-    {
-        "type": "key",
-        "value": "Key.tab",
-        "delay": 0.19
-    },
-    {
-        "type": "key",
-        "value": "0",
-        "delay": 0.326
-    },
-    {
-        "type": "key",
-        "value": ".",
         "delay": 0.231
     },
     {
         "type": "key",
-        "value": "2",
-        "delay": 0.296
+        "value": "a",
+        "delay": 0.161
     },
     {
         "type": "key",
-        "value": "5",
-        "delay": 0.205
-    },
-    {
-        "type": "click",
-        "x": 756,
-        "y": 343,
-        "target_color": null,
-        "delay": 1.725
+        "value": "t",
+        "delay": 0.298
     },
     {
         "type": "key",
-        "value": "Key.shift_r",
-        "delay": 1.608
+        "value": "g",
+        "delay": 0.321
+    },
+    {
+        "type": "key",
+        "value": "p",
+        "delay": 0.674
+    },
+    {
+        "type": "key",
+        "value": "t",
+        "delay": 0.353
+    },
+    {
+        "type": "key",
+        "value": ".",
+        "delay": 0.435
+    },
+    {
+        "type": "key",
+        "value": "c",
+        "delay": 0.275
+    },
+    {
+        "type": "key",
+        "value": "o",
+        "delay": 0.139
+    },
+    {
+        "type": "key",
+        "value": "m",
+        "delay": 0.243
+    },
+    {
+        "type": "key",
+        "value": "Key.enter",
+        "delay": 0.661
     },
     {
         "type": "pixel_watcher",
-        "x": 1741,
-        "y": 229,
+        "x": 1339,
+        "y": 633,
         "target_color": [
-            81,
-            163,
-            81
+            226,
+            226,
+            226
         ],
-        "delay": 0.218
+        "delay": 7.365
     },
     {
-        "type": "pixel_watcher",
-        "x": 1741,
-        "y": 229,
-        "target_color": [
-            81,
-            163,
-            81
+        "type": "mouse_down",
+        "x": 1179,
+        "y": 110,
+        "delay": 3.559
+    },
+    {
+        "type": "mouse_up",
+        "x": 1179,
+        "y": 110,
+        "delay": 0.072
+    },
+    {
+        "type": "hotkey",
+        "modifier": "ctrl",
+        "key": "v",
+        "delay": 2.032
+    },
+    {
+        "type": "key",
+        "value": "Key.enter",
+        "delay": 1.018
+    },
+    {
+        "type": "mouse_down",
+        "x": 205,
+        "y": 11,
+        "delay": 6.315
+    },
+    {
+        "type": "mouse_up",
+        "x": 205,
+        "y": 11,
+        "delay": 0.045
+    },
+    {
+        "type": "mouse_down",
+        "x": 1200,
+        "y": 92,
+        "delay": 2.338
+    },
+    {
+        "type": "mouse_up",
+        "x": 1200,
+        "y": 92,
+        "delay": 0.063
+    },
+    {
+        "type": "mouse_down",
+        "x": 1341,
+        "y": 73,
+        "delay": 1.898
+    },
+    {
+        "type": "mouse_up",
+        "x": 1342,
+        "y": 73,
+        "delay": 0.067
+    },
+    {
+        "type": "mouse_down",
+        "x": 1217,
+        "y": 320,
+        "delay": 1.121
+    },
+    {
+        "type": "mouse_up",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.064
+    },
+    {
+        "type": "mouse_down",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.254
+    },
+    {
+        "type": "mouse_up",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.064
+    },
+    {
+        "type": "mouse_down",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.324
+    },
+    {
+        "type": "mouse_up",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.064
+    },
+    {
+        "type": "mouse_down",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.314
+    },
+    {
+        "type": "mouse_up",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.067
+    },
+    {
+        "type": "mouse_down",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.229
+    },
+    {
+        "type": "mouse_up",
+        "x": 1217,
+        "y": 320,
+        "delay": 0.053
+    },
+    {
+        "type": "mouse_down",
+        "x": 850,
+        "y": 421,
+        "delay": 2.095
+    },
+    {
+        "type": "mouse_up",
+        "x": 850,
+        "y": 421,
+        "delay": 0.072
+    },
+    {
+        "type": "mouse_down",
+        "x": 646,
+        "y": 466,
+        "delay": 2.778
+    },
+    {
+        "type": "mouse_up",
+        "x": 646,
+        "y": 466,
+        "delay": 0.068
+    },
+    {
+        "type": "mouse_down",
+        "x": 583,
+        "y": 398,
+        "delay": 1.494
+    },
+    {
+        "type": "mouse_up",
+        "x": 583,
+        "y": 398,
+        "delay": 0.052
+    },
+    {
+        "type": "mouse_down",
+        "x": 583,
+        "y": 398,
+        "delay": 0.072
+    },
+    {
+        "type": "mouse_up",
+        "x": 583,
+        "y": 398,
+        "delay": 0.064
+    },
+    {
+        "type": "hotkey",
+        "modifier": "ctrl",
+        "key": "c",
+        "delay": 0.659
+    },
+    {
+        "type": "mouse_down",
+        "x": 397,
+        "y": 0,
+        "delay": 2.023
+    },
+    {
+        "type": "mouse_up",
+        "x": 397,
+        "y": 0,
+        "delay": 0.052
+    },
+    {
+        "type": "mouse_down",
+        "x": 685,
+        "y": 332,
+        "delay": 0.78
+    },
+    {
+        "type": "mouse_up",
+        "x": 685,
+        "y": 332,
+        "delay": 0.073
+    },
+    {
+        "type": "hotkey",
+        "modifier": "ctrl",
+        "key": "v",
+        "delay": 1.169
+    },
+    {
+        "type": "key",
+        "value": ";",
+        "delay": 3.039
+    },
+    {
+        "type": "conditional_selector",
+        "x": 750,
+        "y": 412,
+        "expected_color": [
+            51,
+            51,
+            51
         ],
-        "delay": 0.576
-    },
-    {
-        "type": "click",
-        "x": 425,
-        "y": 486,
-        "target_color": null,
-        "delay": 0.992
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 1.206
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.138
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.14
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.166
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.137
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.15
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.15
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.14
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.141
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.281
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.151
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.145
-    },
-    {
-        "type": "key",
-        "value": "Key.backspace",
-        "delay": 0.101
-    },
-    {
-        "type": "key",
-        "value": "Key.shift",
-        "delay": 0.23
-    },
-    {
-        "type": "key",
-        "value": "S",
-        "delay": 0.221
-    },
-    {
-        "type": "key",
-        "value": "H",
-        "delay": 0.146
-    },
-    {
-        "type": "key",
-        "value": "R",
-        "delay": 0.189
-    },
-    {
-        "type": "key",
-        "value": "T",
-        "delay": 0.201
-    },
-    {
-        "type": "key",
-        "value": "-",
-        "delay": 0.306
-    },
-    {
-        "type": "key",
-        "value": "Key.shift",
-        "delay": 0.2
-    },
-    {
-        "type": "key",
-        "value": "_",
-        "delay": 0.296
-    },
-    {
-        "type": "click",
-        "x": 760,
-        "y": 450,
-        "target_color": null,
-        "delay": 1.899
-    },
-    {
-        "type": "click",
-        "x": 1688,
-        "y": 302,
-        "target_color": null,
-        "delay": 1.208
-    },
-    {
-        "type": "click",
-        "x": 1208,
-        "y": 1053,
-        "target_color": null,
-        "delay": 2.174
-    }
-]
+        "accepted": "accepted.json",
+        "rejected": "rejected.json",
+        "delay": 2.781
+    }]

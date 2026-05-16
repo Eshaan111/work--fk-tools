@@ -7,6 +7,7 @@ from PIL import ImageGrab
 recording = []
 last_event_time = None
 shift_pressed = False 
+ctrl_pressed = False
 
 def get_delay():
     global last_event_time
@@ -22,45 +23,93 @@ def get_pixel_color(x, y):
         return (0, 0, 0)
 
 def on_click(x, y, button, pressed):
-    if pressed and last_event_time:
+    if last_event_time:
         delay = get_delay()
         
-        # Shift + Click = pixel_watcher
-        if shift_pressed:
-            color = get_pixel_color(x, y)
-            event_type = "pixel_watcher"
-            print(f"[PIXEL WATCHER] Target: ({x}, {y}) | Color: {color} | Recorded Delay: {delay}s")
+        if pressed:
+            # Shift + Click = pixel_watcher
+            if shift_pressed:
+                color = get_pixel_color(x, y)
+                print(f"[PIXEL WATCHER] Target: ({x}, {y}) | Color: {color} | Recorded Delay: {delay}s")
+                recording.append({
+                    "type": "pixel_watcher", 
+                    "x": x, 
+                    "y": y, 
+                    "target_color": color, 
+                    "delay": delay
+                })
+            else:
+                print(f"[MOUSE DOWN] ({x}, {y}) | Delay: {delay}s")
+                recording.append({
+                    "type": "mouse_down", 
+                    "x": x, 
+                    "y": y, 
+                    "delay": delay
+                })
         else:
-            color = None
-            event_type = "click"
-            print(f"[CLICK] ({x}, {y}) | Delay: {delay}s")
-
-        recording.append({
-            "type": event_type, 
-            "x": x, 
-            "y": y, 
-            "target_color": color, 
-            "delay": delay
-        })
+            # Record mouse up to complete clicks or drag selections
+            if not shift_pressed:
+                print(f"[MOUSE UP] ({x}, {y}) | Delay: {delay}s")
+                recording.append({
+                    "type": "mouse_up", 
+                    "x": x, 
+                    "y": y, 
+                    "delay": delay
+                })
 
 def on_press(key):
-    global last_event_time, shift_pressed
+    global last_event_time, shift_pressed, ctrl_pressed
     if key == keyboard.Key.esc: return False
     
-    if key == keyboard.Key.shift or key == keyboard.Key.shift_r:
+    if key in [keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r]:
+        ctrl_pressed = True
+        return
+    
+    if key in [keyboard.Key.shift, keyboard.Key.shift_r]:
         shift_pressed = True
+        return
     
     if last_event_time:
-        try: k = key.char
-        except AttributeError: k = str(key)
-        recording.append({"type": "key", "value": k, "delay": get_delay()})
+        delay = get_delay()
+        try: 
+            k = key.char
+        except AttributeError: 
+            k = str(key)
+        
+        # Intercept and log hotkey combinations
+        if ctrl_pressed and k:
+            if k in ['c', 'C', '\x03']: # '\x03' is the ASCII control code for Ctrl+C
+                recording.append({"type": "hotkey", "modifier": "ctrl", "key": "c", "delay": delay})
+                print(f"[HOTKEY] ctrl + c | Delay: {delay}s")
+                return
+            elif k in ['v', 'V', '\x16']: # '\x16' is Ctrl+V
+                recording.append({"type": "hotkey", "modifier": "ctrl", "key": "v", "delay": delay})
+                print(f"[HOTKEY] ctrl + v | Delay: {delay}s")
+                return
+            elif k in ['x', 'X', '\x18']: # '\x18' is Ctrl+X
+                recording.append({"type": "hotkey", "modifier": "ctrl", "key": "x", "delay": delay})
+                print(f"[HOTKEY] ctrl + x | Delay: {delay}s")
+                return
+            elif k in ['a', 'A', '\x01']: # '\x01' is Ctrl+A
+                recording.append({"type": "hotkey", "modifier": "ctrl", "key": "a", "delay": delay})
+                print(f"[HOTKEY] ctrl + a | Delay: {delay}s")
+                return
+
+        # Prevent standalone modifier key strings from cluttering output
+        if "ctrl" in str(key).lower() or "shift" in str(key).lower():
+            return
+
+        recording.append({"type": "key", "value": k, "delay": delay})
+        print(f"[KEY] {k} | Delay: {delay}s")
 
 def on_release(key):
-    global shift_pressed
-    if key == keyboard.Key.shift or key == keyboard.Key.shift_r:
+    global shift_pressed, ctrl_pressed
+    if key in [keyboard.Key.shift, keyboard.Key.shift_r]:
         shift_pressed = False
+    if key in [keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r]:
+        ctrl_pressed = False
 
-print("--- SELECTIVE DELAY RECORDER ---")
+print("--- SELECTIVE DELAY RECORDER WITH DRAG & COPY/PASTE ---")
 print("S: Start | ESC: Save | Shift + Click: Pixel Watcher (Instant)")
 
 with keyboard.Listener(on_press=lambda k: False if hasattr(k, 'char') and k.char.lower() == 's' else True) as s: s.join()
