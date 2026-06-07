@@ -23,21 +23,23 @@ def get_current_color(x, y):
 def color_matches(current, target, tolerance):
     return all(abs(current[i] - target[i]) <= tolerance for i in range(3))
 
-def run_playback():
+def run_playback(loops: int = 1, startup_delay: float = 0.0) -> bool:
     try:
         with RECORDING_PATH.open("r", encoding="utf-8") as f:
             events = json.load(f)
         print(f"Loaded recording from: {RECORDING_PATH}")
     except FileNotFoundError:
         print(f"Recording file not found: {RECORDING_PATH}")
-        return
+        return False
     except json.JSONDecodeError as exc:
         print(f"Recording file is not valid JSON: {RECORDING_PATH} | {exc}")
-        return
+        return False
 
-    loops = int(input("Loops: ") or 1)
-    time.sleep(3)
+    if startup_delay > 0:
+        print(f"Waiting {startup_delay:.1f}s before playback starts...")
+        time.sleep(startup_delay)
     
+    all_runs_successful = True
     for run_idx in range(loops):
         print(f"\n>>> RUN #{run_idx + 1} STARTING")
         aborted = False
@@ -85,10 +87,14 @@ def run_playback():
         
         if aborted:
             print(f">>> RUN #{run_idx + 1} FAILED (Aborted)")
+            all_runs_successful = False
         else:
             print(f">>> RUN #{run_idx + 1} SUCCESSFUL")
         
         time.sleep(2) # Breath time between loops
 
+    return all_runs_successful
+
 if __name__ == "__main__":
-    run_playback()
+    requested_loops = int(input("Loops: ") or 1)
+    run_playback(loops=requested_loops, startup_delay=3)

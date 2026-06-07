@@ -1,0 +1,6 @@
+pandas
+pillow
+rembg
+openai
+python-dotenv
+numpy

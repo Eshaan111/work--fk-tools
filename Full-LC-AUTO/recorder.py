@@ -1,10 +1,8 @@
 import time
 import json
-from pathlib import Path
+import os
 from pynput import mouse, keyboard
 from PIL import ImageGrab
-
-RECORDING_PATH = Path(__file__).resolve().with_name("recording.json")
 
 recording = []
 last_event_time = None
@@ -72,6 +70,5 @@ with mouse.Listener(on_click=on_click) as m_listener, \
      keyboard.Listener(on_press=on_press, on_release=on_release) as k_listener:
     k_listener.join()
 
-with RECORDING_PATH.open("w", encoding="utf-8") as f:
+with open("recording.json", "w") as f:
     json.dump(recording, f, indent=4)
-print(f"Saved recording to: {RECORDING_PATH}")

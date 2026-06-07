@@ -1,0 +1,41 @@
+[
+    {
+        "type": "click",
+        "x": 779,
+        "y": 635,
+        "target_color": null,
+        "delay": 1.783
+    },
+    {
+        "type": "key",
+        "value": "a",
+        "delay": 0.216
+    },
+    {
+        "type": "key",
+        "value": "d",
+        "delay": 0.145
+    },
+    {
+        "type": "key",
+        "value": "w",
+        "delay": 0.085
+    },
+    {
+        "type": "key",
+        "value": "d",
+        "delay": 0.327
+    },
+    {
+        "type": "key",
+        "value": "w",
+        "delay": 0.144
+    },
+    {
+        "type": "click",
+        "x": 799,
+        "y": 398,
+        "target_color": null,
+        "delay": 0.625
+    }
+]
