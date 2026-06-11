@@ -6,7 +6,7 @@ Suggest new background ideas for the uploaded product image.
 
 We have already used background ideas based on these phrases:
 
-Terracota Style With Plant and Gym equipment in background, Industrial Concrete Studio, Minimal White Cyclorama, Dark Graphite Gradient Studio, Athletic Track Sunrise, Coastal Boardwalk Morning, Urban Rooftop Fitness Terrace, Luxury Locker Room Corridor, Modern Sports Recovery Lounge, Modern Atrium Walkway, Warm Limewash Studio, Soft Travertine Studio, Soft Plaster Curve Studio, Matte Sandstone Studio, Pearl Microcement Studio, Bleached Oak Panel Studio, Ivory Linen Backdrop Studio
+Terracota Style With Plant and Gym equipment in background, Warm Limewash Studio, Pearl Microcement Studio, Champagne Clay Studio, Soft Quartz Studio, Bleached Oak Panel Studio
 
 Your job is to suggest NEW background ideas that are clearly different from the already-used ones.
 
@@ -167,7 +167,7 @@ IMPORTANT
 
 The ideas should be distinct from:
 
-Terracota Style With Plant and Gym equipment in background, Industrial Concrete Studio, Minimal White Cyclorama, Dark Graphite Gradient Studio, Athletic Track Sunrise, Coastal Boardwalk Morning, Urban Rooftop Fitness Terrace, Luxury Locker Room Corridor, Modern Sports Recovery Lounge, Modern Atrium Walkway, Warm Limewash Studio, Soft Travertine Studio, Soft Plaster Curve Studio, Matte Sandstone Studio, Pearl Microcement Studio, Bleached Oak Panel Studio, Ivory Linen Backdrop Studio
+Terracota Style With Plant and Gym equipment in background, Warm Limewash Studio, Pearl Microcement Studio, Champagne Clay Studio, Soft Quartz Studio, Bleached Oak Panel Studio
 
 
 Generate 15 diverse ideas.

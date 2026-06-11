@@ -17,17 +17,44 @@ import pyautogui
 from openpyxl import load_workbook
 from pynput import keyboard
 
-PRABHU_FIREFOX_PROFILE = Path(
+LAPTOP_NAME = "VAIO"
+# LAPTOP_NAME = "ASUS"
+
+PRABHU_FIREFOX_PROFILE_ASUS = Path(
     r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"
 )
-PROJECT_ROOT = Path(__file__).resolve().parent
-RUN_HELPERS_DIR = PROJECT_ROOT / "run-helpers"
-FULL_GENERATED_IMAGES_DIR = PROJECT_ROOT / "FULL GENERATED IMAGES"
-IMAGES_FINAL_DIR = PROJECT_ROOT / "IMAGES-FINAL"
+PRABHU_FIREFOX_PROFILE_VAIO = Path(
+    r"C:\Users\SONY\AppData\Roaming\Mozilla\Firefox\Profiles\gm1pmawk.default-release"
+)
+IMAGE_PROMPTER_ROOT = Path(__file__).resolve().parent
+ROOT_PATH = IMAGE_PROMPTER_ROOT
+
+
+def image_prompter_path(*relative_parts: str) -> Path:
+    return ROOT_PATH.joinpath(*relative_parts)
+
+
+RUN_HELPERS_DIR = image_prompter_path("run-helpers")
+FULL_GENERATED_IMAGES_DIR = image_prompter_path("FULL GENERATED IMAGES")
+IMAGES_FINAL_DIR = image_prompter_path("IMAGES-FINAL")
 NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
-USED_IMAGE_DESIGNS_WORKBOOK = PROJECT_ROOT / "USED-IMAGE-DESIGNS.xlsx"
-PROMPT_TEMPLATE_PATH = PROJECT_ROOT / "image_edit_prompt_template.txt"
-IMAGE_GENERATION_PROMPT_TEMPLATE_PATH = PROJECT_ROOT / "image_generation_prompt"
+NO_BG_IMAGES_ROOT_VAIO = Path(r"C:\NO-BG-IMAGES")
+LAPTOP_CONFIGS = {
+    "ASUS": {
+        "firefox_profile": PRABHU_FIREFOX_PROFILE_ASUS,
+        "no_bg_images_root": NO_BG_IMAGES_ROOT_ASUS,
+    },
+    "VAIO": {
+        "firefox_profile": PRABHU_FIREFOX_PROFILE_VAIO,
+        "no_bg_images_root": NO_BG_IMAGES_ROOT_VAIO,
+    },
+}
+ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME.upper()]
+PRABHU_FIREFOX_PROFILE = ACTIVE_LAPTOP_CONFIG["firefox_profile"]
+NO_BG_IMAGES_ROOT = ACTIVE_LAPTOP_CONFIG["no_bg_images_root"]
+USED_IMAGE_DESIGNS_WORKBOOK = image_prompter_path("USED-IMAGE-DESIGNS.xlsx")
+PROMPT_TEMPLATE_PATH = image_prompter_path("image_edit_prompt_template.txt")
+IMAGE_GENERATION_PROMPT_TEMPLATE_PATH = image_prompter_path("image_generation_prompt")
 DEFAULT_FIREFOX_BINARY = Path(r"C:\Program Files\Mozilla Firefox\firefox.exe")
 FALLBACK_FIREFOX_BINARIES = [
     Path(r"C:\Program Files\Mozilla Firefox\firefox.exe"),
@@ -54,15 +81,15 @@ RUN_HELPER_PATHS = (
     IMAGE_GENERATION_FINAL_CHAT_PATH,
 )
 LEGACY_RUN_HELPER_PATHS = (
-    PROJECT_ROOT / "generated_prompt_preview.txt",
-    PROJECT_ROOT / "last_full_chat.txt",
-    PROJECT_ROOT / "latest_response.txt",
-    PROJECT_ROOT / "all_responses.txt",
-    PROJECT_ROOT / "parsed_latest_ideas.txt",
-    PROJECT_ROOT / "new_ideas_not_in_excel.txt",
-    PROJECT_ROOT / "current_run_idea.json",
-    PROJECT_ROOT / "current_generation_prompt.txt",
-    PROJECT_ROOT / "image_generation_final_chat.txt",
+    image_prompter_path("generated_prompt_preview.txt"),
+    image_prompter_path("last_full_chat.txt"),
+    image_prompter_path("latest_response.txt"),
+    image_prompter_path("all_responses.txt"),
+    image_prompter_path("parsed_latest_ideas.txt"),
+    image_prompter_path("new_ideas_not_in_excel.txt"),
+    image_prompter_path("current_run_idea.json"),
+    image_prompter_path("current_generation_prompt.txt"),
+    image_prompter_path("image_generation_final_chat.txt"),
 )
 CHATGPT_URL = "https://chatgpt.com"
 IDEA_MARKER = "IDEA FOR BACKGROUND :"
@@ -72,10 +99,14 @@ pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.15
 START_HOTKEY_KEY = keyboard.Key.right
 CHAT_CLICK_TARGET = (1237, 575)
+CHATGPT_PROMPT_BOX_PIXELS_VAIO = {
+    "position": (563, 398),
+    "rgb": (230, 255, 255),
+}
 IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
 IMAGE_GENERATION_TIMEOUT_SECONDS = 600
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 12
-IMAGE_GENERATION_VERIFICATION_LIMIT = 2
+IMAGE_GENERATION_VERIFICATION_LIMIT = 0
 POST_SAVE_EXTRACTION_WAIT_SECONDS = 2.0
 IMAGE_GENERATION_IN_PROGRESS_PHRASES = (
     "creating image",
@@ -210,19 +241,33 @@ def prompt_for_kind(kind_to_phrases: dict[str, list[str]]) -> str:
         print("Please choose one of the listed options.")
 
 
+def prompt_for_loop_count() -> int:
+    while True:
+        choice = input("How many full cycles do you want to run? ").strip()
+        if not choice.isdigit():
+            print("Please enter a valid whole number.")
+            continue
+
+        loop_count = int(choice)
+        if loop_count >= 1:
+            return loop_count
+
+        print("Please enter at least 1.")
+
+
 def resolve_product_image_folder(product_kind: str) -> Path:
-    if not NO_BG_IMAGES_ROOT_ASUS.exists():
+    if not NO_BG_IMAGES_ROOT.exists():
         raise FileNotFoundError(
-            f"NO-BG-IMAGES root folder was not found: {NO_BG_IMAGES_ROOT_ASUS}"
+            f"NO-BG-IMAGES root folder was not found: {NO_BG_IMAGES_ROOT}"
         )
 
     normalized_target = product_kind.strip().casefold()
-    for folder in NO_BG_IMAGES_ROOT_ASUS.iterdir():
+    for folder in NO_BG_IMAGES_ROOT.iterdir():
         if folder.is_dir() and folder.name.strip().casefold() == normalized_target:
             return folder
 
     raise FileNotFoundError(
-        f"Could not find an image folder for kind '{product_kind}' inside {NO_BG_IMAGES_ROOT_ASUS}."
+        f"Could not find an image folder for kind '{product_kind}' inside {NO_BG_IMAGES_ROOT}."
     )
 
 
@@ -279,10 +324,10 @@ def build_image_generation_prompt(idea: BackgroundIdea) -> str:
     )
 
 
-def prepare_product_prompt_context() -> ProductPromptContext:
+def prepare_product_prompt_context(product_kind: str | None = None) -> ProductPromptContext:
     initialize_run_helpers()
     kind_to_phrases = load_kind_to_used_phrases()
-    selected_kind = prompt_for_kind(kind_to_phrases)
+    selected_kind = product_kind or prompt_for_kind(kind_to_phrases)
     image_folder = resolve_product_image_folder(selected_kind)
     image_paths = get_images_from_folder(image_folder)
     used_phrases_csv = build_used_phrases_csv(kind_to_phrases.get(selected_kind, []))
@@ -396,6 +441,18 @@ def click_chat_copy_target() -> None:
     print(f"Clicking chat copy target at ({target_x}, {target_y}) before copy cycle...")
     pyautogui.moveTo(target_x, target_y, duration=0.2)
     pyautogui.click()
+
+
+def hold_click_chatgpt_boot_focus_target() -> None:
+    target_x, target_y = CHATGPT_PROMPT_BOX_PIXELS_VAIO["position"]
+    print(
+        f"Clicking ChatGPT boot focus target ({target_x}, {target_y}) every 0.5 seconds for 10 seconds..."
+    )
+    pyautogui.moveTo(target_x, target_y, duration=0.2)
+    end_time = time.time() + 10
+    while time.time() < end_time:
+        pyautogui.click()
+        time.sleep(0.5)
 
 
 def copy_full_chat_text_once() -> str:
@@ -845,13 +902,15 @@ def copy_or_download_generated_image(
         destination_path.write_bytes(response.read())
 
 
-def extract_generated_images_from_latest_saved_html() -> Path:
+def extract_generated_images_from_latest_saved_html() -> Path | None:
     latest_html_path = get_latest_saved_html_path()
     generated_sources = extract_generated_image_sources_from_html(latest_html_path)
     if not generated_sources:
-        raise ValueError(
-            f"No generated-image <img> tags were found in: {latest_html_path}"
+        print(
+            "No generated-image <img> tags were found in the saved HTML, "
+            f"so skipping final image extraction for this cycle: {latest_html_path}"
         )
+        return None
 
     output_dir = get_next_images_final_output_dir()
     print(f"Extracting generated images from: {latest_html_path}")
@@ -1028,7 +1087,8 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
     open_firefox_normal_window()
     time.sleep(2)
 
-    wait_for_start_hotkey()
+    # wait_for_start_hotkey()
+    hold_click_chatgpt_boot_focus_target()
 
     print()
     print("Starting focused-field prompt and image paste flow...")
@@ -1099,14 +1159,24 @@ def wait_for_start_hotkey() -> None:
 
 
 def main() -> None:
-    context = prepare_product_prompt_context()
+    loop_count = prompt_for_loop_count()
+    kind_to_phrases = load_kind_to_used_phrases()
+    selected_kind = prompt_for_kind(kind_to_phrases)
 
-    print(f"Selected kind: {context.product_kind}")
-    print(f"First image ready: {context.image_paths[0]}")
-    print(f"Total images queued for generation: {len(context.image_paths)}")
-    print(f"Prompt preview saved to: {PROMPT_PREVIEW_PATH}")
+    for cycle_index in range(1, loop_count + 1):
+        print()
+        print(f"========== Starting cycle {cycle_index} of {loop_count} ==========")
 
-    run_chatgpt_manual_browser_flow(context)
+        context = prepare_product_prompt_context(selected_kind)
+
+        print(f"Selected kind: {context.product_kind}")
+        print(f"First image ready: {context.image_paths[0]}")
+        print(f"Total images queued for generation: {len(context.image_paths)}")
+        print(f"Prompt preview saved to: {PROMPT_PREVIEW_PATH}")
+
+        run_chatgpt_manual_browser_flow(context)
+
+        print(f"========== Finished cycle {cycle_index} of {loop_count} ==========")
 
 
 if __name__ == "__main__":
