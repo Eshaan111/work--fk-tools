@@ -6,9 +6,12 @@ import re
 import shutil
 import subprocess
 import time
+import urllib.request
 import winsound
 from dataclasses import dataclass
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import unquote, urlparse
 
 import pyautogui
 from openpyxl import load_workbook
@@ -19,6 +22,8 @@ PRABHU_FIREFOX_PROFILE = Path(
 )
 PROJECT_ROOT = Path(__file__).resolve().parent
 RUN_HELPERS_DIR = PROJECT_ROOT / "run-helpers"
+FULL_GENERATED_IMAGES_DIR = PROJECT_ROOT / "FULL GENERATED IMAGES"
+IMAGES_FINAL_DIR = PROJECT_ROOT / "IMAGES-FINAL"
 NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
 USED_IMAGE_DESIGNS_WORKBOOK = PROJECT_ROOT / "USED-IMAGE-DESIGNS.xlsx"
 PROMPT_TEMPLATE_PATH = PROJECT_ROOT / "image_edit_prompt_template.txt"
@@ -70,6 +75,8 @@ CHAT_CLICK_TARGET = (1237, 575)
 IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
 IMAGE_GENERATION_TIMEOUT_SECONDS = 600
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 12
+IMAGE_GENERATION_VERIFICATION_LIMIT = 2
+POST_SAVE_EXTRACTION_WAIT_SECONDS = 2.0
 IMAGE_GENERATION_IN_PROGRESS_PHRASES = (
     "creating image",
     "generating image",
@@ -102,6 +109,22 @@ class BackgroundIdea:
     title: str
     visual_concept: str
     background_description: str
+
+
+class GeneratedImageHTMLParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.generated_image_sources: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.casefold() != "img":
+            return
+
+        attrs_map = dict(attrs)
+        alt_text = (attrs_map.get("alt") or "").strip()
+        src = (attrs_map.get("src") or "").strip()
+        if alt_text.startswith("Generated image:") and src:
+            self.generated_image_sources.append(src)
 
 
 def ensure_run_helpers_dir() -> None:
@@ -741,6 +764,112 @@ def beep_all_images_generation_complete() -> None:
         time.sleep(0.12)
 
 
+def save_generated_images_to_output_folder() -> None:
+    output_folder = FULL_GENERATED_IMAGES_DIR.resolve()
+    if not output_folder.exists():
+        raise FileNotFoundError(
+            f"Full generated images folder was not found: {output_folder}"
+        )
+
+    print(f"Saving generated images into: {output_folder}")
+    pyautogui.hotkey("ctrl", "s")
+    time.sleep(2.0)
+    pyautogui.hotkey("alt", "d")
+    time.sleep(0.35)
+    set_clipboard_text(str(output_folder))
+    time.sleep(0.35)
+    pyautogui.hotkey("ctrl", "v")
+    time.sleep(0.35)
+    pyautogui.press("enter")
+    time.sleep(0.5)
+
+    for _ in range(6):
+        pyautogui.press("tab")
+        time.sleep(0.12)
+
+    set_clipboard_text(time.strftime("%H-%M-%S"))
+    time.sleep(0.2)
+    pyautogui.hotkey("ctrl", "v")
+    time.sleep(0.2)
+    pyautogui.press("enter")
+
+
+def get_latest_saved_html_path() -> Path:
+    html_candidates = sorted(
+        [
+            path
+            for path in FULL_GENERATED_IMAGES_DIR.iterdir()
+            if path.is_file() and path.suffix.lower() in {".htm", ".html"}
+        ],
+        key=lambda path: path.stat().st_mtime,
+    )
+    if not html_candidates:
+        raise FileNotFoundError(
+            f"No saved HTML files were found in: {FULL_GENERATED_IMAGES_DIR}"
+        )
+    return html_candidates[-1]
+
+
+def get_next_images_final_output_dir() -> Path:
+    IMAGES_FINAL_DIR.mkdir(parents=True, exist_ok=True)
+    numeric_folders = [
+        int(path.name)
+        for path in IMAGES_FINAL_DIR.iterdir()
+        if path.is_dir() and path.name.isdigit()
+    ]
+    next_folder_number = max(numeric_folders, default=-1) + 1
+    output_dir = IMAGES_FINAL_DIR / str(next_folder_number)
+    output_dir.mkdir(parents=True, exist_ok=False)
+    return output_dir
+
+
+def extract_generated_image_sources_from_html(html_path: Path) -> list[str]:
+    html_text = html_path.read_text(encoding="utf-8", errors="replace")
+    parser = GeneratedImageHTMLParser()
+    parser.feed(html_text)
+    return parser.generated_image_sources
+
+
+def copy_or_download_generated_image(
+    image_src: str,
+    html_path: Path,
+    destination_path: Path,
+) -> None:
+    decoded_src = unquote(image_src)
+    local_source_path = (html_path.parent / decoded_src).resolve()
+    if local_source_path.exists():
+        shutil.copy2(local_source_path, destination_path)
+        return
+
+    with urllib.request.urlopen(image_src) as response:
+        destination_path.write_bytes(response.read())
+
+
+def extract_generated_images_from_latest_saved_html() -> Path:
+    latest_html_path = get_latest_saved_html_path()
+    generated_sources = extract_generated_image_sources_from_html(latest_html_path)
+    if not generated_sources:
+        raise ValueError(
+            f"No generated-image <img> tags were found in: {latest_html_path}"
+        )
+
+    output_dir = get_next_images_final_output_dir()
+    print(f"Extracting generated images from: {latest_html_path}")
+    print(f"Saving ordered generated images to: {output_dir}")
+
+    for image_index, image_src in enumerate(generated_sources, start=1):
+        parsed_src = urlparse(image_src)
+        image_suffix = Path(parsed_src.path).suffix or ".png"
+        destination_path = output_dir / f"{image_index}{image_suffix}"
+        copy_or_download_generated_image(
+            image_src=image_src,
+            html_path=latest_html_path,
+            destination_path=destination_path,
+        )
+
+    return output_dir
+
+
 def is_image_generation_in_progress(full_chat_text: str) -> bool:
     normalized_text = full_chat_text.casefold()
     return any(
@@ -838,18 +967,55 @@ def run_generation_prompt_for_remaining_images(
     image_paths: list[Path],
     generation_prompt_text: str,
 ) -> None:
-    for image_index, image_path in enumerate(image_paths, start=1):
+    if IMAGE_GENERATION_VERIFICATION_LIMIT == -1:
+        target_verification_count = len(image_paths)
+    elif IMAGE_GENERATION_VERIFICATION_LIMIT < -1:
+        raise ValueError(
+            "IMAGE_GENERATION_VERIFICATION_LIMIT must be -1 or a non-negative integer."
+        )
+    else:
+        target_verification_count = min(
+            IMAGE_GENERATION_VERIFICATION_LIMIT,
+            len(image_paths),
+        )
+
+    if target_verification_count == 0:
+        print(
+            "IMAGE_GENERATION_VERIFICATION_LIMIT is 0, so skipping image verification and moving directly to the final save flow."
+        )
+        beep_all_images_generation_complete()
+        save_generated_images_to_output_folder()
+        time.sleep(POST_SAVE_EXTRACTION_WAIT_SECONDS)
+        extract_generated_images_from_latest_saved_html()
+        return
+
+    print(
+        f"Will verify {target_verification_count} generated image(s) before the final beep/save flow."
+    )
+
+    for image_index, image_path in enumerate(
+        image_paths[:target_verification_count],
+        start=1,
+    ):
         print()
         print(
-            f"Running image generation for image {image_index} of {len(image_paths)}: {image_path}"
+            f"Running image generation for image {image_index} of {target_verification_count}: {image_path}"
         )
         run_generation_prompt_for_image(image_path, generation_prompt_text)
         print(
-            f"Confirmed generated image for image {image_index} of {len(image_paths)}."
+            f"Confirmed generated image for image {image_index} of {target_verification_count}."
         )
 
-    print("Confirmed generated images for every image in the folder.")
+    if target_verification_count == len(image_paths):
+        print("Confirmed generated images for every image in the folder.")
+    else:
+        print(
+            "Reached the configured image-generation verification limit. Moving to the final beep/save flow."
+        )
     beep_all_images_generation_complete()
+    save_generated_images_to_output_folder()
+    time.sleep(POST_SAVE_EXTRACTION_WAIT_SECONDS)
+    extract_generated_images_from_latest_saved_html()
 
 
 def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:

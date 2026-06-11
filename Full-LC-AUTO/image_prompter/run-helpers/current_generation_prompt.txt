@@ -33,9 +33,9 @@ Do NOT:
 
 TARGET_BACKGROUND:
 
-= Title: Warm Limewash Studio
-Visual Concept: Soft handcrafted surfaces create a premium fashion-catalog atmosphere with understated warmth.
-Background Description: Light warm-white limewash wall with subtle tonal variation, smooth matte ivory floor, seamless transition between wall and floor, large open negative space, soft diffused studio lighting, gentle shadow falloff, slight depth of field, refined luxury ecommerce photography aesthetic.
+= Title: Champagne Clay Studio
+Visual Concept: Soft handcrafted mineral surfaces create a refined and contemporary activewear presentation.
+Background Description: Smooth champagne-toned clay plaster wall with subtle tonal variation, warm ivory matte floor, seamless wall-to-floor transition, extremely low-contrast texture, large negative space surrounding the product, soft diffused overhead lighting, gentle contact shadows, slight environmental depth of field, premium ecommerce catalog aesthetic.
 
 PRIMARY OBJECTIVE
 
@@ -237,9 +237,9 @@ Scene Style:
 TARGET_BACKGROUND DESCRIPTION
 
 """
-Title: Warm Limewash Studio
-Visual Concept: Soft handcrafted surfaces create a premium fashion-catalog atmosphere with understated warmth.
-Background Description: Light warm-white limewash wall with subtle tonal variation, smooth matte ivory floor, seamless transition between wall and floor, large open negative space, soft diffused studio lighting, gentle shadow falloff, slight depth of field, refined luxury ecommerce photography aesthetic.
+Title: Champagne Clay Studio
+Visual Concept: Soft handcrafted mineral surfaces create a refined and contemporary activewear presentation.
+Background Description: Smooth champagne-toned clay plaster wall with subtle tonal variation, warm ivory matte floor, seamless wall-to-floor transition, extremely low-contrast texture, large negative space surrounding the product, soft diffused overhead lighting, gentle contact shadows, slight environmental depth of field, premium ecommerce catalog aesthetic.
 """
 
 FINAL PRIORITY ORDER

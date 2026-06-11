@@ -169,4 +169,6 @@ The ideas should be distinct from:
 
 [USED_PHRASES_CSV]
 
+
 Generate 15 diverse ideas.
+Wrap the entire response in a fenced code block with language identifier json.
