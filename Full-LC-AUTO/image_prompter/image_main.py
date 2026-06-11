@@ -241,6 +241,20 @@ def prompt_for_kind(kind_to_phrases: dict[str, list[str]]) -> str:
         print("Please choose one of the listed options.")
 
 
+def get_images_final_kind_dir(product_kind: str) -> Path:
+    kind_folder_name = re.sub(r'[<>:"/\\|?*]+', "-", product_kind.strip()).strip(" .")
+    if not kind_folder_name:
+        raise ValueError("Product kind cannot be empty when creating IMAGES-FINAL folder.")
+    return IMAGES_FINAL_DIR / kind_folder_name
+
+
+def ensure_images_final_kind_folders(product_kinds: list[str]) -> None:
+    IMAGES_FINAL_DIR.mkdir(parents=True, exist_ok=True)
+    for product_kind in product_kinds:
+        kind_dir = get_images_final_kind_dir(product_kind)
+        (kind_dir / "0").mkdir(parents=True, exist_ok=True)
+
+
 def prompt_for_loop_count() -> int:
     while True:
         choice = input("How many full cycles do you want to run? ").strip()
@@ -867,15 +881,16 @@ def get_latest_saved_html_path() -> Path:
     return html_candidates[-1]
 
 
-def get_next_images_final_output_dir() -> Path:
-    IMAGES_FINAL_DIR.mkdir(parents=True, exist_ok=True)
+def get_next_images_final_output_dir(product_kind: str) -> Path:
+    images_final_kind_dir = get_images_final_kind_dir(product_kind)
+    images_final_kind_dir.mkdir(parents=True, exist_ok=True)
     numeric_folders = [
         int(path.name)
-        for path in IMAGES_FINAL_DIR.iterdir()
+        for path in images_final_kind_dir.iterdir()
         if path.is_dir() and path.name.isdigit()
     ]
     next_folder_number = max(numeric_folders, default=-1) + 1
-    output_dir = IMAGES_FINAL_DIR / str(next_folder_number)
+    output_dir = images_final_kind_dir / str(next_folder_number)
     output_dir.mkdir(parents=True, exist_ok=False)
     return output_dir
 
@@ -902,7 +917,7 @@ def copy_or_download_generated_image(
         destination_path.write_bytes(response.read())
 
 
-def extract_generated_images_from_latest_saved_html() -> Path | None:
+def extract_generated_images_from_latest_saved_html(product_kind: str) -> Path | None:
     latest_html_path = get_latest_saved_html_path()
     generated_sources = extract_generated_image_sources_from_html(latest_html_path)
     if not generated_sources:
@@ -912,7 +927,7 @@ def extract_generated_images_from_latest_saved_html() -> Path | None:
         )
         return None
 
-    output_dir = get_next_images_final_output_dir()
+    output_dir = get_next_images_final_output_dir(product_kind)
     print(f"Extracting generated images from: {latest_html_path}")
     print(f"Saving ordered generated images to: {output_dir}")
 
@@ -1025,6 +1040,7 @@ def run_generation_prompt_for_image(
 def run_generation_prompt_for_remaining_images(
     image_paths: list[Path],
     generation_prompt_text: str,
+    product_kind: str,
 ) -> None:
     if IMAGE_GENERATION_VERIFICATION_LIMIT == -1:
         target_verification_count = len(image_paths)
@@ -1045,7 +1061,7 @@ def run_generation_prompt_for_remaining_images(
         beep_all_images_generation_complete()
         save_generated_images_to_output_folder()
         time.sleep(POST_SAVE_EXTRACTION_WAIT_SECONDS)
-        extract_generated_images_from_latest_saved_html()
+        extract_generated_images_from_latest_saved_html(product_kind)
         return
 
     print(
@@ -1074,7 +1090,7 @@ def run_generation_prompt_for_remaining_images(
     beep_all_images_generation_complete()
     save_generated_images_to_output_folder()
     time.sleep(POST_SAVE_EXTRACTION_WAIT_SECONDS)
-    extract_generated_images_from_latest_saved_html()
+    extract_generated_images_from_latest_saved_html(product_kind)
 
 
 def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
@@ -1127,6 +1143,7 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
             run_generation_prompt_for_remaining_images(
                 context.image_paths,
                 generation_prompt_text,
+                context.product_kind,
             )
         else:
             print("No parsed ideas were found in the latest output.")
@@ -1161,6 +1178,7 @@ def wait_for_start_hotkey() -> None:
 def main() -> None:
     loop_count = prompt_for_loop_count()
     kind_to_phrases = load_kind_to_used_phrases()
+    ensure_images_final_kind_folders(sorted(kind_to_phrases.keys()))
     selected_kind = prompt_for_kind(kind_to_phrases)
 
     for cycle_index in range(1, loop_count + 1):

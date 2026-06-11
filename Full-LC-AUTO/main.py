@@ -8,15 +8,13 @@ import string
 import threading
 import tkinter as tk
 from datetime import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from time import sleep
 
 import msvcrt
 from openpyxl import load_workbook
 import pyautogui
-from pynput.keyboard import Controller as KeyboardController
-from pynput.keyboard import Key as PynputKey
 from pynput.mouse import Button as PynputButton
 from pynput.mouse import Controller as MouseController
 
@@ -37,9 +35,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+LAPTOP_NAME = os.getenv("FK_LAPTOP_NAME", "VAIO").upper()
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
 )
+DEFAULT_IMAGE_DIRECTORY_VAIO: Path | None = Path(r"C:\LISTING IMAGES AUTOMATED\Shorts")
 JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "1": ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
     "2": ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
@@ -47,43 +47,125 @@ JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "4": ("Black-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BLACK-PLAIN\NEW IMAGES")),
     "5": ("White-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\WHITE-PLAIN\NEW IMAGES")),
 }
-DEFAULT_SNAPSHOT_DIRECTORY = PROJECT_ROOT / "snapshots"
-DEFAULT_PRICE_STOCK_SHIPPING_EXCEL = (
+JEANS_KIND_OPTIONS_VAIO: dict[str, tuple[str, Path | None]] = {
+    "1": ("Beige", Path(r"C:\LISTING IMAGES AUTOMATED\BEIGE")),
+    "2": ("Ice", Path(r"C:\LISTING IMAGES AUTOMATED\ICE")),
+    "3": ("Black-baggy", Path(r"C:\LISTING IMAGES AUTOMATED\Black-baggy")),
+    "4": ("Black-Plain", Path(r"C:\LISTING IMAGES AUTOMATED\Balck-Plain")),
+    "5": ("White-Plain", Path(r"C:\LISTING IMAGES AUTOMATED\White")),
+}
+DEFAULT_SNAPSHOT_DIRECTORY_ASUS = PROJECT_ROOT / "snapshots"
+DEFAULT_SNAPSHOT_DIRECTORY_VAIO = PROJECT_ROOT / "snapshots"
+DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_ASUS = (
     PROJECT_ROOT / "data inputs" / "Price-Stock-Shipping-inputs.xlsx"
 )
-DEFAULT_PRICE_STOCK_SHIPPING_JSON = (
+DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_VAIO = (
+    PROJECT_ROOT / "data inputs" / "Price-Stock-Shipping-inputs.xlsx"
+)
+DEFAULT_PRICE_STOCK_SHIPPING_JSON_ASUS = (
     PROJECT_ROOT / "assets" / "Price-Stock-Shipping-inputs.json"
 )
-DEFAULT_PRODUCT_DESCRIPTION_EXCEL = (
+DEFAULT_PRICE_STOCK_SHIPPING_JSON_VAIO = (
+    PROJECT_ROOT / "assets" / "Price-Stock-Shipping-inputs.json"
+)
+DEFAULT_PRODUCT_DESCRIPTION_EXCEL_ASUS = (
     PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Jeans.xlsx"
 )
-DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL = (
+DEFAULT_PRODUCT_DESCRIPTION_EXCEL_VAIO = (
+    PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Jeans.xlsx"
+)
+DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL_ASUS = (
     PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Shorts.xlsx"
 )
-DEFAULT_PRODUCT_DESCRIPTION_JSON = (
+DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL_VAIO = (
+    PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Shorts.xlsx"
+)
+DEFAULT_PRODUCT_DESCRIPTION_JSON_ASUS = (
     PROJECT_ROOT / "assets" / "Product-Description-inputs-Jeans.json"
 )
-DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON = (
+DEFAULT_PRODUCT_DESCRIPTION_JSON_VAIO = (
+    PROJECT_ROOT / "assets" / "Product-Description-inputs-Jeans.json"
+)
+DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON_ASUS = (
     PROJECT_ROOT / "assets" / "Product-Description-inputs-Shorts.json"
 )
-DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL = (
+DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON_VAIO = (
+    PROJECT_ROOT / "assets" / "Product-Description-inputs-Shorts.json"
+)
+DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL_ASUS = (
     PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Jeans.xlsx"
 )
-DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL = (
+DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL_VAIO = (
+    PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Jeans.xlsx"
+)
+DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL_ASUS = (
     PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Shorts.xlsx"
 )
-DEFAULT_ADDITIONAL_DESCRIPTION_JSON = (
+DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL_VAIO = (
+    PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Shorts.xlsx"
+)
+DEFAULT_ADDITIONAL_DESCRIPTION_JSON_ASUS = (
     PROJECT_ROOT / "assets" / "Additional-Description-inputs-Jeans.json"
 )
-DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON = (
+DEFAULT_ADDITIONAL_DESCRIPTION_JSON_VAIO = (
+    PROJECT_ROOT / "assets" / "Additional-Description-inputs-Jeans.json"
+)
+DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON_ASUS = (
     PROJECT_ROOT / "assets" / "Additional-Description-inputs-Shorts.json"
 )
-DEFAULT_VARIANTS_EXCEL = PROJECT_ROOT / "data inputs" / "Variants-excel_jean.xlsx"
-FIREFOX_PROFILES_ASUS = {
+DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON_VAIO = (
+    PROJECT_ROOT / "assets" / "Additional-Description-inputs-Shorts.json"
+)
+DEFAULT_VARIANTS_EXCEL_ASUS = PROJECT_ROOT / "data inputs" / "Variants-excel_jean.xlsx"
+DEFAULT_VARIANTS_EXCEL_VAIO = PROJECT_ROOT / "data inputs" / "Variants-excel_jean.xlsx"
+FIREFOX_PROFILES_ASUS: dict[str, Path | None] = {
     "seema": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\ekyb3fej.Seema"),
     # "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\7kkhlz7p.prabhu-bt"),
     "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"),
 }
+FIREFOX_PROFILES_VAIO: dict[str, Path | None] = {
+    "seema": None,
+    "prabhu": Path(r"C:\Users\SONY\AppData\Roaming\Mozilla\Firefox\Profiles\gm1pmawk.default-release"),
+}
+LAPTOP_CONFIGS = {
+    "ASUS": {
+        "default_image_directory": DEFAULT_IMAGE_DIRECTORY_ASUS,
+        "jeans_kind_options": JEANS_KIND_OPTIONS_ASUS,
+        "snapshot_directory": DEFAULT_SNAPSHOT_DIRECTORY_ASUS,
+        "price_stock_shipping_excel": DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_ASUS,
+        "price_stock_shipping_json": DEFAULT_PRICE_STOCK_SHIPPING_JSON_ASUS,
+        "product_description_excel": DEFAULT_PRODUCT_DESCRIPTION_EXCEL_ASUS,
+        "product_description_shorts_excel": DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL_ASUS,
+        "product_description_json": DEFAULT_PRODUCT_DESCRIPTION_JSON_ASUS,
+        "product_description_shorts_json": DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON_ASUS,
+        "additional_description_excel": DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL_ASUS,
+        "additional_description_shorts_excel": DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL_ASUS,
+        "additional_description_json": DEFAULT_ADDITIONAL_DESCRIPTION_JSON_ASUS,
+        "additional_description_shorts_json": DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON_ASUS,
+        "variants_excel": DEFAULT_VARIANTS_EXCEL_ASUS,
+        "firefox_profiles": FIREFOX_PROFILES_ASUS,
+    },
+    "VAIO": {
+        "default_image_directory": DEFAULT_IMAGE_DIRECTORY_VAIO,
+        "jeans_kind_options": JEANS_KIND_OPTIONS_VAIO,
+        "snapshot_directory": DEFAULT_SNAPSHOT_DIRECTORY_VAIO,
+        "price_stock_shipping_excel": DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_VAIO,
+        "price_stock_shipping_json": DEFAULT_PRICE_STOCK_SHIPPING_JSON_VAIO,
+        "product_description_excel": DEFAULT_PRODUCT_DESCRIPTION_EXCEL_VAIO,
+        "product_description_shorts_excel": DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL_VAIO,
+        "product_description_json": DEFAULT_PRODUCT_DESCRIPTION_JSON_VAIO,
+        "product_description_shorts_json": DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON_VAIO,
+        "additional_description_excel": DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL_VAIO,
+        "additional_description_shorts_excel": DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL_VAIO,
+        "additional_description_json": DEFAULT_ADDITIONAL_DESCRIPTION_JSON_VAIO,
+        "additional_description_shorts_json": DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON_VAIO,
+        "variants_excel": DEFAULT_VARIANTS_EXCEL_VAIO,
+        "firefox_profiles": FIREFOX_PROFILES_VAIO,
+    },
+}
+if LAPTOP_NAME not in LAPTOP_CONFIGS:
+    raise ValueError(f"Unknown FK_LAPTOP_NAME '{LAPTOP_NAME}'. Choose ASUS or VAIO.")
+ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME]
 DEFAULT_LISTING_URL = (
     "https://seller.flipkart.com/index.html#dashboard/addListings/single"
     "?vertical=jean&vid=667"
@@ -102,8 +184,8 @@ IMAGE_SLOT_IDS = [
     "thumbnail_4",
 ]
 # Legacy fixed-point VERIFYING CHANGES CYCLE values kept only for reference.
-# PRODUCT_DESCRIPTION_TAB_CLICK_POINT = (770, 380)
-# SKU_PAGE_ALTERNATE_CLICK_POINT = (518, 379)
+# PRODUCT_DESCRIPTION_TAB_CLICK_POINT_ASUS = (770, 380)
+# SKU_PAGE_ALTERNATE_CLICK_POINT_ASUS = (518, 379)
 BRAND_CODE_MAP = {
     "STAR": "STARVIELLE",
     "GENZ": "GENZ VANE",
@@ -129,37 +211,92 @@ def log_event(stage: str, message: str) -> None:
     print(f"[{timestamp}] [{stage}] {message}")
 
 
+def require_configured_path(path_value: Path | None, path_label: str) -> Path:
+    if path_value is not None:
+        return path_value
+
+    manual_path = input(f"Paste the {LAPTOP_NAME} path for {path_label}: ").strip().strip('"')
+    if not manual_path:
+        raise ValueError(f"No path was provided for {path_label}.")
+    return Path(manual_path).expanduser()
+
+
+def active_path(config_key: str, path_label: str) -> Path:
+    return require_configured_path(ACTIVE_LAPTOP_CONFIG[config_key], path_label)
+
+
 @dataclass(slots=True)
 class BotConfig:
     listing_url: str = DEFAULT_LISTING_URL
-    image_directory: Path = Path(
-        os.getenv("FLIPKART_IMAGE_DIR", str(DEFAULT_IMAGE_DIRECTORY_ASUS))
-    ).expanduser()
-    snapshot_directory: Path = Path(
-        os.getenv("FLIPKART_SNAPSHOT_DIR", str(DEFAULT_SNAPSHOT_DIRECTORY))
-    ).expanduser()
-    price_stock_shipping_excel: Path = Path(
-        os.getenv("PRICE_STOCK_SHIPPING_EXCEL", str(DEFAULT_PRICE_STOCK_SHIPPING_EXCEL))
-    ).expanduser()
-    price_stock_shipping_json: Path = Path(
-        os.getenv("PRICE_STOCK_SHIPPING_JSON", str(DEFAULT_PRICE_STOCK_SHIPPING_JSON))
-    ).expanduser()
-    product_description_excel: Path = Path(
-        os.getenv("PRODUCT_DESCRIPTION_EXCEL", str(DEFAULT_PRODUCT_DESCRIPTION_EXCEL))
-    ).expanduser()
-    product_description_json: Path = Path(
-        os.getenv("PRODUCT_DESCRIPTION_JSON", str(DEFAULT_PRODUCT_DESCRIPTION_JSON))
-    ).expanduser()
-    additional_description_excel: Path = Path(
-        os.getenv("ADDITIONAL_DESCRIPTION_EXCEL", str(DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL))
-    ).expanduser()
-    additional_description_json: Path = Path(
-        os.getenv("ADDITIONAL_DESCRIPTION_JSON", str(DEFAULT_ADDITIONAL_DESCRIPTION_JSON))
-    ).expanduser()
-    variants_excel: Path = Path(
-        os.getenv("VARIANTS_EXCEL", str(DEFAULT_VARIANTS_EXCEL))
-    ).expanduser()
-    data_directory: Path = Path(os.getenv("FLIPKART_DATA_DIR", "")).expanduser()
+    image_directory: Path = field(
+        default_factory=lambda: Path(
+            os.getenv(
+                "FLIPKART_IMAGE_DIR",
+                str(active_path("default_image_directory", "default shorts image directory")),
+            )
+        ).expanduser()
+    )
+    snapshot_directory: Path = field(
+        default_factory=lambda: Path(
+            os.getenv("FLIPKART_SNAPSHOT_DIR", str(active_path("snapshot_directory", "snapshot directory")))
+        ).expanduser()
+    )
+    price_stock_shipping_excel: Path = field(
+        default_factory=lambda: Path(
+            os.getenv(
+                "PRICE_STOCK_SHIPPING_EXCEL",
+                str(active_path("price_stock_shipping_excel", "Price/Stock/Shipping Excel")),
+            )
+        ).expanduser()
+    )
+    price_stock_shipping_json: Path = field(
+        default_factory=lambda: Path(
+            os.getenv(
+                "PRICE_STOCK_SHIPPING_JSON",
+                str(active_path("price_stock_shipping_json", "Price/Stock/Shipping JSON")),
+            )
+        ).expanduser()
+    )
+    product_description_excel: Path = field(
+        default_factory=lambda: Path(
+            os.getenv(
+                "PRODUCT_DESCRIPTION_EXCEL",
+                str(active_path("product_description_excel", "Jeans Product Description Excel")),
+            )
+        ).expanduser()
+    )
+    product_description_json: Path = field(
+        default_factory=lambda: Path(
+            os.getenv(
+                "PRODUCT_DESCRIPTION_JSON",
+                str(active_path("product_description_json", "Jeans Product Description JSON")),
+            )
+        ).expanduser()
+    )
+    additional_description_excel: Path = field(
+        default_factory=lambda: Path(
+            os.getenv(
+                "ADDITIONAL_DESCRIPTION_EXCEL",
+                str(active_path("additional_description_excel", "Jeans Additional Description Excel")),
+            )
+        ).expanduser()
+    )
+    additional_description_json: Path = field(
+        default_factory=lambda: Path(
+            os.getenv(
+                "ADDITIONAL_DESCRIPTION_JSON",
+                str(active_path("additional_description_json", "Jeans Additional Description JSON")),
+            )
+        ).expanduser()
+    )
+    variants_excel: Path = field(
+        default_factory=lambda: Path(
+            os.getenv("VARIANTS_EXCEL", str(active_path("variants_excel", "Variants Excel")))
+        ).expanduser()
+    )
+    data_directory: Path = field(
+        default_factory=lambda: Path(os.getenv("FLIPKART_DATA_DIR", "")).expanduser()
+    )
     firefox_binary: str | None = os.getenv("FIREFOX_BINARY")
     geckodriver_path: str | None = os.getenv("GECKODRIVER_PATH")
     profile_name: str = "seema"
@@ -167,8 +304,9 @@ class BotConfig:
 
     @property
     def firefox_profile_path(self) -> Path:
-        if self.profile_name not in FIREFOX_PROFILES_ASUS:
-            available_profiles = ", ".join(sorted(FIREFOX_PROFILES_ASUS))
+        firefox_profiles = ACTIVE_LAPTOP_CONFIG["firefox_profiles"]
+        if self.profile_name not in firefox_profiles:
+            available_profiles = ", ".join(sorted(firefox_profiles))
             raise ValueError(
                 f"Unknown Firefox profile '{self.profile_name}'. "
                 f"Choose one of: {available_profiles}."
@@ -216,17 +354,17 @@ class ListingSelection:
 
 def get_product_description_excel_path(product_type: str) -> Path:
     return (
-        DEFAULT_PRODUCT_DESCRIPTION_EXCEL
+        active_path("product_description_excel", "Jeans Product Description Excel")
         if product_type == "jeans"
-        else DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL
+        else active_path("product_description_shorts_excel", "Shorts Product Description Excel")
     )
 
 
 def get_product_description_json_path(product_type: str) -> Path:
     return (
-        DEFAULT_PRODUCT_DESCRIPTION_JSON
+        active_path("product_description_json", "Jeans Product Description JSON")
         if product_type == "jeans"
-        else DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON
+        else active_path("product_description_shorts_json", "Shorts Product Description JSON")
     )
 
 
@@ -236,17 +374,17 @@ def get_product_description_sheet_name(product_type: str) -> str:
 
 def get_additional_description_excel_path(product_type: str) -> Path:
     return (
-        DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL
+        active_path("additional_description_excel", "Jeans Additional Description Excel")
         if product_type == "jeans"
-        else DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL
+        else active_path("additional_description_shorts_excel", "Shorts Additional Description Excel")
     )
 
 
 def get_additional_description_json_path(product_type: str) -> Path:
     return (
-        DEFAULT_ADDITIONAL_DESCRIPTION_JSON
+        active_path("additional_description_json", "Jeans Additional Description JSON")
         if product_type == "jeans"
-        else DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON
+        else active_path("additional_description_shorts_json", "Shorts Additional Description JSON")
     )
 
 
@@ -308,7 +446,7 @@ def resolve_profile_name(selected_value: str) -> str:
     if normalized_value in PROFILE_ALIASES:
         return PROFILE_ALIASES[normalized_value]
 
-    available_profiles = ", ".join(sorted(FIREFOX_PROFILES_ASUS))
+    available_profiles = ", ".join(sorted(ACTIVE_LAPTOP_CONFIG["firefox_profiles"]))
     raise ValueError(
         f"Unknown Firefox profile '{selected_value}'. Choose one of: {available_profiles}, s, p."
     )
@@ -425,9 +563,10 @@ def mark_image_folder_exhausted(image_folder: ImageFolder, brand_name: str) -> P
 
 
 def resolve_profile_path(profile_name: str) -> Path:
-    configured_path = FIREFOX_PROFILES_ASUS[profile_name]
+    firefox_profiles = ACTIVE_LAPTOP_CONFIG["firefox_profiles"]
+    configured_path = firefox_profiles[profile_name]
 
-    if configured_path.exists():
+    if configured_path is not None and configured_path.exists():
         return configured_path
 
     log_event(
@@ -445,7 +584,7 @@ def resolve_profile_path(profile_name: str) -> Path:
     if not resolved_path.exists():
         raise ValueError(f"Profile directory does not exist: {resolved_path}")
 
-    FIREFOX_PROFILES_ASUS[profile_name] = resolved_path
+    firefox_profiles[profile_name] = resolved_path
     return resolved_path
 
 
@@ -475,12 +614,17 @@ def prompt_for_listing_selection() -> ListingSelection:
         print("4. Black-Plain")
         print("5. White-Plain")
         kind_choice = input(f"Enter option [1]: ").strip() or "1"
-        if kind_choice not in JEANS_KIND_OPTIONS_ASUS:
+        jeans_kind_options = ACTIVE_LAPTOP_CONFIG["jeans_kind_options"]
+        if kind_choice not in jeans_kind_options:
             raise ValueError("Please choose a valid jeans option from 1 to 5.")
-        selected_kind, image_directory = JEANS_KIND_OPTIONS_ASUS[kind_choice]
+        selected_kind, configured_image_directory = jeans_kind_options[kind_choice]
+        image_directory = require_configured_path(
+            configured_image_directory,
+            f"{selected_kind} jeans image directory",
+        )
     else:
         selected_kind = "Shorts"
-        image_directory = DEFAULT_IMAGE_DIRECTORY_ASUS
+        image_directory = active_path("default_image_directory", "default shorts image directory")
 
     size_value = input(f"Enter size [{DEFAULT_LISTING_SIZE}]: ").strip() or DEFAULT_LISTING_SIZE
     return ListingSelection(
@@ -857,8 +1001,39 @@ def set_input_value(
         if field_label != "Description" or len(field_value) < 120:
             return False
 
+        try:
+            driver.execute_script(
+                """
+                const element = arguments[0];
+                const value = arguments[1];
+                const prototype = element instanceof HTMLTextAreaElement
+                    ? HTMLTextAreaElement.prototype
+                    : HTMLInputElement.prototype;
+                const valueSetter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
+
+                element.scrollIntoView({block: "center", inline: "nearest"});
+                element.focus();
+                if (valueSetter) {
+                    valueSetter.call(element, value);
+                } else {
+                    element.value = value;
+                }
+                element.dispatchEvent(new InputEvent("input", {bubbles: true, inputType: "insertText", data: value}));
+                element.dispatchEvent(new Event("change", {bubbles: true}));
+                element.blur();
+                """,
+                active_input,
+                field_value,
+            )
+            log_event("FORM", "Set long Description text via browser input/change events.")
+            return True
+        except WebDriverException as exc:
+            log_event(
+                "FORM",
+                f"Browser event-based Description fill failed, trying clipboard paste fallback: {exc.__class__.__name__}",
+            )
+
         original_clipboard_text: str | None = None
-        keyboard = KeyboardController()
         clipboard_root = tk.Tk()
         clipboard_root.withdraw()
         try:
@@ -877,15 +1052,14 @@ def set_input_value(
             sleep(0.05)
             pyautogui.press("delete")
             sleep(0.05)
-            with keyboard.pressed(PynputKey.ctrl):
-                keyboard.press("v")
-                keyboard.release("v")
-            sleep(0.2)
-            current_value = (active_input.get_attribute("value") or "").strip()
-            if current_value == field_value:
-                log_event("FORM", "Pasted long Description text via pyautogui + pynput.")
-                return True
-            return False
+            pyautogui.hotkey("ctrl", "v")
+            sleep(1.0)
+            log_event(
+                "FORM",
+                "Pasted long Description text via pyautogui. "
+                "Skipping immediate Selenium read-back to avoid WebDriver stalls.",
+            )
+            return True
         finally:
             clipboard_root.clipboard_clear()
             if original_clipboard_text:
