@@ -37,17 +37,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DEFAULT_LISTING_URL = (
-    "https://seller.flipkart.com/index.html#dashboard/addListings/single"
-    "?vertical=jean&vid=667"
-)
-DEFAULT_BRAND_NAME = "STARVIELLE"
-USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION = True
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
 )
-DEFAULT_JEANS_KIND = "Beige"
-DEFAULT_LISTING_SIZE = "28"
 JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "1": ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
     "2": ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
@@ -87,6 +79,19 @@ DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON = (
     PROJECT_ROOT / "assets" / "Additional-Description-inputs-Shorts.json"
 )
 DEFAULT_VARIANTS_EXCEL = PROJECT_ROOT / "data inputs" / "Variants-excel_jean.xlsx"
+FIREFOX_PROFILES_ASUS = {
+    "seema": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\ekyb3fej.Seema"),
+    # "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\7kkhlz7p.prabhu-bt"),
+    "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"),
+}
+DEFAULT_LISTING_URL = (
+    "https://seller.flipkart.com/index.html#dashboard/addListings/single"
+    "?vertical=jean&vid=667"
+)
+DEFAULT_BRAND_NAME = "STARVIELLE"
+USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION = True
+DEFAULT_JEANS_KIND = "Beige"
+DEFAULT_LISTING_SIZE = "28"
 PHASE_ONE_SNAPSHOT_NAME = "PHASE 1.html"
 ENABLE_ENTER_COMMIT_FOR_TAG_INPUT_FIELDS = False
 IMAGE_SLOT_IDS = [
@@ -110,11 +115,6 @@ BRAND_NAME_TO_CODE = {
     normalize_name: code for code, normalize_name in (
         (code, " ".join(name.strip().upper().split())) for code, name in BRAND_CODE_MAP.items()
     )
-}
-FIREFOX_PROFILES_ASUS = {
-    "seema": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\ekyb3fej.Seema"),
-    # "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\7kkhlz7p.prabhu-bt"),
-    "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"),
 }
 PROFILE_ALIASES = {
     "s": "seema",

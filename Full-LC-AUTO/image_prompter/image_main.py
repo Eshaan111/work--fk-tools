@@ -27,13 +27,18 @@ IMAGES_FINAL_DIR = PROJECT_ROOT / "IMAGES-FINAL"
 NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
 USED_IMAGE_DESIGNS_WORKBOOK = PROJECT_ROOT / "USED-IMAGE-DESIGNS.xlsx"
 PROMPT_TEMPLATE_PATH = PROJECT_ROOT / "image_edit_prompt_template.txt"
+IMAGE_GENERATION_PROMPT_TEMPLATE_PATH = PROJECT_ROOT / "image_generation_prompt"
+DEFAULT_FIREFOX_BINARY = Path(r"C:\Program Files\Mozilla Firefox\firefox.exe")
+FALLBACK_FIREFOX_BINARIES = [
+    Path(r"C:\Program Files\Mozilla Firefox\firefox.exe"),
+    Path(r"C:\Program Files (x86)\Mozilla Firefox\firefox.exe"),
+]
 PROMPT_PREVIEW_PATH = RUN_HELPERS_DIR / "generated_prompt_preview.txt"
 LAST_FULL_CHAT_PATH = RUN_HELPERS_DIR / "last_full_chat.txt"
 LATEST_RESPONSE_PATH = RUN_HELPERS_DIR / "latest_response.txt"
 ALL_RESPONSES_PATH = RUN_HELPERS_DIR / "all_responses.txt"
 PARSED_IDEAS_PATH = RUN_HELPERS_DIR / "parsed_latest_ideas.txt"
 NEW_IDEAS_PATH = RUN_HELPERS_DIR / "new_ideas_not_in_excel.txt"
-IMAGE_GENERATION_PROMPT_TEMPLATE_PATH = PROJECT_ROOT / "image_generation_prompt"
 CURRENT_RUN_IDEA_PATH = RUN_HELPERS_DIR / "current_run_idea.json"
 CURRENT_GENERATION_PROMPT_PATH = RUN_HELPERS_DIR / "current_generation_prompt.txt"
 IMAGE_GENERATION_FINAL_CHAT_PATH = RUN_HELPERS_DIR / "image_generation_final_chat.txt"
@@ -62,11 +67,6 @@ LEGACY_RUN_HELPER_PATHS = (
 CHATGPT_URL = "https://chatgpt.com"
 IDEA_MARKER = "IDEA FOR BACKGROUND :"
 SUPPORTED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
-DEFAULT_FIREFOX_BINARY = Path(r"C:\Program Files\Mozilla Firefox\firefox.exe")
-FALLBACK_FIREFOX_BINARIES = [
-    Path(r"C:\Program Files\Mozilla Firefox\firefox.exe"),
-    Path(r"C:\Program Files (x86)\Mozilla Firefox\firefox.exe"),
-]
 
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.15
