@@ -2,10 +2,12 @@ import html
 import json
 import re
 import sys
+import zipfile
 from pathlib import Path
 import pandas as pd
 import numpy as np
 from statistics import mode, StatisticsError
+from xml.etree import ElementTree as ET
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -34,8 +36,15 @@ class Dashboard(QMainWindow):
         self.file_type = "xlsx"
         self.available_modes = {"normal": False, "offer": False}
         self.size_override_path = Path(__file__).with_name("size_overrides.json")
+        self.flag_config_path = Path(__file__).with_name("flag_rules.xlsx")
         self.size_overrides = {}
-        self.size_values = ["28", "30", "32", "34"]
+        self.size_values = ["26", "28", "30", "32", "34", "36"]
+        self.default_title_flag_keywords = ["Dark Blue"]
+        self.default_sku_flag_keywords = []
+        self.default_inactive_sizes = ["26", "36"]
+        self.flag_title_keywords = list(self.default_title_flag_keywords)
+        self.flag_sku_keywords = list(self.default_sku_flag_keywords)
+        self.flag_inactive_sizes = list(self.default_inactive_sizes)
         self.undo_state = None
         self.undo_label = ""
         self.change_log_entries = []
@@ -169,6 +178,15 @@ class Dashboard(QMainWindow):
         meta_row.addWidget(self.account_label, 0)
         self.layout.addLayout(meta_row)
 
+        status_matrix_row = QHBoxLayout()
+        status_matrix_row.setSpacing(10)
+        self.status_matrix_label = QLabel("Size Status Matrix\nACTIVE: -\nINACTIVE: -")
+        self.status_matrix_label.setObjectName("metaLabel")
+        self.status_matrix_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.status_matrix_label.setMinimumHeight(72)
+        status_matrix_row.addWidget(self.status_matrix_label)
+        self.layout.addLayout(status_matrix_row)
+
         # -------- SIZE OVERRIDES --------
         size_row = QHBoxLayout()
         size_row.setSpacing(10)
@@ -265,6 +283,7 @@ class Dashboard(QMainWindow):
         self.layout.addWidget(self.canvas)
         self.apply_dashboard_style()
         self.refresh_mode_ui()
+        self.load_flag_config()
 
     # ---------------- MODE TOGGLE ----------------
     def toggle_mode(self):
@@ -409,6 +428,366 @@ class Dashboard(QMainWindow):
             encoding="utf-8"
         )
 
+    def excel_column_name(self, index):
+        result = ""
+        index = int(index)
+        while index > 0:
+            index, remainder = divmod(index - 1, 26)
+            result = chr(65 + remainder) + result
+        return result
+
+    def excel_column_index(self, col_name):
+        result = 0
+        for char in str(col_name).upper():
+            if "A" <= char <= "Z":
+                result = result * 26 + (ord(char) - 64)
+        return result
+
+    def write_simple_xlsx(self, path, rows):
+        sheet_rows = []
+        for row_idx, row_values in enumerate(rows, start=1):
+            cells = []
+            for col_idx, value in enumerate(row_values, start=1):
+                if value is None or str(value) == "":
+                    continue
+                cell_ref = f"{self.excel_column_name(col_idx)}{row_idx}"
+                cell_text = html.escape(str(value))
+                cells.append(
+                    f'<c r="{cell_ref}" t="inlineStr"><is><t>{cell_text}</t></is></c>'
+                )
+            sheet_rows.append(f'<row r="{row_idx}">{"".join(cells)}</row>')
+
+        sheet_xml = (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            f'<sheetData>{"".join(sheet_rows)}</sheetData>'
+            '</worksheet>'
+        )
+        workbook_xml = (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            '<sheets><sheet name="Flags" sheetId="1" r:id="rId1"/></sheets>'
+            '</workbook>'
+        )
+        content_types_xml = (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            '<Default Extension="xml" ContentType="application/xml"/>'
+            '<Override PartName="/xl/workbook.xml" '
+            'ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+            '<Override PartName="/xl/worksheets/sheet1.xml" '
+            'ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            '</Types>'
+        )
+        root_rels_xml = (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" '
+            'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" '
+            'Target="xl/workbook.xml"/>'
+            '</Relationships>'
+        )
+        workbook_rels_xml = (
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Id="rId1" '
+            'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" '
+            'Target="worksheets/sheet1.xml"/>'
+            '</Relationships>'
+        )
+
+        with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            zf.writestr("[Content_Types].xml", content_types_xml)
+            zf.writestr("_rels/.rels", root_rels_xml)
+            zf.writestr("xl/workbook.xml", workbook_xml)
+            zf.writestr("xl/_rels/workbook.xml.rels", workbook_rels_xml)
+            zf.writestr("xl/worksheets/sheet1.xml", sheet_xml)
+
+    def read_simple_xlsx(self, path):
+        ns = {"main": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+        rows = []
+
+        with zipfile.ZipFile(path, "r") as zf:
+            shared_strings = []
+            if "xl/sharedStrings.xml" in zf.namelist():
+                shared_xml = ET.fromstring(zf.read("xl/sharedStrings.xml"))
+                for si in shared_xml.findall(".//main:si", ns):
+                    text_nodes = si.findall(".//main:t", ns)
+                    shared_strings.append("".join(node.text or "" for node in text_nodes))
+            sheet_xml = ET.fromstring(zf.read("xl/worksheets/sheet1.xml"))
+
+        for row in sheet_xml.findall(".//main:sheetData/main:row", ns):
+            values = []
+            current_col = 1
+            for cell in row.findall("main:c", ns):
+                ref = cell.attrib.get("r", "")
+                col_name = "".join(ch for ch in ref if ch.isalpha())
+                col_index = self.excel_column_index(col_name) or current_col
+
+                while current_col < col_index:
+                    values.append("")
+                    current_col += 1
+
+                cell_type = cell.attrib.get("t", "")
+                cell_value = ""
+                if cell_type == "inlineStr":
+                    text_nodes = cell.findall(".//main:t", ns)
+                    cell_value = "".join(node.text or "" for node in text_nodes)
+                elif cell_type == "s":
+                    value_node = cell.find("main:v", ns)
+                    if value_node is not None and value_node.text is not None:
+                        try:
+                            shared_index = int(value_node.text)
+                            if 0 <= shared_index < len(shared_strings):
+                                cell_value = shared_strings[shared_index]
+                        except Exception:
+                            cell_value = ""
+                else:
+                    value_node = cell.find("main:v", ns)
+                    cell_value = value_node.text if value_node is not None else ""
+
+                values.append(cell_value)
+                current_col = col_index + 1
+
+            rows.append(values)
+
+        return rows
+
+    def create_default_flag_config(self):
+        rows = [
+            ["Title Keyword", *self.default_title_flag_keywords],
+            ["SKU", *self.default_sku_flag_keywords],
+            ["Size", *self.default_inactive_sizes],
+        ]
+        self.write_simple_xlsx(self.flag_config_path, rows)
+
+    def load_flag_config(self):
+        if not self.flag_config_path.exists():
+            self.create_default_flag_config()
+
+        self.flag_title_keywords = list(self.default_title_flag_keywords)
+        self.flag_sku_keywords = list(self.default_sku_flag_keywords)
+        self.flag_inactive_sizes = list(self.default_inactive_sizes)
+
+        try:
+            config_rows = self.read_simple_xlsx(self.flag_config_path)
+        except Exception:
+            return
+
+        title_keywords = []
+        sku_keywords = []
+        inactive_sizes = []
+
+        for row in config_rows:
+            if not row:
+                continue
+
+            row_key = str(row[0]).strip().lower()
+            values = [
+                str(value).strip()
+                for value in row[1:]
+                if str(value).strip()
+            ]
+
+            if row_key == "title keyword" and values:
+                title_keywords = values
+            elif row_key == "sku" and values:
+                sku_keywords = values
+            elif row_key == "size" and values:
+                inactive_sizes = values
+
+        if title_keywords:
+            self.flag_title_keywords = title_keywords
+        if sku_keywords:
+            self.flag_sku_keywords = sku_keywords
+        if inactive_sizes:
+            self.flag_inactive_sizes = inactive_sizes
+
+    def detect_title_flag_matches(self, title_text):
+        title = str(title_text).strip()
+        if not title:
+            return []
+
+        title_lower = title.lower()
+        return [
+            keyword for keyword in self.flag_title_keywords
+            if str(keyword).strip() and str(keyword).strip().lower() in title_lower
+        ]
+
+    def detect_sku_flag_matches(self, sku_text):
+        sku = str(sku_text).strip()
+        if not sku:
+            return []
+
+        sku_lower = sku.lower()
+        return [
+            keyword for keyword in self.flag_sku_keywords
+            if str(keyword).strip() and str(keyword).strip().lower() in sku_lower
+        ]
+
+    def ensure_flag_exemption_column(self):
+        if "__flag_exemptions" not in self.df.columns:
+            self.df["__flag_exemptions"] = ""
+
+    def parse_flag_exemptions(self, raw_value):
+        text = str(raw_value).strip()
+        if not text:
+            return set()
+        try:
+            parsed = json.loads(text)
+            if isinstance(parsed, list):
+                return {str(item).strip() for item in parsed if str(item).strip()}
+        except Exception:
+            pass
+        return {part.strip() for part in text.split("|") if part.strip()}
+
+    def serialize_flag_exemptions(self, values):
+        clean_values = sorted({str(value).strip() for value in values if str(value).strip()})
+        return json.dumps(clean_values)
+
+    def build_flag_details(self, mask=None):
+        if self.df.empty:
+            return pd.DataFrame(index=self.df.index)
+
+        if mask is None:
+            mask = pd.Series(True, index=self.df.index, dtype=bool)
+        else:
+            mask = mask.reindex(self.df.index, fill_value=False)
+
+        self.ensure_flag_exemption_column()
+
+        title_series = self.df[self.col_title].astype(str) if self.col_title in self.df.columns else pd.Series("", index=self.df.index)
+        sku_series = self.df[self.col_sku].astype(str) if self.col_sku in self.df.columns else pd.Series("", index=self.df.index)
+        size_series = self.df["Size"].astype(str).str.strip()
+        title_matches = title_series.apply(self.detect_title_flag_matches)
+        sku_matches = sku_series.apply(self.detect_sku_flag_matches)
+        exemption_sets = self.df["__flag_exemptions"].apply(self.parse_flag_exemptions)
+
+        size_reason = pd.Series("", index=self.df.index, dtype=object)
+        title_reason = pd.Series("", index=self.df.index, dtype=object)
+        sku_reason = pd.Series("", index=self.df.index, dtype=object)
+        auto_flag = pd.Series("", index=self.df.index, dtype=object)
+
+        for idx in self.df.index[mask]:
+            reasons = []
+            size_value = size_series.loc[idx]
+            title_keywords = title_matches.loc[idx]
+            sku_keywords = sku_matches.loc[idx]
+            exemptions = exemption_sets.loc[idx]
+
+            if size_value in self.flag_inactive_sizes and f"size:{size_value}" not in exemptions:
+                size_reason.loc[idx] = size_value
+                reasons.append(f"SIZE: {size_value}")
+
+            active_title_keywords = [
+                keyword for keyword in title_keywords
+                if f"title:{keyword.lower()}" not in exemptions
+            ]
+            if active_title_keywords:
+                title_reason.loc[idx] = " | ".join(active_title_keywords)
+                reasons.append("TITLE: " + " | ".join(active_title_keywords))
+
+            active_sku_keywords = [
+                keyword for keyword in sku_keywords
+                if f"sku:{keyword.lower()}" not in exemptions
+            ]
+            if active_sku_keywords:
+                sku_reason.loc[idx] = " | ".join(active_sku_keywords)
+                reasons.append("SKU: " + " | ".join(active_sku_keywords))
+
+            auto_flag.loc[idx] = " | ".join(reasons)
+
+        return pd.DataFrame({
+            "__flag_size_reason": size_reason,
+            "__flag_title_reason": title_reason,
+            "__flag_sku_reason": sku_reason,
+            "__auto_flag": auto_flag,
+        }, index=self.df.index)
+
+    def build_flag_summary_lines(self, flagged_df):
+        if flagged_df is None or flagged_df.empty or "Jeans Type" not in flagged_df.columns:
+            return []
+
+        flagged_rows = flagged_df[["Jeans Type", "__flag_size_reason", "__flag_title_reason", "__flag_sku_reason"]].copy()
+        flagged_rows["Jeans Type"] = flagged_rows["Jeans Type"].astype(str).str.strip()
+        flagged_rows["__flag_size_reason"] = flagged_rows["__flag_size_reason"].astype(str).str.strip()
+        flagged_rows["__flag_title_reason"] = flagged_rows["__flag_title_reason"].astype(str).str.strip()
+        flagged_rows["__flag_sku_reason"] = flagged_rows["__flag_sku_reason"].astype(str).str.strip()
+
+        unique_lines = set()
+        for _, row in flagged_rows.iterrows():
+            kind = row["Jeans Type"] or "UNKNOWN"
+            if row["__flag_size_reason"]:
+                unique_lines.add(f"{kind} : {row['__flag_size_reason']}")
+            if row["__flag_title_reason"]:
+                for keyword in row["__flag_title_reason"].split(" | "):
+                    keyword = keyword.strip()
+                    if keyword:
+                        unique_lines.add(f"{kind} : {keyword}")
+            if row["__flag_sku_reason"]:
+                for keyword in row["__flag_sku_reason"].split(" | "):
+                    keyword = keyword.strip()
+                    if keyword:
+                        unique_lines.add(f"{kind} : {keyword}")
+
+        return sorted(unique_lines)
+
+    def resolve_activation_mask(self, mask, action_label):
+        if self.df.empty or "Listing Status" not in self.df.columns:
+            return mask
+
+        details = self.build_flag_details(mask)
+        flagged_mask = mask & (details["__auto_flag"].astype(str).str.strip() != "")
+        if not flagged_mask.any():
+            return mask
+
+        flagged_df = self.df.loc[flagged_mask].copy()
+        flagged_df["__flag_size_reason"] = details.loc[flagged_mask, "__flag_size_reason"]
+        flagged_df["__flag_title_reason"] = details.loc[flagged_mask, "__flag_title_reason"]
+        flagged_df["__flag_sku_reason"] = details.loc[flagged_mask, "__flag_sku_reason"]
+        lines = self.build_flag_summary_lines(flagged_df)
+        if not lines:
+            return mask
+
+        popup = QMessageBox(self)
+        popup.setIcon(QMessageBox.Warning)
+        popup.setWindowTitle("Flag Override")
+        popup.setText(
+            "This action will make flagged rows ACTIVE:\n\n"
+            + "\n".join(lines)
+            + "\n\nChoose what to do with these flagged rows."
+        )
+        activate_button = popup.addButton("Activate Flagged Rows", QMessageBox.AcceptRole)
+        keep_inactive_button = popup.addButton("Keep Flagged Rows Inactive", QMessageBox.RejectRole)
+        popup.setDefaultButton(keep_inactive_button)
+        popup.exec_()
+
+        if popup.clickedButton() == activate_button:
+            self.ensure_flag_exemption_column()
+            for idx in self.df.index[flagged_mask]:
+                exemptions = self.parse_flag_exemptions(self.df.at[idx, "__flag_exemptions"])
+                size_reason = str(details.at[idx, "__flag_size_reason"]).strip()
+                title_reason = str(details.at[idx, "__flag_title_reason"]).strip()
+                sku_reason = str(details.at[idx, "__flag_sku_reason"]).strip()
+                if size_reason:
+                    exemptions.add(f"size:{size_reason}")
+                if title_reason:
+                    for keyword in title_reason.split(" | "):
+                        keyword = keyword.strip()
+                        if keyword:
+                            exemptions.add(f"title:{keyword.lower()}")
+                if sku_reason:
+                    for keyword in sku_reason.split(" | "):
+                        keyword = keyword.strip()
+                        if keyword:
+                            exemptions.add(f"sku:{keyword.lower()}")
+                self.df.at[idx, "__flag_exemptions"] = self.serialize_flag_exemptions(exemptions)
+            return mask
+
+        return mask & ~flagged_mask
+
     def save_undo_state(self, label):
         if self.df.empty:
             return
@@ -543,6 +922,53 @@ class Dashboard(QMainWindow):
 
         return "UNDETECTED"
 
+    def apply_size_flags(self, mask=None):
+        if self.df.empty:
+            return self.df.iloc[0:0].copy()
+
+        if mask is None:
+            mask = pd.Series(True, index=self.df.index, dtype=bool)
+        else:
+            mask = mask.reindex(self.df.index, fill_value=False)
+
+        if "Auto Flag" not in self.df.columns:
+            self.df["Auto Flag"] = ""
+
+        details = self.build_flag_details(mask)
+        self.df.loc[mask, "Auto Flag"] = details.loc[mask, "__auto_flag"]
+
+        flagged_mask = mask & (details["__auto_flag"].astype(str).str.strip() != "")
+        clear_flag_mask = mask & ~flagged_mask
+        self.df.loc[clear_flag_mask, "Auto Flag"] = ""
+
+        if "Listing Status" in self.df.columns:
+            self.df.loc[flagged_mask, "Listing Status"] = "INACTIVE"
+
+        flagged_df = self.df.loc[flagged_mask].copy()
+        flagged_df["__flag_size_reason"] = details.loc[flagged_mask, "__flag_size_reason"]
+        flagged_df["__flag_title_reason"] = details.loc[flagged_mask, "__flag_title_reason"]
+        flagged_df["__flag_sku_reason"] = details.loc[flagged_mask, "__flag_sku_reason"]
+        return flagged_df
+
+    def show_flag_popup(self, flagged_df, source_label):
+        if flagged_df is None or flagged_df.empty:
+            return
+
+        lines = self.build_flag_summary_lines(flagged_df)
+        if not lines:
+            return
+
+        QMessageBox.information(
+            self,
+            "Flags Detected",
+            "Flagged cause of\n\n"
+            + "\n".join(lines)
+            + "\n\nWhat happened to flagged rows:\n"
+            + "- Title keyword flagged rows were set to INACTIVE and stock count was updated to 0.\n"
+            + "- SKU phrase flagged rows were set to INACTIVE and stock count was updated to 0.\n"
+            + "- Size flagged rows were set to INACTIVE and stock count was updated to 0."
+        )
+
     def detect_account_from_filename(self, path):
         filename = Path(path).name.lower()
         if "84f77" in filename:
@@ -554,6 +980,7 @@ class Dashboard(QMainWindow):
     # ---------------- LOAD ----------------
     def load_file(self):
         self.load_size_overrides()
+        self.load_flag_config()
 
         path, _ = QFileDialog.getOpenFileName(
             self, "Open", "", "Excel (*.xlsx *.xls *.csv)"
@@ -583,6 +1010,7 @@ class Dashboard(QMainWindow):
         self.df.reset_index(drop=True, inplace=True)
         self.df["__orig_index"] = self.df.index
         self.df["__locked"] = False
+        self.df["__flag_exemptions"] = ""
         self.account_label.setText(f"Account: {account_name}")
         self.undo_state = None
         self.undo_label = ""
@@ -649,6 +1077,9 @@ class Dashboard(QMainWindow):
         self.df["Size"] = self.df[self.col_sku].apply(self.detect_size_from_sku)
         if "Listing Status" in self.df.columns:
             self.df["Listing Status"] = self.df["Listing Status"].astype(str).str.strip().str.upper()
+        flagged_df = self.apply_size_flags()
+        self.sync_stock_count_with_status(pd.Series(True, index=self.df.index, dtype=bool))
+        self.show_flag_popup(flagged_df, "size detection")
 
     # ---------------- OFFER LOGIC ----------------
     def apply_offer_logic(self, df):
@@ -759,8 +1190,11 @@ class Dashboard(QMainWindow):
         if mask.any():
             before_values = self.df.loc[mask, self.col_settlement].copy()
             self.df.loc[mask, "Size"] = size
+            flagged_df = self.apply_size_flags(mask)
+            self.sync_stock_count_with_status(mask)
             after_values = self.df.loc[mask, self.col_settlement].copy()
             self.log_change("Save Size", before_values, after_values, int(mask.sum()), f"SKU: {sku} -> {size}", self.df.loc[mask])
+            self.show_flag_popup(flagged_df, "manual size override")
         else:
             QMessageBox.information(
                 self,
@@ -848,14 +1282,18 @@ class Dashboard(QMainWindow):
         current_sku = self.df[self.col_sku].astype(str).str.strip()
         mask = current_sku.isin(override_map.keys())
         before_values = self.df.loc[mask, self.col_settlement].copy()
+        flagged_df = self.df.iloc[0:0].copy()
         if mask.any():
             self.df.loc[mask, "Size"] = current_sku[mask].map(override_map)
+            flagged_df = self.apply_size_flags(mask)
+            self.sync_stock_count_with_status(mask)
         after_values = self.df.loc[mask, self.col_settlement].copy()
 
         extra = f"Uploaded Size Rows: {len(upload_df)}"
         self.log_change("Upload Sizes", before_values, after_values, int(mask.sum()), extra, self.df.loc[mask])
         self.setup_filters()
         self.update_dashboard()
+        self.show_flag_popup(flagged_df, "uploaded size sheet")
         QMessageBox.information(self, "Success", f"Imported {len(upload_df)} size mappings")
 
     # ---------------- FREEZE ----------------
@@ -937,7 +1375,7 @@ class Dashboard(QMainWindow):
 
         self.update_dashboard()
 
-    def get_filtered_mask(self, include_selection=True):
+    def get_filtered_mask(self, include_selection=True, apply_status_filter=True):
         if self.df.empty:
             return pd.Series(False, index=self.df.index, dtype=bool)
 
@@ -963,7 +1401,7 @@ class Dashboard(QMainWindow):
         if self.listing_filter.currentText() != "All":
             mask &= self.df["Listing Type"] == self.listing_filter.currentText()
 
-        if "Listing Status" in self.df.columns and self.status_filter.currentText() != "All":
+        if apply_status_filter and "Listing Status" in self.df.columns and self.status_filter.currentText() != "All":
             mask &= self.df["Listing Status"] == self.status_filter.currentText()
 
         if include_selection and self.selected_range:
@@ -982,6 +1420,38 @@ class Dashboard(QMainWindow):
             f"Loaded: {loaded_rows} | Visible: {visible_rows} | Export: {export_rows}"
         )
 
+    def update_status_matrix(self, df):
+        if df is None or df.empty or "Listing Status" not in df.columns or "Size" not in df.columns:
+            self.status_matrix_label.setText("Size Status Matrix\nACTIVE: -\nINACTIVE: -")
+            return
+
+        status_series = df["Listing Status"].astype(str).str.strip().str.upper()
+        size_series = df["Size"].astype(str).str.strip()
+
+        active_sizes = sorted(size_series[status_series == "ACTIVE"].dropna().unique().tolist(), key=str)
+        inactive_sizes = sorted(size_series[status_series == "INACTIVE"].dropna().unique().tolist(), key=str)
+
+        active_text = ", ".join(active_sizes) if active_sizes else "-"
+        inactive_text = ", ".join(inactive_sizes) if inactive_sizes else "-"
+        self.status_matrix_label.setText(
+            f"Size Status Matrix\nACTIVE: {active_text}\nINACTIVE: {inactive_text}"
+        )
+
+    def sync_stock_count_with_status(self, mask):
+        stock_col = "Your Stock Count"
+        status_col = "Listing Status"
+
+        if stock_col not in self.df.columns or status_col not in self.df.columns:
+            return
+
+        active_mask = mask & (self.df[status_col].astype(str).str.strip().str.upper() == "ACTIVE")
+        inactive_mask = mask & (self.df[status_col].astype(str).str.strip().str.upper() == "INACTIVE")
+
+        if active_mask.any():
+            self.df.loc[active_mask, stock_col] = 250
+        if inactive_mask.any():
+            self.df.loc[inactive_mask, stock_col] = 0
+
     def apply_status_change(self):
         if self.df.empty or "Listing Status" not in self.df.columns:
             QMessageBox.warning(self, "Error", "Listing Status column not available")
@@ -995,8 +1465,18 @@ class Dashboard(QMainWindow):
             return
 
         self.save_undo_state("Set Status")
+        if new_status == "ACTIVE":
+            mask = self.resolve_activation_mask(mask, "Set Status")
+            if mask.empty or not mask.any():
+                QMessageBox.information(self, "No Changes", "Flagged rows stayed INACTIVE because the flags were not excluded.")
+                self.update_dashboard()
+                return
+
         before_values = self.df.loc[mask, self.col_settlement].copy()
         self.df.loc[mask, "Listing Status"] = new_status
+        if new_status == "ACTIVE":
+            self.apply_size_flags(mask)
+        self.sync_stock_count_with_status(mask)
         after_values = self.df.loc[mask, self.col_settlement].copy()
         self.log_change("Set Status", before_values, after_values, int(mask.sum()), f"Status: {new_status}", self.df.loc[mask])
         self.setup_filters()
@@ -1051,9 +1531,11 @@ class Dashboard(QMainWindow):
     def update_dashboard(self):
         if self.df.empty:
             self.update_row_counts(0)
+            self.update_status_matrix(None)
             return
 
         chart_df = self.df[self.get_filtered_mask(include_selection=False)].copy()
+        status_matrix_df = self.df[self.get_filtered_mask(include_selection=True, apply_status_filter=False)].copy()
         df = chart_df.copy()
         if self.selected_range:
             low, high = self.selected_range
@@ -1063,6 +1545,7 @@ class Dashboard(QMainWindow):
             ]
 
         self.update_row_counts(len(df))
+        self.update_status_matrix(status_matrix_df)
         self.update_table(df)
         self.update_chart(chart_df)
 
@@ -1102,15 +1585,32 @@ class Dashboard(QMainWindow):
             self.df.loc[row_mask, col_name] = item.text()
             if col_name == self.col_sku:
                 self.df.loc[row_mask, "Size"] = self.df.loc[row_mask, self.col_sku].apply(self.detect_size_from_sku)
+                flagged_df = self.apply_size_flags(row_mask)
+                self.sync_stock_count_with_status(row_mask)
+                self.show_flag_popup(flagged_df, "SKU edit")
             elif col_name == "Listing Status":
                 self.df.loc[row_mask, "Listing Status"] = str(item.text()).strip().upper()
+                if str(item.text()).strip().upper() == "ACTIVE":
+                    active_mask = self.resolve_activation_mask(row_mask, "Listing Status edit")
+                    if active_mask.any():
+                        self.df.loc[active_mask, "Listing Status"] = "ACTIVE"
+                        self.apply_size_flags(active_mask)
+                        self.sync_stock_count_with_status(active_mask)
+                    inactive_rows = row_mask & ~active_mask
+                    if inactive_rows.any():
+                        self.df.loc[inactive_rows, "Listing Status"] = "INACTIVE"
+                        self.sync_stock_count_with_status(inactive_rows)
+                else:
+                    self.df.loc[row_mask, "Listing Status"] = str(item.text()).strip().upper()
+                    self.sync_stock_count_with_status(row_mask)
             after_values = self.df.loc[row_mask, self.col_settlement].copy()
             after_cell_value = str(self.df.loc[row_mask, col_name].iloc[0])
             extra = f"Row: {orig_idx}"
             if col_name == self.col_settlement:
                 extra += f", Settlement: {before_cell_value} -> {after_cell_value}"
             elif col_name == "Listing Status":
-                extra += f", Status: {before_cell_value} -> {after_cell_value}"
+                stock_value = str(self.df.loc[row_mask, "Your Stock Count"].iloc[0]) if "Your Stock Count" in self.df.columns else "unchanged"
+                extra += f", Status: {before_cell_value} -> {after_cell_value}, Stock: {stock_value}"
             else:
                 extra += f", {col_name}: {before_cell_value} -> {after_cell_value}"
             self.log_change(f"Edit {col_name}", before_values, after_values, 1, extra, self.df.loc[row_mask])
@@ -1160,8 +1660,9 @@ class Dashboard(QMainWindow):
 
         ax.set_facecolor("#fcfcfd")
         ax.grid(True, axis="y", alpha=0.18)
-        ax.set_xlabel("Settlement")
+        ax.set_xlabel(f"Settlement values from Excel column: {self.col_settlement}")
         ax.set_ylabel("Frequency")
+        ax.set_title(f"Settlement distribution from column: {self.col_settlement}")
 
         annot = ax.annotate(
             "",
@@ -1278,7 +1779,7 @@ class Dashboard(QMainWindow):
             return
 
         df = self.df.sort_values("__orig_index")
-        df = df.drop(columns=["__orig_index", "__locked"], errors="ignore")
+        df = df.drop(columns=["__orig_index", "__locked", "__flag_exemptions"], errors="ignore")
         path, _ = QFileDialog.getSaveFileName(
             self,
             "Save File",
