@@ -1,0 +1,100 @@
+{
+  "phase": "Product Description",
+  "product_type": "Jeans",
+  "scope_note": "This configuration is for jeans only. Create a separate Product Description input file later for shorts if needed.",
+  "source_snapshot": "Full-LC-AUTO/product description page.htm",
+  "locator_strategy": "Prefer locating the field label text first, then target the nearest input, combobox, or tag-style field within the same attribute wrapper.",
+  "fields": [
+    {
+      "order": 1,
+      "label": "Size",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Size' -> nearest combobox"
+    },
+    {
+      "order": 2,
+      "label": "Style Code",
+      "required": true,
+      "input_type": "text",
+      "locator_hint": "label text 'Style Code' -> nearest input[type='text']"
+    },
+    {
+      "order": 3,
+      "label": "Fit",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Fit' -> nearest combobox"
+    },
+    {
+      "order": 4,
+      "label": "Ideal For",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Ideal For' -> nearest combobox"
+    },
+    {
+      "order": 5,
+      "label": "Color",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Color' -> nearest combobox"
+    },
+    {
+      "order": 6,
+      "label": "Reversible",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Reversible' -> nearest combobox"
+    },
+    {
+      "order": 7,
+      "label": "Pack of",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Pack of' -> nearest input[type='number']"
+    },
+    {
+      "order": 8,
+      "label": "Brand Color",
+      "required": true,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Brand Color' -> nearest multi-value tag input / pill entry control"
+    },
+    {
+      "order": 9,
+      "label": "Rise",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Rise' -> nearest combobox"
+    },
+    {
+      "order": 10,
+      "label": "Fabric",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Fabric' -> nearest combobox"
+    },
+    {
+      "order": 11,
+      "label": "Suitable For",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Suitable For' -> nearest combobox"
+    },
+    {
+      "order": 12,
+      "label": "Distressed",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Distressed' -> nearest combobox"
+    },
+    {
+      "order": 13,
+      "label": "Faded",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Faded' -> nearest combobox"
+    }
+  ]
+}

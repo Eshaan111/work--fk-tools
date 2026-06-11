@@ -1,0 +1,4 @@
+openpyxl
+PyAutoGUI
+pynput
+selenium

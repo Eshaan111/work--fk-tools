@@ -1,0 +1,98 @@
+You are helping generate fresh ecommerce background ideas for a product image edit workflow.
+
+TASK
+
+Suggest new background ideas for the uploaded product image.
+
+We have already used background ideas based on these phrases:
+
+Terracota Style With Plant and Gym equipment in background, Industrial Concrete Studio, Minimal White Cyclorama, Dark Graphite Gradient Studio, Athletic Track Sunrise, Coastal Boardwalk Morning, Urban Rooftop Fitness Terrace, Luxury Locker Room Corridor, Modern Sports Recovery Lounge
+
+Your job is to suggest NEW background ideas that are clearly different from the already-used ones.
+
+RULES
+
+0. Prefer realistic environmental backgrounds with subtle architectural elements and carefully selected props rather than simple gradients, although occasional premium studio gradients are acceptable.
+1. Do not repeat or closely paraphrase the already-used ideas.
+2. Keep ideas commercially strong for ecommerce product compositing.
+3. Ideas must work for a no-background product image that will be placed into the scene later.
+4. The product must remain the visual focus.
+5. Do not suggest scenes with extra products, text, logos, signage, people, vehicles, or distracting props.
+6. Keep the ideas photorealistic, premium, and professionally art-directed.
+7. Match the kind of product being worked on.
+8. Favor scenes that would realistically be used in high-end ecommerce campaigns.
+9. Avoid environments that feel overly cinematic, fantasy-like, AI-generated, or excessively decorative.
+10. Prefer clean compositions with strong negative space around the product.
+11. If props are used, limit them to 1–3 subtle supporting elements.
+12. Avoid cluttered scenes, busy textures, crowded interiors, or excessive visual detail.
+13. Avoid concepts that rely primarily on dramatic lighting effects.
+14. Prioritize realism, simplicity, and product focus over visual complexity.
+
+BACKGROUND STYLE PREFERENCES
+
+* Soft premium studio lighting.
+* Natural realistic shadows.
+* Clean professional photography aesthetics.
+* Slight environmental depth of field.
+* Refined luxury ecommerce feel.
+* Background should complement the product, not compete with it.
+* Scene should feel photographed rather than AI-generated.
+* Architectural elements, materials, textures, and props should be understated and elegant.
+* Large open spaces are preferred over crowded environments.
+* Avoid hyper-detailed AI-style backgrounds.
+
+PRODUCT CONTEXT
+
+Product Kind:
+SHORTS
+
+Scene Goal:
+Professional ecommerce image background ideas for compositing.
+
+OUTPUT FORMAT
+
+Return JSON only.
+
+Use this exact shape:
+
+{
+"ideas": [
+{
+"title": "...",
+"visual_concept": "...",
+"background_description": "..."
+}
+]
+}
+
+GUIDELINES FOR EACH IDEA
+
+"title":
+
+* Short commercial-friendly scene name.
+
+"visual_concept":
+
+* One sentence describing the overall atmosphere and purpose of the scene.
+
+"background_description":
+
+* Detailed image-generation-ready description.
+* Include materials, architecture, lighting, depth of field, and subtle supporting elements.
+* Emphasize realism, premium styling, and product-focused composition.
+
+Failsafe:
+
+* If JSON cannot be followed, start each idea with exactly:
+  IDEA FOR BACKGROUND :
+* Put the idea title on the same line after that marker.
+* Then provide One-line visual concept.
+* Then provide Short background description usable for image generation.
+
+IMPORTANT
+
+The ideas should be distinct from:
+
+Terracota Style With Plant and Gym equipment in background, Industrial Concrete Studio, Minimal White Cyclorama, Dark Graphite Gradient Studio, Athletic Track Sunrise, Coastal Boardwalk Morning, Urban Rooftop Fitness Terrace, Luxury Locker Room Corridor, Modern Sports Recovery Lounge
+
+Generate 15 diverse ideas.

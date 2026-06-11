@@ -1,0 +1,93 @@
+IMAGE EDIT TASK
+
+ASSET DEFINITIONS
+
+SOURCE_PRODUCT:
+= The uploaded product image.
+= This is the ONLY object that must remain unchanged.
+= Preserve:
+  - exact product shape
+  - exact colors
+  - exact texture
+  - exact logos/branding
+  - exact proportions
+  - exact lighting direction whenever possible
+  - exact resolution of the original product
+
+TARGET_BACKGROUND:
+= Title: Modern Atrium Walkway
+Visual Concept: Premium activewear presented within a refined contemporary architectural space.
+Background Description: Spacious indoor atrium with light limestone flooring, tall neutral-toned walls, subtle vertical architectural panels, soft natural daylight filtering from overhead skylights, clean open composition with generous negative space, shallow depth of field, realistic shadows, understated luxury commercial photography aesthetic.
+
+EDIT INSTRUCTIONS
+
+1. Keep SOURCE_PRODUCT exactly as provided.
+2. Do NOT redesign, redraw, recolor, restyle, reshape, or regenerate SOURCE_PRODUCT.
+3. Place SOURCE_PRODUCT naturally inside TARGET_BACKGROUND.
+4. Generate only the environment around the product.
+5. Add realistic shadows and contact shadows beneath the product.
+6. Match perspective and lighting between SOURCE_PRODUCT and TARGET_BACKGROUND.
+7. Ensure professional ecommerce quality.
+8. Product must remain the visual focus.
+9. Do not crop the product.
+10. Maintain original aspect ratio.
+11. Maintain high resolution.
+12. No text, watermarks, labels, or extra products.
+
+SOFT PROFESSIONAL RENDERING REQUIREMENTS
+
+- Make the entire final image feel like a premium professional studio photoshoot.
+- Use soft diffused studio lighting, not harsh AI-style lighting.
+- Reduce over-sharpness, over-contrast, plastic texture, and hyper-real artificial details.
+- Background should be slightly softened with natural depth of field so it does not compete with the product.
+- Blend product and background using realistic ambient light, soft shadows, and subtle color matching.
+- Avoid jarring edges around the product; ensure clean natural compositing.
+- Use realistic camera softness, gentle highlights, smooth gradients, and premium ecommerce retouching.
+- Final image should look photographed, not AI-generated.
+
+BACKGROUND SIMPLICITY & COMPOSITION REQUIREMENTS
+
+- Keep the background clean, premium, and intentionally minimal.
+- Avoid clutter, excessive props, busy architecture, unnecessary objects, or visually distracting elements.
+- Use only a few carefully selected environmental details when needed to establish the scene.
+- Props should be subtle, secondary, and never compete with the product.
+- Large open negative space is preferred over crowded environments.
+- Background elements should support the product rather than tell a story.
+- Prioritize premium commercial photography aesthetics over cinematic or highly detailed scenes.
+- Maintain clear visual separation between product and background.
+- Use shallow-to-medium depth of field to gently soften environmental details.
+- Avoid highly textured surfaces, excessive patterns, complex reflections, or busy lighting effects.
+- If props are included, use no more than 1–3 simple supporting elements.
+- The product should occupy the majority of the viewer's attention.
+- Overall composition should resemble high-end ecommerce photography from premium fashion and athletic brands.
+- Scene should feel realistic, refined, and professionally art-directed rather than AI-generated.
+
+When choosing between realism and visual complexity, always prioritize realism, simplicity, and product focus.
+
+COMPOSITION
+
+Product Position:
+[center / left / right]
+
+Camera Angle:
+[same as source image]
+
+Depth of Field:
+[shallow / medium / deep]
+
+Scene Style:
+[ecommerce studio / luxury / lifestyle / industrial / minimal]
+
+TARGET_BACKGROUND DESCRIPTION
+
+"""
+Title: Modern Atrium Walkway
+Visual Concept: Premium activewear presented within a refined contemporary architectural space.
+Background Description: Spacious indoor atrium with light limestone flooring, tall neutral-toned walls, subtle vertical architectural panels, soft natural daylight filtering from overhead skylights, clean open composition with generous negative space, shallow depth of field, realistic shadows, understated luxury commercial photography aesthetic.
+"""
+
+
+
+OUTPUT
+
+Generate OUTPUT_IMAGE by compositing SOURCE_PRODUCT into TARGET_BACKGROUND while preserving SOURCE_PRODUCT exactly.

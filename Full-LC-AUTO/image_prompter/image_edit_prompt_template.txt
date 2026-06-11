@@ -1,0 +1,172 @@
+You are helping generate fresh ecommerce background ideas for a product image edit workflow.
+
+TASK
+
+Suggest new background ideas for the uploaded product image.
+
+We have already used background ideas based on these phrases:
+
+[USED_PHRASES_CSV]
+
+Your job is to suggest NEW background ideas that are clearly different from the already-used ones.
+
+CORE OBJECTIVE
+
+Generate backgrounds that resemble premium ecommerce photography sets rather than real-world locations.
+
+The goal is NOT to create complete environments, destinations, interiors, outdoor scenes, or architectural spaces.
+
+The goal IS to create simple, premium, studio-style sets that enhance the product while remaining visually unobtrusive.
+
+RULES
+
+0. Prioritize studio-built environments over real-world locations.
+1. Do not repeat or closely paraphrase the already-used ideas.
+2. Keep ideas commercially strong for ecommerce product compositing.
+3. Ideas must work for a no-background product image that will be placed into the scene later.
+4. The product must remain the visual focus.
+5. Do not suggest scenes with extra products, text, logos, signage, people, vehicles, or distracting props.
+6. Keep the ideas photorealistic, premium, and professionally art-directed.
+7. Match the kind of product being worked on.
+8. Favor backgrounds that could realistically be built inside a commercial photography studio.
+9. Avoid environments that feel cinematic, lifestyle-heavy, decorative, conceptual, or AI-generated.
+10. Prefer clean compositions with strong negative space around the product.
+11. If props are used, limit them to 0–2 subtle supporting elements.
+12. Avoid cluttered scenes, busy textures, crowded interiors, excessive architecture, or visual storytelling.
+13. Avoid dramatic lighting effects.
+14. Prioritize realism, simplicity, and product focus over visual complexity.
+15. Favor material-driven backgrounds over location-driven backgrounds.
+16. Use no more than 2–3 primary materials per concept.
+17. Use no more than 2–3 color families per concept.
+18. Avoid dark, moody, high-contrast environments unless specifically appropriate for the product.
+
+DO NOT GENERATE
+
+* Atriums
+* Courtyards
+* Hallways
+* Walkways
+* Rooftops
+* Resort environments
+* Outdoor landscapes
+* Hospitality spaces
+* Gyms
+* Offices
+* Large architectural environments
+* Lifestyle scenes
+* Detailed interiors
+* Storytelling environments
+
+PREFER GENERATING
+
+* Limewash walls
+* Plaster walls
+* Microcement surfaces
+* Matte stone panels
+* Soft textured backdrops
+* Seamless studio sets
+* Minimal architectural niches
+* Curved cyclorama walls
+* Light wood accents
+* Premium retail-display inspired sets
+* Soft gradients combined with physical materials
+* Clean geometric forms
+* Subtle wall paneling
+* Minimal pedestals (only if appropriate)
+* Refined material studies
+
+BACKGROUND STYLE PREFERENCES
+
+* Soft premium studio lighting.
+* Natural realistic shadows.
+* Bright and airy overall mood.
+* Clean professional photography aesthetics.
+* Slight environmental depth of field.
+* Refined luxury ecommerce feel.
+* Background should complement the product, not compete with it.
+* Scene should feel photographed rather than AI-generated.
+* Materials and textures should be understated and elegant.
+* Large amounts of negative space.
+* Avoid hyper-detailed AI-style backgrounds.
+* Avoid excessive texture contrast.
+* Favor warm neutrals, soft grays, light stone tones, warm whites, muted beiges, and gentle natural materials.
+
+BACKGROUND STRUCTURE
+
+Most ideas should follow this structure:
+
+* One primary wall/backdrop material.
+* One floor material.
+* Zero to two subtle supporting elements.
+* Large open negative space.
+* Soft studio lighting.
+* Clean product-focused composition.
+
+PRODUCT CONTEXT
+
+Product Kind:
+[PRODUCT_KIND]
+
+Scene Goal:
+Professional ecommerce image background ideas for compositing.
+
+OUTPUT FORMAT
+
+Return JSON only.
+
+Use this exact shape:
+
+{
+"ideas": [
+{
+"title": "...",
+"visual_concept": "...",
+"background_description": "..."
+}
+]
+}
+
+GUIDELINES FOR EACH IDEA
+
+"title"
+
+* Short commercial-friendly set name.
+* Focus on materials and design rather than locations.
+
+Examples:
+
+* Warm Limewash Studio
+* Soft Stone Backdrop
+* Microcement Corner Set
+* Oak Accent Wall
+* Matte Sandstone Studio
+
+"visual_concept"
+
+* One sentence describing the atmosphere and purpose of the set.
+
+"background_description"
+
+* Detailed image-generation-ready description.
+* Focus primarily on materials, surfaces, lighting, negative space, and composition.
+* Avoid describing complete environments.
+* Mention wall treatment, floor treatment, lighting style, depth of field, and subtle supporting elements if used.
+* Emphasize premium ecommerce photography aesthetics.
+
+Failsafe
+
+If JSON cannot be followed:
+
+* Start each idea with exactly:
+  IDEA FOR BACKGROUND :
+* Put the title on the same line.
+* Then provide one-line visual concept.
+* Then provide background description.
+
+IMPORTANT
+
+The ideas should be distinct from:
+
+[USED_PHRASES_CSV]
+
+Generate 15 diverse ideas.
