@@ -1,0 +1,518 @@
+ChatGPT Plus
+
+You are helping generate fresh ecommerce background ideas for a product image edit workflow.
+
+TASK
+
+Suggest new background ideas for the uploaded product image.
+
+We have already used background ideas based on these phrases:
+
+Terracota Style With Plant and Gym equipment in background, Industrial Concrete Studio, Minimal White Cyclorama, Dark Graphite Gradient Studio, Athletic Track Sunrise, Coastal Boardwalk Morning, Urban Rooftop Fitness Terrace, Luxury Locker Room Corridor, Modern Sports Recovery Lounge, Modern Atrium Walkway
+
+Your job is to suggest NEW background ideas that are clearly different from the already-used ones.
+
+CORE OBJECTIVE
+
+Generate backgrounds that resemble premium ecommerce photography sets rather than real-world locations.
+
+The goal is NOT to create complete environments, destinations, interiors, outdoor scenes, or architectural spaces.
+
+The goal IS to create simple, premium, studio-style sets that enhance the product while remaining visually unobtrusive.
+
+RULES
+
+0. Prioritize studio-built environments over real-world locations.
+1. Do not repeat or closely paraphrase the already-used ideas.
+2. Keep ideas commercially strong for ecommerce product compositing.
+3. Ideas must work for a no-background product image that will be placed into the scene later.
+4. The product must remain the visual focus.
+5. Do not suggest scenes with extra products, text, logos, signage, people, vehicles, or distracting props.
+6. Keep the ideas photorealistic, premium, and professionally art-directed.
+7. Match the kind of product being worked on.
+8. Favor backgrounds that could realistically be built inside a commercial photography studio.
+9. Avoid environments that feel cinematic, lifestyle-heavy, decorative, conceptual, or AI-generated.
+10. Prefer clean compositions with strong negative space around the product.
+11. If props are used, limit them to 0–2 subtle supporting elements.
+12. Avoid cluttered scenes, busy textures, crowded interiors, excessive architecture, or visual storytelling.
+13. Avoid dramatic lighting effects.
+14. Prioritize realism, simplicity, and product focus over visual complexity.
+15. Favor material-driven backgrounds over location-driven backgrounds.
+16. Use no more than 2–3 primary materials per concept.
+17. Use no more than 2–3 color families per concept.
+18. Avoid dark, moody, high-contrast environments unless specifically appropriate for the product.
+
+DO NOT GENERATE
+
+* Atriums
+* Courtyards
+* Hallways
+* Walkways
+* Rooftops
+* Resort environments
+* Outdoor landscapes
+* Hospitality spaces
+* Gyms
+* Offices
+* Large architectural environments
+* Lifestyle scenes
+* Detailed interiors
+* Storytelling environments
+
+PREFER GENERATING
+
+* Limewash walls
+* Plaster walls
+* Microcement surfaces
+* Matte stone panels
+* Soft textured backdrops
+* Seamless studio sets
+* Minimal architectural niches
+* Curved cyclorama walls
+* Light wood accents
+* Premium retail-display inspired sets
+* Soft gradients combined with physical materials
+* Clean geometric forms
+* Subtle wall paneling
+* Minimal pedestals (only if appropriate)
+* Refined material studies
+
+BACKGROUND STYLE PREFERENCES
+
+* Soft premium studio lighting.
+* Natural realistic shadows.
+* Bright and airy overall mood.
+* Clean professional photography aesthetics.
+* Slight environmental depth of field.
+* Refined luxury ecommerce feel.
+* Background should complement the product, not compete with it.
+* Scene should feel photographed rather than AI-generated.
+* Materials and textures should be understated and elegant.
+* Large amounts of negative space.
+* Avoid hyper-detailed AI-style backgrounds.
+* Avoid excessive texture contrast.
+* Favor warm neutrals, soft grays, light stone tones, warm whites, muted beiges, and gentle natural materials.
+
+BACKGROUND STRUCTURE
+
+Most ideas should follow this structure:
+
+* One primary wall/backdrop material.
+* One floor material.
+* Zero to two subtle supporting elements.
+* Large open negative space.
+* Soft studio lighting.
+* Clean product-focused composition.
+
+PRODUCT CONTEXT
+
+Product Kind:
+SHORTS
+
+Scene Goal:
+Professional ecommerce image background ideas for compositing.
+
+OUTPUT FORMAT
+
+Return JSON only.
+
+Use this exact shape:
+
+{
+"ideas": [
+{
+"title": "...",
+"visual_concept": "...",
+"background_description": "..."
+}
+]
+}
+
+GUIDELINES FOR EACH IDEA
+
+"title"
+
+* Short commercial-friendly set name.
+* Focus on materials and design rather than locations.
+
+Examples:
+
+* Warm Limewash Studio
+* Soft Stone Backdrop
+* Microcement Corner Set
+* Oak Accent Wall
+* Matte Sandstone Studio
+
+"visual_concept"
+
+* One sentence describing the atmosphere and purpose of the set.
+
+"background_description"
+
+* Detailed image-generation-ready description.
+* Focus primarily on materials, surfaces, lighting, negative space, and composition.
+* Avoid describing complete environments.
+* Mention wall treatment, floor treatment, lighting style, depth of field, and subtle supporting elements if used.
+* Emphasize premium ecommerce photography aesthetics.
+
+Failsafe
+
+If JSON cannot be followed:
+
+* Start each idea with exactly:
+  IDEA FOR BACKGROUND :
+* Put the title on the same line.
+* Then provide one-line visual concept.
+* Then provide background description.
+
+IMPORTANT
+
+The ideas should be distinct from:
+
+Terracota Style With Plant and Gym equipment in background, Industrial Concrete Studio, Minimal White Cyclorama, Dark Graphite Gradient Studio, Athletic Track Sunrise, Coastal Boardwalk Morning, Urban Rooftop Fitness Terrace, Luxury Locker Room Corridor, Modern Sports Recovery Lounge, Modern Atrium Walkway
+
+Generate 15 diverse ideas.
+
+{
+  "ideas": [
+    {
+      "title": "Warm Limewash Studio",
+      "visual_concept": "Soft handcrafted surfaces create a premium fashion-catalog atmosphere with understated warmth.",
+      "background_description": "Light warm-white limewash wall with subtle tonal variation, smooth matte ivory floor, seamless transition between wall and floor, large open negative space, soft diffused studio lighting, gentle shadow falloff, slight depth of field, refined luxury ecommerce photography aesthetic."
+    },
+    {
+      "title": "Matte Sandstone Set",
+      "visual_concept": "Natural stone-inspired materials provide a clean premium foundation without distracting from the product.",
+      "background_description": "Large matte sandstone wall panel backdrop in pale beige tones, smooth stone-look flooring, minimal surface texture, bright airy lighting, realistic contact shadows, subtle depth separation, spacious composition with generous negative space."
+    },
+    {
+      "title": "Soft Plaster Curve",
+      "visual_concept": "Elegant curved studio architecture creates a modern premium presentation.",
+      "background_description": "Warm off-white plaster wall flowing into a gentle curved cyclorama corner, smooth matte floor, clean uninterrupted surfaces, soft directional daylight simulation, realistic shadow gradients, shallow depth of field, luxury ecommerce studio feel."
+    },
+    {
+      "title": "Light Oak Accent Studio",
+      "visual_concept": "Natural wood detailing adds warmth while maintaining a clean commercial appearance.",
+      "background_description": "Minimal vertical light oak slat accent section integrated into a warm neutral backdrop, smooth ivory floor, restrained material palette, soft studio lighting, subtle depth, product-centered composition with extensive negative space."
+    },
+    {
+      "title": "Microcement Horizon Set",
+      "visual_concept": "Contemporary material-driven backdrop with refined texture and clean geometry.",
+      "background_description": "Pale greige microcement wall and floor with subtle tonal distinction, seamless edges, soft natural-looking shadows, lightly blurred background depth, premium retail-display inspired styling, uncluttered composition."
+    },
+    {
+      "title": "Stone Panel Gallery Set",
+      "visual_concept": "Minimal large-format panels create a sophisticated retail-display atmosphere.",
+      "background_description": "Oversized matte stone wall panels in soft limestone tones, smooth neutral flooring, barely visible panel joints, diffused studio lighting, realistic shadowing, clean product-first composition with ample breathing room."
+    },
+    {
+      "title": "Ivory Gradient Material Studio",
+      "visual_concept": "A subtle blend of physical materials and soft tonal transitions enhances product focus.",
+      "background_description": "Warm ivory textured backdrop with an extremely gentle tonal gradient, smooth matte floor, clean seamless composition, soft overhead lighting, natural shadow transitions, premium ecommerce photography styling."
+    },
+    {
+      "title": "Minimal Niche Display",
+      "visual_concept": "Architectural restraint adds visual interest while remaining unobtrusive.",
+      "background_description": "Warm plaster backdrop featuring a single shallow recessed niche, smooth stone-look floor, neutral color palette, soft diffuse lighting, slight environmental depth of field, generous negative space, refined retail-inspired presentation."
+    },
+    {
+      "title": "Pearl Textured Studio",
+      "visual_concept": "Subtle texture introduces depth without competing with the product.",
+      "background_description": "Pearl-white textured wall treatment with fine handcrafted finish, clean matte floor, soft even lighting, natural contact shadows, bright airy mood, luxury catalog photography aesthetic with large uncluttered areas."
+    },
+    {
+      "title": "Limestone Block Composition",
+      "visual_concept": "Simple geometric forms provide structure and premium visual balance.",
+      "background_description": "Soft limestone wall backdrop with one or two low-profile geometric stone forms positioned far from the product area, smooth floor surface, neutral palette, gentle studio lighting, shallow depth of field, clean professional composition."
+    },
+    {
+      "title": "Champagne Beige Studio",
+      "visual_concept": "Warm neutral tones create a refined luxury retail aesthetic.",
+      "background_description": "Champagne-beige matte backdrop with subtle material depth, seamless floor continuation, soft balanced lighting, realistic shadows, minimal texture variation, spacious ecommerce-focused layout with abundant negative space."
+    },
+    {
+      "title": "Curved Panel Studio",
+      "visual_concept": "Soft geometric shapes provide visual sophistication while maintaining simplicity.",
+      "background_description": "Large curved matte wall panels in warm off-white tones, smooth pale floor, clean architectural geometry, diffused studio illumination, subtle depth blur, premium commercial photography atmosphere."
+    },
+    {
+      "title": "Soft Mineral Surface Set",
+      "visual_concept": "Natural mineral-inspired finishes deliver a contemporary premium backdrop.",
+      "background_description": "Muted mineral-plaster wall with delicate tonal movement, light stone floor surface, restrained color palette of warm white and soft gray, realistic shadows, airy studio lighting, uncluttered composition."
+    },
+    {
+      "title": "Retail Display Wall",
+      "visual_concept": "Inspired by luxury apparel merchandising with minimal visual noise.",
+      "background_description": "Clean warm-neutral wall featuring subtle vertical panel detailing, smooth matte floor, bright professional lighting, shallow depth of field, premium showroom-inspired styling, large open negative space surrounding the product."
+    },
+    {
+      "title": "Natural Linen Backdrop Studio",
+      "visual_concept": "Textile-inspired softness creates a refined catalog-photography look.",
+      "background_description": "Large stretched linen-texture backdrop in warm ivory tones, smooth neutral floor, soft diffused studio lighting, gentle texture visibility, realistic shadow grounding, bright luxury ecommerce aesthetic with simple uncluttered composition."
+    }
+  ]
+}
+
+
+IMAGE EDIT TASK
+
+ASSET DEFINITIONS
+
+SOURCE_PRODUCT:
+= The uploaded product image.
+= This is the ONLY object that must remain unchanged.
+
+Preserve exactly:
+
+* Product shape
+* Product proportions
+* Product colors
+* Product texture
+* Product stitching
+* Product details
+* Product branding
+* Product logos
+* Product material appearance
+* Product resolution
+
+Do NOT:
+
+* Redesign
+* Reinterpret
+* Restyle
+* Recolor
+* Reconstruct
+* Replace
+* Regenerate
+* Modify branding
+* Modify fabric appearance
+
+TARGET_BACKGROUND:
+
+= Title: Warm Limewash Studio
+Visual Concept: Soft handcrafted surfaces create a premium fashion-catalog atmosphere with understated warmth.
+Background Description: Light warm-white limewash wall with subtle tonal variation, smooth matte ivory floor, seamless transition between wall and floor, large open negative space, soft diffused studio lighting, gentle shadow falloff, slight depth of field, refined luxury ecommerce photography aesthetic.
+
+PRIMARY OBJECTIVE
+
+Create a premium ecommerce product photograph.
+
+The product is the hero.
+
+The background exists only to support the product.
+
+The final result should resemble a professional product photoshoot from premium fashion and athletic ecommerce brands.
+
+EDIT INSTRUCTIONS
+
+1. Keep SOURCE_PRODUCT exactly unchanged.
+2. Preserve all product details precisely.
+3. Build a simple premium studio set around the product.
+4. Do not create a detailed environment or location.
+5. Do not create a scene that tells a story.
+6. Add realistic contact shadows beneath the product.
+7. Match perspective and lighting naturally.
+8. Product must remain the dominant visual element.
+9. Do not crop the product.
+10. Maintain original aspect ratio.
+11. Maintain high resolution.
+12. No text.
+13. No logos.
+14. No labels.
+15. No additional products.
+16. No mannequins.
+17. No people.
+
+SOFT PROFESSIONAL RENDERING
+
+* Soft diffused commercial studio lighting.
+* Bright and airy photography aesthetic.
+* Premium ecommerce retouching style.
+* Natural realistic shadows.
+* Gentle highlight rolloff.
+* Soft realistic contrast.
+* Slight camera softness.
+* Subtle depth of field.
+* Realistic material rendering.
+* Final image should look photographed, not generated.
+* Avoid oversharpening.
+* Avoid HDR-style processing.
+* Avoid excessive micro-detail enhancement.
+* Avoid artificial AI-generated textures.
+* Avoid hyperreal rendering.
+* Prefer natural photographic softness.
+
+BACKGROUND CONTROL
+
+Keep the background extremely simple.
+
+Preferred structure:
+
+* One backdrop material.
+* One floor material.
+* Large negative space.
+* Clean composition.
+
+Maximum supporting elements:
+
+0–2
+
+Examples of acceptable elements:
+
+* Simple wall panel
+* Architectural niche
+* Light wood accent
+* Minimal planter
+* Subtle geometric form
+
+Avoid:
+
+* Detailed interiors
+* Outdoor scenes
+* Buildings
+* Courtyards
+* Atriums
+* Hallways
+* Walkways
+* Rooftops
+* Landscapes
+* Hospitality spaces
+* Lifestyle scenes
+* Complex architecture
+* Multiple decorative objects
+* Busy textures
+* Visual clutter
+* Layered environments
+* Deep backgrounds
+* Scene-building
+
+MATERIAL PREFERENCE
+
+Favor:
+
+* Limewash
+* Plaster
+* Microcement
+* Matte stone
+* Light wood
+* Soft concrete
+* Warm neutral surfaces
+* Clean studio walls
+* Minimal paneling
+
+Avoid:
+
+* Dark moody environments
+* Heavy industrial styling
+* High contrast materials
+* Dramatic textures
+* Glossy reflective surfaces
+* Complex patterns
+
+COLOR PALETTE
+
+Favor:
+
+* Warm white
+* Soft beige
+* Light stone
+* Warm gray
+* Sand
+* Cream
+* Natural oak
+
+Avoid:
+
+* Very dark backgrounds
+* Harsh blacks
+* Neon colors
+* Strong saturation
+
+COMPOSITION CONTROL
+
+* Product should occupy the majority of viewer attention.
+* Product should be visually larger than the background.
+* Background should feel secondary and understated.
+* Use generous negative space.
+* Background should not contain a focal point.
+* Avoid dramatic perspective lines.
+* Avoid strong leading lines.
+* Avoid complex depth cues.
+* Keep background visually quiet.
+* If a design choice competes with the product, simplify it.
+
+CAMERA & PHOTOGRAPHY STYLE
+
+Photography Style:
+Premium Ecommerce Studio Product Photography
+
+Reference Style:
+
+* Nike product detail photography
+* Lululemon ecommerce photography
+* Gymshark PDP imagery
+* Alo Yoga ecommerce imagery
+* Vuori product photography
+* Premium fashion catalog photography
+
+Desired Feel:
+
+* Clean
+* Bright
+* Commercial
+* Product-first
+* Studio-built
+* Professional
+* Minimal
+
+Avoid:
+
+* Editorial fashion shoots
+* Lifestyle campaigns
+* Luxury resort imagery
+* Architectural photography
+* Concept art
+* CGI-style renders
+* Cinematic scenes
+* AI-art aesthetics
+
+COMPOSITION
+
+Product Position:
+[center / left / right]
+
+Camera Angle:
+[same as source image]
+
+Depth of Field:
+[shallow / medium]
+
+Scene Style:
+[premium ecommerce studio]
+
+TARGET_BACKGROUND DESCRIPTION
+
+"""
+Title: Warm Limewash Studio
+Visual Concept: Soft handcrafted surfaces create a premium fashion-catalog atmosphere with understated warmth.
+Background Description: Light warm-white limewash wall with subtle tonal variation, smooth matte ivory floor, seamless transition between wall and floor, large open negative space, soft diffused studio lighting, gentle shadow falloff, slight depth of field, refined luxury ecommerce photography aesthetic.
+"""
+
+FINAL PRIORITY ORDER
+
+1. Product accuracy
+2. Product visibility
+3. Realistic compositing
+4. Clean studio aesthetic
+5. Simplicity
+6. Background design
+
+If any background element competes with the product, reduce or remove it.
+
+The background should feel like a premium studio set, not a location.
+
+OUTPUT
+
+Generate OUTPUT_IMAGE by compositing SOURCE_PRODUCT into TARGET_BACKGROUND while preserving SOURCE_PRODUCT exactly.
+
+Generated image: Athletic style in neutral tones

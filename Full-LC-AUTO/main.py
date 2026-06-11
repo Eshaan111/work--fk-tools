@@ -36,58 +36,57 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_LISTING_URL = (
     "https://seller.flipkart.com/index.html#dashboard/addListings/single"
     "?vertical=jean&vid=667"
 )
 DEFAULT_BRAND_NAME = "STARVIELLE"
 USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION = True
-DEFAULT_IMAGE_DIRECTORY = Path(
+DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
 )
 DEFAULT_JEANS_KIND = "Beige"
 DEFAULT_LISTING_SIZE = "28"
-JEANS_KIND_OPTIONS: dict[str, tuple[str, Path]] = {
+JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "1": ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
     "2": ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
     "3": ("Black-baggy", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BLACK-BAGGY\NEW IMAGES")),
     "4": ("Black-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BLACK-PLAIN\NEW IMAGES")),
     "5": ("White-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\WHITE-PLAIN\NEW IMAGES")),
 }
-DEFAULT_SNAPSHOT_DIRECTORY = Path(r"C:\work-mom\Code-Tools\Full-LC-AUTO\snapshots")
-DEFAULT_PRICE_STOCK_SHIPPING_EXCEL = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\data inputs\Price-Stock-Shipping-inputs.xlsx"
+DEFAULT_SNAPSHOT_DIRECTORY = PROJECT_ROOT / "snapshots"
+DEFAULT_PRICE_STOCK_SHIPPING_EXCEL = (
+    PROJECT_ROOT / "data inputs" / "Price-Stock-Shipping-inputs.xlsx"
 )
-DEFAULT_PRICE_STOCK_SHIPPING_JSON = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\assets\Price-Stock-Shipping-inputs.json"
+DEFAULT_PRICE_STOCK_SHIPPING_JSON = (
+    PROJECT_ROOT / "assets" / "Price-Stock-Shipping-inputs.json"
 )
-DEFAULT_PRODUCT_DESCRIPTION_EXCEL = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\data inputs\Product-Description-inputs-Jeans.xlsx"
+DEFAULT_PRODUCT_DESCRIPTION_EXCEL = (
+    PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Jeans.xlsx"
 )
-DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\data inputs\Product-Description-inputs-Shorts.xlsx"
+DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL = (
+    PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Shorts.xlsx"
 )
-DEFAULT_PRODUCT_DESCRIPTION_JSON = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\assets\Product-Description-inputs-Jeans.json"
+DEFAULT_PRODUCT_DESCRIPTION_JSON = (
+    PROJECT_ROOT / "assets" / "Product-Description-inputs-Jeans.json"
 )
-DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\assets\Product-Description-inputs-Shorts.json"
+DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON = (
+    PROJECT_ROOT / "assets" / "Product-Description-inputs-Shorts.json"
 )
-DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\data inputs\Additional-Description-inputs-Jeans.xlsx"
+DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL = (
+    PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Jeans.xlsx"
 )
-DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\data inputs\Additional-Description-inputs-Shorts.xlsx"
+DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL = (
+    PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Shorts.xlsx"
 )
-DEFAULT_ADDITIONAL_DESCRIPTION_JSON = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\assets\Additional-Description-inputs-Jeans.json"
+DEFAULT_ADDITIONAL_DESCRIPTION_JSON = (
+    PROJECT_ROOT / "assets" / "Additional-Description-inputs-Jeans.json"
 )
-DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\assets\Additional-Description-inputs-Shorts.json"
+DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON = (
+    PROJECT_ROOT / "assets" / "Additional-Description-inputs-Shorts.json"
 )
-DEFAULT_VARIANTS_EXCEL = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\data inputs\Variants-excel_jean.xlsx"
-)
+DEFAULT_VARIANTS_EXCEL = PROJECT_ROOT / "data inputs" / "Variants-excel_jean.xlsx"
 PHASE_ONE_SNAPSHOT_NAME = "PHASE 1.html"
 ENABLE_ENTER_COMMIT_FOR_TAG_INPUT_FIELDS = False
 IMAGE_SLOT_IDS = [
@@ -112,7 +111,7 @@ BRAND_NAME_TO_CODE = {
         (code, " ".join(name.strip().upper().split())) for code, name in BRAND_CODE_MAP.items()
     )
 }
-FIREFOX_PROFILES = {
+FIREFOX_PROFILES_ASUS = {
     "seema": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\ekyb3fej.Seema"),
     # "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\7kkhlz7p.prabhu-bt"),
     "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"),
@@ -134,7 +133,7 @@ def log_event(stage: str, message: str) -> None:
 class BotConfig:
     listing_url: str = DEFAULT_LISTING_URL
     image_directory: Path = Path(
-        os.getenv("FLIPKART_IMAGE_DIR", str(DEFAULT_IMAGE_DIRECTORY))
+        os.getenv("FLIPKART_IMAGE_DIR", str(DEFAULT_IMAGE_DIRECTORY_ASUS))
     ).expanduser()
     snapshot_directory: Path = Path(
         os.getenv("FLIPKART_SNAPSHOT_DIR", str(DEFAULT_SNAPSHOT_DIRECTORY))
@@ -168,8 +167,8 @@ class BotConfig:
 
     @property
     def firefox_profile_path(self) -> Path:
-        if self.profile_name not in FIREFOX_PROFILES:
-            available_profiles = ", ".join(sorted(FIREFOX_PROFILES))
+        if self.profile_name not in FIREFOX_PROFILES_ASUS:
+            available_profiles = ", ".join(sorted(FIREFOX_PROFILES_ASUS))
             raise ValueError(
                 f"Unknown Firefox profile '{self.profile_name}'. "
                 f"Choose one of: {available_profiles}."
@@ -309,7 +308,7 @@ def resolve_profile_name(selected_value: str) -> str:
     if normalized_value in PROFILE_ALIASES:
         return PROFILE_ALIASES[normalized_value]
 
-    available_profiles = ", ".join(sorted(FIREFOX_PROFILES))
+    available_profiles = ", ".join(sorted(FIREFOX_PROFILES_ASUS))
     raise ValueError(
         f"Unknown Firefox profile '{selected_value}'. Choose one of: {available_profiles}, s, p."
     )
@@ -426,7 +425,7 @@ def mark_image_folder_exhausted(image_folder: ImageFolder, brand_name: str) -> P
 
 
 def resolve_profile_path(profile_name: str) -> Path:
-    configured_path = FIREFOX_PROFILES[profile_name]
+    configured_path = FIREFOX_PROFILES_ASUS[profile_name]
 
     if configured_path.exists():
         return configured_path
@@ -446,7 +445,7 @@ def resolve_profile_path(profile_name: str) -> Path:
     if not resolved_path.exists():
         raise ValueError(f"Profile directory does not exist: {resolved_path}")
 
-    FIREFOX_PROFILES[profile_name] = resolved_path
+    FIREFOX_PROFILES_ASUS[profile_name] = resolved_path
     return resolved_path
 
 
@@ -476,12 +475,12 @@ def prompt_for_listing_selection() -> ListingSelection:
         print("4. Black-Plain")
         print("5. White-Plain")
         kind_choice = input(f"Enter option [1]: ").strip() or "1"
-        if kind_choice not in JEANS_KIND_OPTIONS:
+        if kind_choice not in JEANS_KIND_OPTIONS_ASUS:
             raise ValueError("Please choose a valid jeans option from 1 to 5.")
-        selected_kind, image_directory = JEANS_KIND_OPTIONS[kind_choice]
+        selected_kind, image_directory = JEANS_KIND_OPTIONS_ASUS[kind_choice]
     else:
         selected_kind = "Shorts"
-        image_directory = DEFAULT_IMAGE_DIRECTORY
+        image_directory = DEFAULT_IMAGE_DIRECTORY_ASUS
 
     size_value = input(f"Enter size [{DEFAULT_LISTING_SIZE}]: ").strip() or DEFAULT_LISTING_SIZE
     return ListingSelection(

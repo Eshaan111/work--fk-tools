@@ -19,22 +19,16 @@ PRABHU_FIREFOX_PROFILE = Path(
 )
 PROJECT_ROOT = Path(__file__).resolve().parent
 RUN_HELPERS_DIR = PROJECT_ROOT / "run-helpers"
-NO_BG_IMAGES_ROOT = Path(r"C:\work-mom\NO-BG-IMAGES")
-USED_IMAGE_DESIGNS_WORKBOOK = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\image_prompter\USED-IMAGE-DESIGNS.xlsx"
-)
-PROMPT_TEMPLATE_PATH = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\image_prompter\image_edit_prompt_template.txt"
-)
+NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
+USED_IMAGE_DESIGNS_WORKBOOK = PROJECT_ROOT / "USED-IMAGE-DESIGNS.xlsx"
+PROMPT_TEMPLATE_PATH = PROJECT_ROOT / "image_edit_prompt_template.txt"
 PROMPT_PREVIEW_PATH = RUN_HELPERS_DIR / "generated_prompt_preview.txt"
 LAST_FULL_CHAT_PATH = RUN_HELPERS_DIR / "last_full_chat.txt"
 LATEST_RESPONSE_PATH = RUN_HELPERS_DIR / "latest_response.txt"
 ALL_RESPONSES_PATH = RUN_HELPERS_DIR / "all_responses.txt"
 PARSED_IDEAS_PATH = RUN_HELPERS_DIR / "parsed_latest_ideas.txt"
 NEW_IDEAS_PATH = RUN_HELPERS_DIR / "new_ideas_not_in_excel.txt"
-IMAGE_GENERATION_PROMPT_TEMPLATE_PATH = Path(
-    r"C:\work-mom\Code-Tools\Full-LC-AUTO\image_prompter\image_generation_prompt"
-)
+IMAGE_GENERATION_PROMPT_TEMPLATE_PATH = PROJECT_ROOT / "image_generation_prompt"
 CURRENT_RUN_IDEA_PATH = RUN_HELPERS_DIR / "current_run_idea.json"
 CURRENT_GENERATION_PROMPT_PATH = RUN_HELPERS_DIR / "current_generation_prompt.txt"
 IMAGE_GENERATION_FINAL_CHAT_PATH = RUN_HELPERS_DIR / "image_generation_final_chat.txt"
@@ -194,18 +188,18 @@ def prompt_for_kind(kind_to_phrases: dict[str, list[str]]) -> str:
 
 
 def resolve_product_image_folder(product_kind: str) -> Path:
-    if not NO_BG_IMAGES_ROOT.exists():
+    if not NO_BG_IMAGES_ROOT_ASUS.exists():
         raise FileNotFoundError(
-            f"NO-BG-IMAGES root folder was not found: {NO_BG_IMAGES_ROOT}"
+            f"NO-BG-IMAGES root folder was not found: {NO_BG_IMAGES_ROOT_ASUS}"
         )
 
     normalized_target = product_kind.strip().casefold()
-    for folder in NO_BG_IMAGES_ROOT.iterdir():
+    for folder in NO_BG_IMAGES_ROOT_ASUS.iterdir():
         if folder.is_dir() and folder.name.strip().casefold() == normalized_target:
             return folder
 
     raise FileNotFoundError(
-        f"Could not find an image folder for kind '{product_kind}' inside {NO_BG_IMAGES_ROOT}."
+        f"Could not find an image folder for kind '{product_kind}' inside {NO_BG_IMAGES_ROOT_ASUS}."
     )
 
 
@@ -737,6 +731,16 @@ def beep_image_generation_complete() -> None:
     winsound.MessageBeep(winsound.MB_OK)
 
 
+def beep_all_images_generation_complete() -> None:
+    for frequency, duration_ms in (
+        (880, 250),
+        (988, 250),
+        (1175, 450),
+    ):
+        winsound.Beep(frequency, duration_ms)
+        time.sleep(0.12)
+
+
 def is_image_generation_in_progress(full_chat_text: str) -> bool:
     normalized_text = full_chat_text.casefold()
     return any(
@@ -845,6 +849,7 @@ def run_generation_prompt_for_remaining_images(
         )
 
     print("Confirmed generated images for every image in the folder.")
+    beep_all_images_generation_complete()
 
 
 def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:

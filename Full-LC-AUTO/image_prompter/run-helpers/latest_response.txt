@@ -1,0 +1,79 @@
+{
+  "ideas": [
+    {
+      "title": "Warm Limewash Studio",
+      "visual_concept": "Soft handcrafted surfaces create a premium fashion-catalog atmosphere with understated warmth.",
+      "background_description": "Light warm-white limewash wall with subtle tonal variation, smooth matte ivory floor, seamless transition between wall and floor, large open negative space, soft diffused studio lighting, gentle shadow falloff, slight depth of field, refined luxury ecommerce photography aesthetic."
+    },
+    {
+      "title": "Matte Sandstone Set",
+      "visual_concept": "Natural stone-inspired materials provide a clean premium foundation without distracting from the product.",
+      "background_description": "Large matte sandstone wall panel backdrop in pale beige tones, smooth stone-look flooring, minimal surface texture, bright airy lighting, realistic contact shadows, subtle depth separation, spacious composition with generous negative space."
+    },
+    {
+      "title": "Soft Plaster Curve",
+      "visual_concept": "Elegant curved studio architecture creates a modern premium presentation.",
+      "background_description": "Warm off-white plaster wall flowing into a gentle curved cyclorama corner, smooth matte floor, clean uninterrupted surfaces, soft directional daylight simulation, realistic shadow gradients, shallow depth of field, luxury ecommerce studio feel."
+    },
+    {
+      "title": "Light Oak Accent Studio",
+      "visual_concept": "Natural wood detailing adds warmth while maintaining a clean commercial appearance.",
+      "background_description": "Minimal vertical light oak slat accent section integrated into a warm neutral backdrop, smooth ivory floor, restrained material palette, soft studio lighting, subtle depth, product-centered composition with extensive negative space."
+    },
+    {
+      "title": "Microcement Horizon Set",
+      "visual_concept": "Contemporary material-driven backdrop with refined texture and clean geometry.",
+      "background_description": "Pale greige microcement wall and floor with subtle tonal distinction, seamless edges, soft natural-looking shadows, lightly blurred background depth, premium retail-display inspired styling, uncluttered composition."
+    },
+    {
+      "title": "Stone Panel Gallery Set",
+      "visual_concept": "Minimal large-format panels create a sophisticated retail-display atmosphere.",
+      "background_description": "Oversized matte stone wall panels in soft limestone tones, smooth neutral flooring, barely visible panel joints, diffused studio lighting, realistic shadowing, clean product-first composition with ample breathing room."
+    },
+    {
+      "title": "Ivory Gradient Material Studio",
+      "visual_concept": "A subtle blend of physical materials and soft tonal transitions enhances product focus.",
+      "background_description": "Warm ivory textured backdrop with an extremely gentle tonal gradient, smooth matte floor, clean seamless composition, soft overhead lighting, natural shadow transitions, premium ecommerce photography styling."
+    },
+    {
+      "title": "Minimal Niche Display",
+      "visual_concept": "Architectural restraint adds visual interest while remaining unobtrusive.",
+      "background_description": "Warm plaster backdrop featuring a single shallow recessed niche, smooth stone-look floor, neutral color palette, soft diffuse lighting, slight environmental depth of field, generous negative space, refined retail-inspired presentation."
+    },
+    {
+      "title": "Pearl Textured Studio",
+      "visual_concept": "Subtle texture introduces depth without competing with the product.",
+      "background_description": "Pearl-white textured wall treatment with fine handcrafted finish, clean matte floor, soft even lighting, natural contact shadows, bright airy mood, luxury catalog photography aesthetic with large uncluttered areas."
+    },
+    {
+      "title": "Limestone Block Composition",
+      "visual_concept": "Simple geometric forms provide structure and premium visual balance.",
+      "background_description": "Soft limestone wall backdrop with one or two low-profile geometric stone forms positioned far from the product area, smooth floor surface, neutral palette, gentle studio lighting, shallow depth of field, clean professional composition."
+    },
+    {
+      "title": "Champagne Beige Studio",
+      "visual_concept": "Warm neutral tones create a refined luxury retail aesthetic.",
+      "background_description": "Champagne-beige matte backdrop with subtle material depth, seamless floor continuation, soft balanced lighting, realistic shadows, minimal texture variation, spacious ecommerce-focused layout with abundant negative space."
+    },
+    {
+      "title": "Curved Panel Studio",
+      "visual_concept": "Soft geometric shapes provide visual sophistication while maintaining simplicity.",
+      "background_description": "Large curved matte wall panels in warm off-white tones, smooth pale floor, clean architectural geometry, diffused studio illumination, subtle depth blur, premium commercial photography atmosphere."
+    },
+    {
+      "title": "Soft Mineral Surface Set",
+      "visual_concept": "Natural mineral-inspired finishes deliver a contemporary premium backdrop.",
+      "background_description": "Muted mineral-plaster wall with delicate tonal movement, light stone floor surface, restrained color palette of warm white and soft gray, realistic shadows, airy studio lighting, uncluttered composition."
+    },
+    {
+      "title": "Retail Display Wall",
+      "visual_concept": "Inspired by luxury apparel merchandising with minimal visual noise.",
+      "background_description": "Clean warm-neutral wall featuring subtle vertical panel detailing, smooth matte floor, bright professional lighting, shallow depth of field, premium showroom-inspired styling, large open negative space surrounding the product."
+    },
+    {
+      "title": "Natural Linen Backdrop Studio",
+      "visual_concept": "Textile-inspired softness creates a refined catalog-photography look.",
+      "background_description": "Large stretched linen-texture backdrop in warm ivory tones, smooth neutral floor, soft diffused studio lighting, gentle texture visibility, realistic shadow grounding, bright luxury ecommerce aesthetic with simple uncluttered composition."
+    }
+  ]
+}
