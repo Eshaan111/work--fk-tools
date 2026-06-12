@@ -2904,6 +2904,348 @@ def cycle_page_switch_verification_until_toast(
     )
 
 
+TAB_XPATHS = {
+    "Additional Description": "//button[@role='tab' and .//span[contains(normalize-space(), 'Additional Description')]]",
+    "Product Description": "//button[@role='tab' and .//span[contains(normalize-space(), 'Product Description')]]",
+    "Price, Stock and Shipping Information": "//button[@role='tab' and .//span[contains(normalize-space(), 'Price, Stock and Shipping Information')]]",
+    "Image addition": "//button[@role='tab' and .//span[contains(normalize-space(), 'Image addition')]]",
+    "Variant addition": "//button[@role='tab' and .//span[contains(normalize-space(), 'Variant addition')]]",
+}
+
+PRODUCT_PAGE_FLOWS = {
+    "jeans": (
+        "additional_description",
+        "product_description",
+        "price_stock_shipping",
+        "images",
+        "variants",
+    ),
+    "shorts": (
+        "additional_description",
+        "product_description",
+        "price_stock_shipping",
+        "images",
+    ),
+}
+
+
+@dataclass(slots=True)
+class FlowState:
+    price_fill_result: FillResult | None = None
+
+
+def open_flow_tab(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    tab_label: str,
+    checkpoint_label: str,
+) -> None:
+    open_tab_via_autogui(driver, tab_label, TAB_XPATHS[tab_label])
+    checkpoint_pause(pause_controller, checkpoint_label, driver, config)
+
+
+def verify_flow_page_switch(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    cycle_label: str,
+    tab_labels: tuple[str, str],
+    checkpoint_label: str,
+) -> None:
+    cycle_page_switch_verification_until_toast(
+        driver,
+        pause_controller,
+        config,
+        cycle_label=cycle_label,
+        tab_sequence=[(tab_label, TAB_XPATHS[tab_label]) for tab_label in tab_labels],
+    )
+    checkpoint_pause(pause_controller, checkpoint_label, driver, config)
+
+
+def run_additional_description_flow_step(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    verify_after: bool = True,
+) -> None:
+    open_flow_tab(
+        driver,
+        pause_controller,
+        config,
+        "Additional Description",
+        "Additional Description tab opened",
+    )
+    additional_description_row = load_product_input_row(
+        config.additional_description_excel,
+        listing_selection.kind,
+        listing_selection.size,
+        worksheet_name=get_additional_description_sheet_name(listing_selection.product_type),
+    )
+    additional_description_field_definitions = load_field_definitions(
+        config.additional_description_json
+    )
+    log_event(
+        "DATA",
+        f"Loaded Additional Description row: kind={additional_description_row.kind}, "
+        f"size={additional_description_row.size}",
+    )
+    log_event("ADDL", "Starting Additional Description field fill from Excel + JSON mapping...")
+    fill_additional_description_fields(
+        driver,
+        additional_description_field_definitions,
+        additional_description_row,
+    )
+    checkpoint_pause(pause_controller, "Additional Description fields filled", driver, config)
+
+    if verify_after:
+        log_event(
+            "VERIFY",
+            "Additional Description filling completed. Starting VERIFYING CHANGES CYCLE.",
+        )
+        verify_flow_page_switch(
+            driver,
+            pause_controller,
+            config,
+            "Additional Description page",
+            ("Additional Description", "Product Description"),
+            "Changes saved detected after Additional Description click cycle",
+        )
+
+
+def run_product_description_flow_step(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+) -> None:
+    open_flow_tab(
+        driver,
+        pause_controller,
+        config,
+        "Product Description",
+        "Product Description tab opened",
+    )
+    product_description_row = load_product_input_row(
+        config.product_description_excel,
+        listing_selection.kind,
+        listing_selection.size,
+        worksheet_name=get_product_description_sheet_name(listing_selection.product_type),
+    )
+    product_description_field_definitions = load_field_definitions(config.product_description_json)
+    log_event(
+        "DATA",
+        f"Loaded Product Description row: kind={product_description_row.kind}, "
+        f"size={product_description_row.size}",
+    )
+    log_event("DESC", "Starting Product Description field fill from Excel + JSON mapping...")
+    fill_product_description_fields(
+        driver,
+        product_description_field_definitions,
+        product_description_row,
+    )
+    checkpoint_pause(pause_controller, "Product Description fields filled", driver, config)
+    log_event(
+        "VERIFY",
+        "Product Description filling completed. Starting VERIFYING CHANGES CYCLE.",
+    )
+    verify_flow_page_switch(
+        driver,
+        pause_controller,
+        config,
+        "Product Description page",
+        ("Product Description", "Price, Stock and Shipping Information"),
+        "Changes saved detected after Product Description click cycle",
+    )
+
+
+def run_price_stock_shipping_flow_step(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+) -> FillResult:
+    open_flow_tab(
+        driver,
+        pause_controller,
+        config,
+        "Price, Stock and Shipping Information",
+        "Selling info tab opened",
+    )
+    phase_one_snapshot_path = save_named_html_snapshot(
+        driver,
+        config.snapshot_directory,
+        PHASE_ONE_SNAPSHOT_NAME,
+    )
+    log_event("SNAPSHOT", f"Saved phase snapshot: {phase_one_snapshot_path}")
+    product_input_row = load_product_input_row(
+        config.price_stock_shipping_excel,
+        listing_selection.kind,
+        listing_selection.size,
+    )
+    field_definitions = load_field_definitions(config.price_stock_shipping_json)
+    log_event(
+        "DATA",
+        f"Loaded Price/Stock/Shipping row for filling: kind={product_input_row.kind}, "
+        f"size={product_input_row.size}",
+    )
+    price_fill_result = fill_price_stock_shipping_fields(
+        driver,
+        field_definitions,
+        product_input_row,
+    )
+    expected_field_values = build_expected_field_values(
+        field_definitions,
+        product_input_row,
+        price_fill_result,
+    )
+    verify_and_refill_price_stock_shipping_fields(
+        driver,
+        field_definitions,
+        expected_field_values,
+        price_fill_result.skipped_fields,
+    )
+    checkpoint_pause(
+        pause_controller,
+        "Price/Stock/Shipping fields filled",
+        driver,
+        config,
+    )
+    log_event(
+        "VERIFY",
+        "Price/Stock/Shipping verification completed. Starting VERIFYING CHANGES CYCLE.",
+    )
+    verify_flow_page_switch(
+        driver,
+        pause_controller,
+        config,
+        "SKU page",
+        ("Price, Stock and Shipping Information", "Image addition"),
+        "Changes saved detected after SKU-page click cycle",
+    )
+    return price_fill_result
+
+
+def run_images_flow_step(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    verify_before_variants: bool,
+) -> None:
+    open_flow_tab(
+        driver,
+        pause_controller,
+        config,
+        "Image addition",
+        "Images tab opened",
+    )
+    selected_image_folder = preview_selected_image_folder(config, DEFAULT_BRAND_NAME)
+    if selected_image_folder is not None:
+        checkpoint_pause(pause_controller, "Image folder selected", driver, config)
+        upload_image_folder(driver, selected_image_folder, DEFAULT_BRAND_NAME, pause_controller, config)
+        checkpoint_pause(pause_controller, "Images uploaded", driver, config)
+
+    if verify_before_variants:
+        log_event(
+            "VERIFY",
+            "Images step completed. Starting VERIFYING CHANGES CYCLE before Variant page.",
+        )
+        verify_flow_page_switch(
+            driver,
+            pause_controller,
+            config,
+            "Images page",
+            ("Image addition", "Variant addition"),
+            "Changes saved detected after Images page click cycle",
+        )
+
+
+def run_variants_flow_step(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    price_fill_result: FillResult | None,
+) -> None:
+    if price_fill_result is None:
+        raise ValueError("Variant step needs the Price/Stock/Shipping fill result.")
+
+    open_flow_tab(
+        driver,
+        pause_controller,
+        config,
+        "Variant addition",
+        "Variant tab opened",
+    )
+    variant_row = load_product_input_row(
+        config.variants_excel,
+        listing_selection.kind,
+        listing_selection.size,
+        worksheet_name="Jeans Variant Inputs",
+    )
+    log_event(
+        "DATA",
+        f"Loaded Variant row: kind={variant_row.kind}, size={variant_row.size}",
+    )
+    log_event("VARIANT", "Starting Variant page creation loop from Excel mapping...")
+    fill_variant_page(
+        driver,
+        variant_row,
+        price_fill_result.generated_values.get("Seller SKU ID", ""),
+    )
+    checkpoint_pause(pause_controller, "Variant rows created", driver, config)
+
+
+def run_listing_page_flow(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+) -> None:
+    flow_steps = PRODUCT_PAGE_FLOWS[listing_selection.product_type]
+    flow_state = FlowState()
+    log_event(
+        "FLOW",
+        f"Running {listing_selection.product_type} flow: {' -> '.join(flow_steps)}",
+    )
+
+    for step_name in flow_steps:
+        if step_name == "additional_description":
+            run_additional_description_flow_step(
+                driver,
+                pause_controller,
+                config,
+                listing_selection,
+            )
+        elif step_name == "product_description":
+            run_product_description_flow_step(driver, pause_controller, config, listing_selection)
+        elif step_name == "price_stock_shipping":
+            flow_state.price_fill_result = run_price_stock_shipping_flow_step(
+                driver,
+                pause_controller,
+                config,
+                listing_selection,
+            )
+        elif step_name == "images":
+            run_images_flow_step(
+                driver,
+                pause_controller,
+                config,
+                verify_before_variants="variants" in flow_steps,
+            )
+        elif step_name == "variants":
+            run_variants_flow_step(
+                driver,
+                pause_controller,
+                config,
+                listing_selection,
+                flow_state.price_fill_result,
+            )
+        else:
+            raise ValueError(f"Unknown flow step: {step_name}")
+
+
 def print_runtime_context(config: BotConfig) -> None:
     log_event("BOOT", "Flipkart lister bot starting...")
     log_event("BOOT", f"Target URL: {config.listing_url}")
@@ -2988,42 +3330,12 @@ def main() -> None:
             "Additional Description test mode is enabled. Skipping image upload, "
             "SKU page, and Product Description filling.",
         )
-        open_tab_via_autogui(
+        run_additional_description_flow_step(
             driver,
-            "Additional Description",
-            "//button[@role='tab' and .//span[contains(normalize-space(), 'Additional Description')]]",
-        )
-        checkpoint_pause(
             pause_controller,
-            "Additional Description tab opened",
-            driver,
             config,
-        )
-        additional_description_row = load_product_input_row(
-            config.additional_description_excel,
-            listing_selection.kind,
-            listing_selection.size,
-            worksheet_name=get_additional_description_sheet_name(listing_selection.product_type),
-        )
-        additional_description_field_definitions = load_field_definitions(
-            config.additional_description_json
-        )
-        log_event(
-            "DATA",
-            f"Loaded Additional Description row: kind={additional_description_row.kind}, "
-            f"size={additional_description_row.size}",
-        )
-        log_event("ADDL", "Starting Additional Description test fill from Excel + JSON mapping...")
-        fill_additional_description_fields(
-            driver,
-            additional_description_field_definitions,
-            additional_description_row,
-        )
-        checkpoint_pause(
-            pause_controller,
-            "Additional Description fields filled",
-            driver,
-            config,
+            listing_selection,
+            verify_after=False,
         )
         log_event(
             "DONE",
@@ -3037,248 +3349,11 @@ def main() -> None:
             driver.quit()
         return
 
-    open_tab_via_autogui(
-        driver,
-        "Additional Description",
-        "//button[@role='tab' and .//span[contains(normalize-space(), 'Additional Description')]]",
-    )
-    checkpoint_pause(
-        pause_controller,
-        "Additional Description tab opened",
-        driver,
-        config,
-    )
-    additional_description_row = load_product_input_row(
-        config.additional_description_excel,
-        listing_selection.kind,
-        listing_selection.size,
-        worksheet_name=get_additional_description_sheet_name(listing_selection.product_type),
-    )
-    additional_description_field_definitions = load_field_definitions(
-        config.additional_description_json
-    )
-    log_event(
-        "DATA",
-        f"Loaded Additional Description row: kind={additional_description_row.kind}, "
-        f"size={additional_description_row.size}",
-    )
-    log_event("ADDL", "Starting Additional Description field fill from Excel + JSON mapping...")
-    fill_additional_description_fields(
-        driver,
-        additional_description_field_definitions,
-        additional_description_row,
-    )
-    checkpoint_pause(pause_controller, "Additional Description fields filled", driver, config)
-    log_event(
-        "VERIFY",
-        "Additional Description filling completed. Starting VERIFYING CHANGES CYCLE.",
-    )
-    cycle_page_switch_verification_until_toast(
-        driver,
-        pause_controller,
-        config,
-        cycle_label="Additional Description page",
-        tab_sequence=[
-            (
-                "Additional Description",
-                "//button[@role='tab' and .//span[contains(normalize-space(), 'Additional Description')]]",
-            ),
-            (
-                "Product Description",
-                "//button[@role='tab' and .//span[contains(normalize-space(), 'Product Description')]]",
-            ),
-        ],
-      )
-    checkpoint_pause(
-        pause_controller,
-        "Changes saved detected after Additional Description click cycle",
-        driver,
-        config,
-    )
-    open_tab_via_autogui(
-        driver,
-        "Product Description",
-        "//button[@role='tab' and .//span[contains(normalize-space(), 'Product Description')]]",
-    )
-    checkpoint_pause(pause_controller, "Product Description tab opened", driver, config)
-    product_description_row = load_product_input_row(
-        config.product_description_excel,
-        listing_selection.kind,
-        listing_selection.size,
-        worksheet_name=get_product_description_sheet_name(listing_selection.product_type),
-    )
-    product_description_field_definitions = load_field_definitions(config.product_description_json)
-    log_event(
-        "DATA",
-        f"Loaded Product Description row: kind={product_description_row.kind}, "
-        f"size={product_description_row.size}",
-    )
-    log_event("DESC", "Starting Product Description field fill from Excel + JSON mapping...")
-    fill_product_description_fields(
-        driver,
-        product_description_field_definitions,
-        product_description_row,
-    )
-    checkpoint_pause(pause_controller, "Product Description fields filled", driver, config)
-    log_event(
-        "VERIFY",
-        "Product Description filling completed. Starting VERIFYING CHANGES CYCLE.",
-    )
-    cycle_page_switch_verification_until_toast(
-        driver,
-        pause_controller,
-        config,
-        cycle_label="Product Description page",
-        tab_sequence=[
-            (
-                "Product Description",
-                "//button[@role='tab' and .//span[contains(normalize-space(), 'Product Description')]]",
-            ),
-            (
-                "Price, Stock and Shipping Information",
-                "//button[@role='tab' and .//span[contains(normalize-space(), 'Price, Stock and Shipping Information')]]",
-            ),
-        ],
-      )
-    checkpoint_pause(
-        pause_controller,
-        "Changes saved detected after Product Description click cycle",
-        driver,
-        config,
-    )
-    open_tab_via_autogui(
-        driver,
-        "Price, Stock and Shipping Information",
-        "//button[@role='tab' and .//span[contains(normalize-space(), 'Price, Stock and Shipping Information')]]",
-    )
-    checkpoint_pause(pause_controller, "Selling info tab opened", driver, config)
-    phase_one_snapshot_path = save_named_html_snapshot(
-        driver,
-        config.snapshot_directory,
-        PHASE_ONE_SNAPSHOT_NAME,
-    )
-    log_event("SNAPSHOT", f"Saved phase snapshot: {phase_one_snapshot_path}")
-    product_input_row = load_product_input_row(
-        config.price_stock_shipping_excel,
-        listing_selection.kind,
-        listing_selection.size,
-    )
-    field_definitions = load_field_definitions(config.price_stock_shipping_json)
-    log_event(
-        "DATA",
-        f"Loaded Price/Stock/Shipping row for filling: kind={product_input_row.kind}, "
-        f"size={product_input_row.size}",
-    )
-    price_fill_result = fill_price_stock_shipping_fields(
-        driver,
-        field_definitions,
-        product_input_row,
-    )
-    expected_field_values = build_expected_field_values(
-        field_definitions,
-        product_input_row,
-        price_fill_result,
-    )
-    verify_and_refill_price_stock_shipping_fields(
-        driver,
-        field_definitions,
-        expected_field_values,
-        price_fill_result.skipped_fields,
-    )
-    checkpoint_pause(
-        pause_controller,
-        "Price/Stock/Shipping fields filled",
-        driver,
-        config,
-    )
-    log_event(
-        "VERIFY",
-        "Price/Stock/Shipping verification completed. Starting VERIFYING CHANGES CYCLE.",
-    )
-    cycle_page_switch_verification_until_toast(
-        driver,
-        pause_controller,
-        config,
-        cycle_label="SKU page",
-        tab_sequence=[
-            (
-                "Price, Stock and Shipping Information",
-                "//button[@role='tab' and .//span[contains(normalize-space(), 'Price, Stock and Shipping Information')]]",
-            ),
-            (
-                "Image addition",
-                "//button[@role='tab' and .//span[contains(normalize-space(), 'Image addition')]]",
-            ),
-        ],
-    )
-    checkpoint_pause(pause_controller, "Changes saved detected after SKU-page click cycle", driver, config)
-    open_tab_via_autogui(
-        driver,
-        "Image addition",
-        "//button[@role='tab' and .//span[contains(normalize-space(), 'Image addition')]]",
-    )
-    checkpoint_pause(pause_controller, "Images tab opened", driver, config)
-    selected_image_folder = preview_selected_image_folder(config, DEFAULT_BRAND_NAME)
-    if selected_image_folder is not None:
-        checkpoint_pause(pause_controller, "Image folder selected", driver, config)
-        upload_image_folder(driver, selected_image_folder, DEFAULT_BRAND_NAME, pause_controller, config)
-        checkpoint_pause(pause_controller, "Images uploaded", driver, config)
-    if listing_selection.product_type == "jeans":
-        log_event(
-            "VERIFY",
-            "Images step completed. Starting VERIFYING CHANGES CYCLE before Variant page.",
-        )
-        cycle_page_switch_verification_until_toast(
-            driver,
-            pause_controller,
-            config,
-            cycle_label="Images page",
-            tab_sequence=[
-                (
-                    "Image addition",
-                    "//button[@role='tab' and .//span[contains(normalize-space(), 'Image addition')]]",
-                ),
-                (
-                    "Variant addition",
-                    "//button[@role='tab' and .//span[contains(normalize-space(), 'Variant addition')]]",
-                ),
-            ],
-        )
-        checkpoint_pause(
-            pause_controller,
-            "Changes saved detected after Images page click cycle",
-            driver,
-            config,
-        )
-        open_tab_via_autogui(
-            driver,
-            "Variant addition",
-            "//button[@role='tab' and .//span[contains(normalize-space(), 'Variant addition')]]",
-        )
-        checkpoint_pause(pause_controller, "Variant tab opened", driver, config)
-        variant_row = load_product_input_row(
-            config.variants_excel,
-            listing_selection.kind,
-            listing_selection.size,
-            worksheet_name="Jeans Variant Inputs",
-        )
-        log_event(
-            "DATA",
-            f"Loaded Variant row: kind={variant_row.kind}, size={variant_row.size}",
-        )
-        log_event("VARIANT", "Starting Variant page creation loop from Excel mapping...")
-        fill_variant_page(
-            driver,
-            variant_row,
-            price_fill_result.generated_values.get("Seller SKU ID", ""),
-        )
-        checkpoint_pause(pause_controller, "Variant rows created", driver, config)
-    else:
-        log_event("VARIANT", "Skipping Variant page for shorts: no shorts variants workbook is configured yet.")
+    run_listing_page_flow(driver, pause_controller, config, listing_selection)
     click_save_and_go_back_button(driver)
     log_event(
         "DONE",
-        "Flow completed in the order Additional Description -> Product Description -> SKU -> Images -> Variants.",
+        f"{listing_selection.product_type.title()} flow completed.",
     )
 
     try:
