@@ -1,0 +1,35 @@
+# Third-party packages to install with pip
+matplotlib
+numpy
+openpyxl
+pandas
+pyautogui
+pynput
+PyQt5
+selenium
+
+# Standard-library imports used by the scripts; these come with Python.
+# __future__
+# dataclasses
+# datetime
+# html
+# html.parser
+# json
+# msvcrt
+# os
+# pathlib
+# random
+# re
+# shutil
+# statistics
+# string
+# subprocess
+# sys
+# threading
+# time
+# tkinter
+# urllib.parse
+# urllib.request
+# winsound
+# zipfile
+# xml.etree.ElementTree

@@ -6,7 +6,7 @@ Suggest new background ideas for the uploaded product image.
 
 We have already used background ideas based on these phrases:
 
-Terracota Style With Plant and Gym equipment in background, Warm Limewash Studio, Pearl Microcement Studio, Champagne Clay Studio, Soft Quartz Studio, Bleached Oak Panel Studio
+Terracota Style With Plant and Gym equipment in background
 
 Your job is to suggest NEW background ideas that are clearly different from the already-used ones.
 
@@ -105,7 +105,7 @@ Most ideas should follow this structure:
 PRODUCT CONTEXT
 
 Product Kind:
-SHORTS
+PAJAMA
 
 Scene Goal:
 Professional ecommerce image background ideas for compositing.
@@ -167,7 +167,7 @@ IMPORTANT
 
 The ideas should be distinct from:
 
-Terracota Style With Plant and Gym equipment in background, Warm Limewash Studio, Pearl Microcement Studio, Champagne Clay Studio, Soft Quartz Studio, Bleached Oak Panel Studio
+Terracota Style With Plant and Gym equipment in background
 
 
 Generate 15 diverse ideas.
