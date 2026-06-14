@@ -678,7 +678,7 @@ def prompt_for_listing_selection() -> ListingSelection:
     product_type = selected_flow.product_type
     surface_type = selected_flow.surface
 
-    if product_type == "jeans":
+    if product_type == "jeans" and surface_type == "flipkart":
         print("Choose jeans kind:")
         print("1. Beige")
         print("2. Ice")
@@ -705,6 +705,12 @@ def prompt_for_listing_selection() -> ListingSelection:
         image_directory = require_configured_path(
             ACTIVE_LAPTOP_CONFIG.get("trouser_image_directory"),
             "default trouser image directory",
+        )
+    else:
+        selected_kind = product_type.title()
+        image_directory = active_path(
+            "default_image_directory",
+            f"default {product_type} image directory",
         )
 
     size_value = input(f"Enter size [{DEFAULT_LISTING_SIZE}]: ").strip() or DEFAULT_LISTING_SIZE
@@ -785,19 +791,15 @@ def load_product_input_row(
         )
         worksheet = workbook[preferred_sheet]
     headers = [worksheet.cell(1, column).value for column in range(1, worksheet.max_column + 1)]
-    normalized_headers = [
-        str(header).strip() if header is not None else None
-        for header in headers
-    ]
 
     normalized_target_kind = target_kind.strip().lower()
     normalized_target_size = target_size.strip().lower()
 
     for row_index in range(2, worksheet.max_row + 1):
         row_values = {
-            normalized_headers[column_index - 1]: worksheet.cell(row_index, column_index).value
+            str(headers[column_index - 1]): worksheet.cell(row_index, column_index).value
             for column_index in range(1, worksheet.max_column + 1)
-            if normalized_headers[column_index - 1]
+            if headers[column_index - 1]
         }
         row_kind = str(row_values.get("kind", "")).strip()
         row_size = str(row_values.get("size", "")).strip()
@@ -806,7 +808,7 @@ def load_product_input_row(
             return ProductInputRow(
                 kind=row_kind,
                 size=row_size,
-                values={key: "" if value is None else str(value).strip() for key, value in row_values.items()},
+                values={key: "" if value is None else str(value) for key, value in row_values.items()},
             )
 
     raise ValueError(
@@ -1683,24 +1685,11 @@ def select_combobox_option(
             f"Available options: {available_options}"
         )
 
-    # Click the radio input directly via JS so React synthetic events fire.
-    # Clicking only the label via pyautogui does not trigger React onChange
-    # on readonly radio inputs, leaving the Create button permanently disabled.
-    clicked_radio = driver.execute_script(
-        """
-        const label = arguments[0];
-        const forAttr = label.getAttribute('for');
-        const radio = forAttr
-            ? document.getElementById(forAttr)
-            : label.closest('[class*="CheckMarkOptionWrapper"]')?.querySelector('input[type="radio"]');
-        if (radio) { radio.click(); return true; }
-        label.click();
-        return false;
-        """,
-        matching_label,
-    )
-    log_event("FORM", f"Clicked {field_label} option '{field_value}' via JS radio click (radio={clicked_radio}).")
-    sleep(0.3)
+    try:
+        click_element_via_autogui(driver, matching_label, f"{field_label} option '{field_value}'")
+    except Exception:
+        click_element_without_js(driver, matching_label)
+    sleep(0.25)
     close_dropdown_with_escape(driver, field_label)
 
 
@@ -2506,57 +2495,243 @@ def fill_additional_description_fields(
 
 def get_variant_creation_controls(
     driver: webdriver.Firefox,
-) -> tuple[WebElement, WebElement | None, WebElement]:
-    """Return (qualifier_combobox_or_None, size_combobox, create_button).
-    Scoped strictly to the wrapper containing the Create button so
-    page-level dropdowns are never mistaken for variant controls.
-    Trouser: 1 combobox (size only). Jeans: 2 (qualifier + size).
-    """
-    deadline = datetime.now().timestamp() + 6
-    last_error = "Variant controls not found."
+) -> tuple[WebElement, WebElement, WebElement]:
+    deadline = datetime.now().timestamp() + 4
+    last_error: str = "Variant controls were not found."
+
     while datetime.now().timestamp() < deadline:
         try:
-            controls = driver.execute_script("""
-                function isVisible(el) {
-                    if (!el) return false;
-                    const s = window.getComputedStyle(el);
-                    const r = el.getBoundingClientRect();
-                    return s.display!=='none' && s.visibility!=='hidden'
-                           && r.width>0 && r.height>0;
+            exact_controls = driver.execute_script(
+                """
+                function isVisible(element) {
+                    if (!element) {
+                        return false;
+                    }
+                    const style = window.getComputedStyle(element);
+                    return style.display !== 'none' && style.visibility !== 'hidden';
                 }
-                function getCreateBtn(root) {
-                    return Array.from(root.querySelectorAll('button')).find(btn => {
-                        const span = btn.querySelector('span');
-                        return isVisible(btn) && span && span.textContent.trim() === 'Create';
-                    }) || null;
+
+                function getCreateButton(container) {
+                    return Array.from(container.querySelectorAll("button")).find((button) => {
+                        const span = button.querySelector("span");
+                        return isVisible(button) && span && span.textContent.trim() === "Create";
+                    });
                 }
-                const wrappers = Array.from(document.querySelectorAll(
-                    "[class*='AttributesAdditionWrapper'], [class*='OptionWrapper']"
-                )).filter(isVisible);
-                for (const w of wrappers) {
-                    const createBtn = getCreateBtn(w);
-                    if (!createBtn) continue;
-                    const combos = Array.from(
-                        w.querySelectorAll("button[role='combobox']")
+
+                function getButtonText(button) {
+                    return (button.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                }
+
+                function hasOptionInputNamed(button, suffix) {
+                    const root = button.closest("[class*='SingleSelectContainer']") || button.parentElement;
+                    return Boolean(root && Array.from(root.querySelectorAll("input[name]")).some((input) => {
+                        return (input.getAttribute('name') || '').toLowerCase().endsWith(suffix);
+                    }));
+                }
+
+                function resolveVariantControls(container) {
+                    const comboboxes = Array.from(
+                        container.querySelectorAll("button[role='combobox']")
                     ).filter(isVisible);
-                    if (!combos.length) continue;
-                    if (combos.length === 1) return [null, combos[0], createBtn];
-                    // Structural signal: the qualifier ("Select Unit") combobox sits
-                    // inside [class*='AttributeItemQualifierWrapper']; the size
-                    // ("Select Size") combobox does not.
-                    const qual = combos.find(b => b.closest("[class*='AttributeItemQualifierWrapper']"));
-                    const size = combos.find(b => b !== qual && !b.closest("[class*='AttributeItemQualifierWrapper']"))
-                                  || combos.find(b => b !== qual);
-                    if (size) return [qual||null, size, createBtn];
+                    const createButton = getCreateButton(container);
+                    if (comboboxes.length < 2 || !createButton) {
+                        return null;
+                    }
+
+                    const qualifierButton = comboboxes.find((button) => {
+                        const text = getButtonText(button);
+                        return (
+                            text.includes('qualifier') ||
+                            hasOptionInputNamed(button, '_qualifier') ||
+                            ['number', 'regular', 'uk', 'us', 'euro', 'kids'].includes(text)
+                        );
+                    });
+                    const sizeButton = comboboxes.find((button) => {
+                        const text = getButtonText(button);
+                        return (
+                            button !== qualifierButton &&
+                            (text.includes('size') || hasOptionInputNamed(button, '_value'))
+                        );
+                    });
+                    if (qualifierButton && sizeButton) {
+                        return [qualifierButton, sizeButton, createButton];
+                    }
+                    return [comboboxes[0], comboboxes[1], createButton];
+                }
+
+                const sizeHeader = Array.from(document.querySelectorAll("div, span"))
+                    .find((element) => isVisible(element) && element.textContent.trim() === "Size");
+                if (!sizeHeader) {
+                    return null;
+                }
+
+                let sizeSection = sizeHeader.closest("div");
+                while (sizeSection) {
+                    const optionWrappers = Array.from(
+                        sizeSection.querySelectorAll("div[class*='OptionWrapper']")
+                    ).filter(isVisible);
+                    for (const wrapper of optionWrappers) {
+                        const controls = resolveVariantControls(wrapper);
+                        if (controls) {
+                            return controls;
+                        }
+                    }
+
+                    const additionWrappers = Array.from(
+                        sizeSection.querySelectorAll("div[class*='AttributesAdditionWrapper']")
+                    ).filter(isVisible);
+                    for (const additionWrapper of additionWrappers) {
+                        const controls = resolveVariantControls(additionWrapper);
+                        if (controls) {
+                            return controls;
+                        }
+                    }
+
+                    sizeSection = sizeSection.parentElement;
+                }
+
+                return null;
+                """,
+            )
+            if exact_controls is not None and len(exact_controls) >= 3:
+                return exact_controls[0], exact_controls[1], exact_controls[2]
+        except WebDriverException as exc:
+            last_error = f"Exact Size-section scan failed: {exc.__class__.__name__}"
+
+        option_wrappers = driver.find_elements(
+            By.XPATH,
+            "//div[.//span[normalize-space()='Create'] and .//button[@role='combobox']]",
+        )
+        for wrapper in option_wrappers:
+            try:
+                controls = driver.execute_script(
+                    """
+                    const wrapper = arguments[0];
+                    function isVisible(element) {
+                        if (!element) {
+                            return false;
+                        }
+                        const style = window.getComputedStyle(element);
+                        return style.display !== 'none' && style.visibility !== 'hidden';
+                    }
+                    const comboboxes = Array.from(
+                        wrapper.querySelectorAll("button[role='combobox']")
+                    ).filter(isVisible);
+                    const createButton = Array.from(wrapper.querySelectorAll("button")).find((button) => {
+                        const span = button.querySelector("span");
+                        return isVisible(button) && span && span.textContent.trim() === "Create";
+                    });
+                    function getButtonText(button) {
+                        return (button.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                    }
+                    function hasOptionInputNamed(button, suffix) {
+                        const root = button.closest("[class*='SingleSelectContainer']") || button.parentElement;
+                        return Boolean(root && Array.from(root.querySelectorAll("input[name]")).some((input) => {
+                            return (input.getAttribute('name') || '').toLowerCase().endsWith(suffix);
+                        }));
+                    }
+                    if (comboboxes.length >= 2 && createButton) {
+                        const qualifierButton = comboboxes.find((button) => {
+                            const text = getButtonText(button);
+                            return (
+                                text.includes('qualifier') ||
+                                hasOptionInputNamed(button, '_qualifier') ||
+                                ['number', 'regular', 'uk', 'us', 'euro', 'kids'].includes(text)
+                            );
+                        });
+                        const sizeButton = comboboxes.find((button) => {
+                            const text = getButtonText(button);
+                            return (
+                                button !== qualifierButton &&
+                                (text.includes('size') || hasOptionInputNamed(button, '_value'))
+                            );
+                        });
+                        if (qualifierButton && sizeButton) {
+                            return [qualifierButton, sizeButton, createButton];
+                        }
+                        return [comboboxes[0], comboboxes[1], createButton];
+                    }
+                    return null;
+                    """,
+                    wrapper,
+                )
+                if controls is not None and len(controls) >= 3:
+                    return controls[0], controls[1], controls[2]
+            except WebDriverException as exc:
+                last_error = f"Wrapper scan failed: {exc.__class__.__name__}"
+
+        try:
+            fallback_controls = driver.execute_script(
+                """
+                function isVisible(element) {
+                    if (!element) {
+                        return false;
+                    }
+                    const style = window.getComputedStyle(element);
+                    return style.display !== 'none' && style.visibility !== 'hidden';
+                }
+
+                const sizeLabel = Array.from(document.querySelectorAll("div"))
+                    .find((element) => isVisible(element) && element.textContent.trim() === "Size");
+                if (!sizeLabel) {
+                    return null;
+                }
+
+                let current = sizeLabel.parentElement;
+                while (current) {
+                    const comboboxes = Array.from(
+                        current.querySelectorAll("button[role='combobox']")
+                    ).filter(isVisible);
+                    const createButton = Array.from(current.querySelectorAll("button")).find((button) => {
+                        const span = button.querySelector("span");
+                        return isVisible(button) && span && span.textContent.trim() === "Create";
+                    });
+                    function getButtonText(button) {
+                        return (button.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                    }
+                    function hasOptionInputNamed(button, suffix) {
+                        const root = button.closest("[class*='SingleSelectContainer']") || button.parentElement;
+                        return Boolean(root && Array.from(root.querySelectorAll("input[name]")).some((input) => {
+                            return (input.getAttribute('name') || '').toLowerCase().endsWith(suffix);
+                        }));
+                    }
+                    if (comboboxes.length >= 2 && createButton) {
+                        const qualifierButton = comboboxes.find((button) => {
+                            const text = getButtonText(button);
+                            return (
+                                text.includes('qualifier') ||
+                                hasOptionInputNamed(button, '_qualifier') ||
+                                ['number', 'regular', 'uk', 'us', 'euro', 'kids'].includes(text)
+                            );
+                        });
+                        const sizeButton = comboboxes.find((button) => {
+                            const text = getButtonText(button);
+                            return (
+                                button !== qualifierButton &&
+                                (text.includes('size') || hasOptionInputNamed(button, '_value'))
+                            );
+                        });
+                        if (qualifierButton && sizeButton) {
+                            return [qualifierButton, sizeButton, createButton];
+                        }
+                        return [comboboxes[0], comboboxes[1], createButton];
+                    }
+                    current = current.parentElement;
                 }
                 return null;
-            """)
-            if controls and len(controls) >= 3:
-                return controls[0], controls[1], controls[2]
-        except Exception as exc:
-            last_error = str(exc)
+                """,
+            )
+            if fallback_controls is not None and len(fallback_controls) >= 3:
+                return fallback_controls[0], fallback_controls[1], fallback_controls[2]
+        except WebDriverException as exc:
+            last_error = f"Fallback scan failed: {exc.__class__.__name__}"
+
         sleep(0.2)
-    raise TimeoutException(f"Could not locate variant controls. {last_error}")
+
+    raise TimeoutException(
+        f"Could not locate the Variant page qualifier, size, and Create controls. Last issue: {last_error}"
+    )
+
 
 def get_variant_sizes_to_create(product_input_row: ProductInputRow) -> list[str]:
     variant_sizes: list[str] = []
@@ -2567,75 +2742,9 @@ def get_variant_sizes_to_create(product_input_row: ProductInputRow) -> list[str]
     return variant_sizes
 
 
-def click_variant_create_button(driver: webdriver.Firefox, variant_size: str) -> None:
-    """Wait for the Size section Create button to be enabled, then JS-click it.
-
-    The button textContent includes the SVG <title> "AddCircle" so we CANNOT
-    match on full textContent === "Create".  Instead we find the <span> child
-    whose text is exactly "Create" and whose button has aria-disabled="false"
-    and no disabled attribute.  We also prefer the button whose SVG icon color
-    is "blue" (the enabled state) over the greyed-out Brand Color one.
-    """
-    def _find_enabled(d: webdriver.Firefox) -> "WebElement | bool":
-        try:
-            btn = d.execute_script("""
-                function isVisible(el) {
-                    if (!el) return false;
-                    const s = window.getComputedStyle(el);
-                    const r = el.getBoundingClientRect();
-                    return s.display!=='none' && s.visibility!=='hidden'
-                           && r.width>0 && r.height>0;
-                }
-                // Find all buttons that have a <span> child with text "Create"
-                // and are NOT disabled.
-                const candidates = Array.from(document.querySelectorAll('button')).filter(btn => {
-                    if (!isVisible(btn)) return false;
-                    if (btn.hasAttribute('disabled')) return false;
-                    if (btn.getAttribute('aria-disabled') === 'true') return false;
-                    // Check the span child text, not full textContent (which includes SVG title)
-                    const span = btn.querySelector('span');
-                    return span && span.textContent.trim() === 'Create';
-                });
-                if (!candidates.length) return null;
-                // Prefer the one whose SVG color is "blue" (the enabled Size button)
-                const blue = candidates.find(btn => {
-                    const svg = btn.querySelector('svg');
-                    return svg && (svg.getAttribute('color') === 'blue'
-                                   || window.getComputedStyle(svg).color === 'blue');
-                });
-                return blue || candidates[0];
-            """)
-        except Exception:
-            return False
-        return btn if btn else False
-
-    log_event("VARIANT", f"Waiting for enabled Create button for size {variant_size}...")
-    create_button = WebDriverWait(driver, 15).until(_find_enabled)
-    driver.execute_script("arguments[0].scrollIntoView({block:'center',inline:'nearest'});", create_button)
-    sleep(0.4)
-    log_event("VARIANT", f"JS-clicking Create button for variant size {variant_size}.")
-    driver.execute_script("arguments[0].click();", create_button)
-    sleep(0.25)
-    try:
-        still_enabled = driver.execute_script(
-            "return !arguments[0].hasAttribute('disabled') "
-            "&& arguments[0].getAttribute('aria-disabled') !== 'true';",
-            create_button,
-        )
-    except Exception:
-        still_enabled = False
-    if still_enabled:
-        log_event("VARIANT", "JS click may have been swallowed; retrying with ActionChains.")
-        try:
-            ActionChains(driver).move_to_element(create_button).pause(0.1).click().perform()
-            sleep(0.25)
-        except Exception:
-            pass
-
-
 def wait_for_variant_create_button_enabled(
     driver: webdriver.Firefox,
-    timeout_seconds: float = 15,
+    timeout_seconds: float = 10,
 ) -> WebElement:
     def _locate_enabled_button(current_driver: webdriver.Firefox) -> WebElement | bool:
         create_button = current_driver.execute_script(
@@ -2689,12 +2798,10 @@ def wait_for_variant_row_creation(
     variant_size: str,
     timeout_seconds: float = 12,
 ) -> None:
-    expected_size_text = build_variant_size_display_text(variant_size, variant_qualifier)
+    expected_size_text = f"{variant_size} {variant_qualifier}".strip()
     size_xpath = (
         "//div[contains(@id,'-size') and contains(@class,'variant-table-cell')]"
-        f"//span[@title={xpath_literal(expected_size_text)}"
-        f" or contains(@title, {xpath_literal(variant_size)})"
-        f" or normalize-space()={xpath_literal(expected_size_text)}]"
+        f"//span[@title={xpath_literal(expected_size_text)} or normalize-space()={xpath_literal(expected_size_text)}]"
     )
     WebDriverWait(driver, timeout_seconds).until(
         EC.presence_of_element_located((By.XPATH, size_xpath))
@@ -3002,11 +3109,6 @@ def fill_variant_page(
     variant_qualifier = product_input_row.values.get("variant_qualifier", "").strip()
     variant_sizes = get_variant_sizes_to_create(product_input_row)
 
-    log_event(
-        "VARIANT",
-        f"Loaded variant_qualifier='{variant_qualifier}' (raw row keys: {list(product_input_row.values.keys())}).",
-    )
-
     if not variant_sizes:
         log_event("VARIANT", "Skipping Variant page: no size_variant values were provided in Excel.")
         return
@@ -3019,22 +3121,21 @@ def fill_variant_page(
         )
 
     for variant_size in variant_sizes:
-        qualifier_combobox, size_combobox, _ = get_variant_creation_controls(driver)
         if should_select_qualifier:
-            if qualifier_combobox is None:
-                raise RuntimeError(
-                    f"Variant Qualifier '{variant_qualifier}' was provided in Excel, "
-                    "but no qualifier combobox ('Select Unit') was found on the page."
-                )
-            log_event("VARIANT", f"Creating size variant with qualifier '{variant_qualifier}' and size '{variant_size}'.")
+            qualifier_combobox, _, _ = get_variant_creation_controls(driver)
+            log_event(
+                "VARIANT",
+                f"Creating size variant with qualifier '{variant_qualifier}' and size '{variant_size}'.",
+            )
             select_combobox_option(driver, qualifier_combobox, variant_qualifier, "Variant Qualifier")
             log_event("VARIANT", f"Selected Variant Qualifier: {variant_qualifier}")
-            _, size_combobox, _ = get_variant_creation_controls(driver)
         else:
             log_event("VARIANT", f"Creating size variant without qualifier and size '{variant_size}'.")
+        _, size_combobox, _ = get_variant_creation_controls(driver)
         select_combobox_option(driver, size_combobox, variant_size, "Variant Size")
         log_event("VARIANT", f"Selected Variant Size: {variant_size}")
-        click_variant_create_button(driver, variant_size)
+        create_button = wait_for_variant_create_button_enabled(driver)
+        click_element_via_autogui(driver, create_button, f"Create variant {variant_size}")
         log_event("VARIANT", f"Clicked Create for variant size {variant_size}.")
         wait_for_variant_row_creation(driver, variant_qualifier, variant_size)
 
