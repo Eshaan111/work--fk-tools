@@ -1516,19 +1516,75 @@ def get_visible_dropdown_container(
     timeout_seconds: float = 2,
 ) -> WebElement:
     deadline = datetime.now().timestamp() + timeout_seconds
-    controlled_container_id = ""
-    if combobox is not None:
-        try:
-            controlled_container_id = (combobox.get_attribute("aria-controls") or "").strip()
-        except WebDriverException:
-            controlled_container_id = ""
 
     while datetime.now().timestamp() < deadline:
-        if controlled_container_id:
+        if combobox is not None:
             try:
-                controlled_container = driver.find_element(By.ID, controlled_container_id)
-                if controlled_container.is_displayed():
-                    return controlled_container
+                local_container = driver.execute_script(
+                    """
+                    const combobox = arguments[0];
+                    const controlledId = (combobox.getAttribute('aria-controls') || '').trim();
+
+                    function isVisible(element) {
+                        if (!element) {
+                            return false;
+                        }
+                        const style = window.getComputedStyle(element);
+                        const rect = element.getBoundingClientRect();
+                        return (
+                            style.display !== 'none' &&
+                            style.visibility !== 'hidden' &&
+                            rect.width > 0 &&
+                            rect.height > 0
+                        );
+                    }
+
+                    const localRoot =
+                        combobox.closest("[class*='SingleSelectContainer']") ||
+                        combobox.closest("[class*='MultiSelect']") ||
+                        combobox.parentElement;
+                    if (localRoot) {
+                        const localContainers = Array.from(
+                            localRoot.querySelectorAll(
+                                "[data-testid='content-single-select'], [data-testid='content-multi-select'], " +
+                                ".styles__DropdownContent-sc-zkytp-1, .styles__DropdownContent-sc-lf8o9y-2"
+                            )
+                        ).filter(isVisible);
+                        if (localContainers.length) {
+                            return localContainers[0];
+                        }
+                    }
+
+                    const candidates = Array.from(
+                        document.querySelectorAll(
+                            "[data-testid='content-single-select'], [data-testid='content-multi-select'], " +
+                            ".styles__DropdownContent-sc-zkytp-1, .styles__DropdownContent-sc-lf8o9y-2"
+                        )
+                    ).filter(isVisible);
+                    if (!candidates.length) {
+                        return null;
+                    }
+
+                    const comboRect = combobox.getBoundingClientRect();
+                    const comboCenterX = comboRect.left + comboRect.width / 2;
+                    const comboBottom = comboRect.bottom;
+                    candidates.sort((left, right) => {
+                        function score(element) {
+                            const rect = element.getBoundingClientRect();
+                            const centerX = rect.left + rect.width / 2;
+                            const verticalGap = Math.abs(rect.top - comboBottom);
+                            const horizontalGap = Math.abs(centerX - comboCenterX);
+                            const idPenalty = controlledId && element.id === controlledId ? 0 : 500;
+                            return verticalGap + horizontalGap + idPenalty;
+                        }
+                        return score(left) - score(right);
+                    });
+                    return candidates[0];
+                    """,
+                    combobox,
+                )
+                if local_container is not None:
+                    return local_container
             except WebDriverException:
                 pass
 
@@ -2462,6 +2518,47 @@ def get_variant_creation_controls(
                     });
                 }
 
+                function getButtonText(button) {
+                    return (button.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                }
+
+                function hasOptionInputNamed(button, suffix) {
+                    const root = button.closest("[class*='SingleSelectContainer']") || button.parentElement;
+                    return Boolean(root && Array.from(root.querySelectorAll("input[name]")).some((input) => {
+                        return (input.getAttribute('name') || '').toLowerCase().endsWith(suffix);
+                    }));
+                }
+
+                function resolveVariantControls(container) {
+                    const comboboxes = Array.from(
+                        container.querySelectorAll("button[role='combobox']")
+                    ).filter(isVisible);
+                    const createButton = getCreateButton(container);
+                    if (comboboxes.length < 2 || !createButton) {
+                        return null;
+                    }
+
+                    const qualifierButton = comboboxes.find((button) => {
+                        const text = getButtonText(button);
+                        return (
+                            text.includes('qualifier') ||
+                            hasOptionInputNamed(button, '_qualifier') ||
+                            ['number', 'regular', 'uk', 'us', 'euro', 'kids'].includes(text)
+                        );
+                    });
+                    const sizeButton = comboboxes.find((button) => {
+                        const text = getButtonText(button);
+                        return (
+                            button !== qualifierButton &&
+                            (text.includes('size') || hasOptionInputNamed(button, '_value'))
+                        );
+                    });
+                    if (qualifierButton && sizeButton) {
+                        return [qualifierButton, sizeButton, createButton];
+                    }
+                    return [comboboxes[0], comboboxes[1], createButton];
+                }
+
                 const sizeHeader = Array.from(document.querySelectorAll("div, span"))
                     .find((element) => isVisible(element) && element.textContent.trim() === "Size");
                 if (!sizeHeader) {
@@ -2474,12 +2571,9 @@ def get_variant_creation_controls(
                         sizeSection.querySelectorAll("div[class*='OptionWrapper']")
                     ).filter(isVisible);
                     for (const wrapper of optionWrappers) {
-                        const comboboxes = Array.from(
-                            wrapper.querySelectorAll("button[role='combobox']")
-                        ).filter(isVisible);
-                        const createButton = getCreateButton(wrapper);
-                        if (comboboxes.length >= 2 && createButton) {
-                            return [comboboxes[0], comboboxes[1], createButton];
+                        const controls = resolveVariantControls(wrapper);
+                        if (controls) {
+                            return controls;
                         }
                     }
 
@@ -2487,12 +2581,9 @@ def get_variant_creation_controls(
                         sizeSection.querySelectorAll("div[class*='AttributesAdditionWrapper']")
                     ).filter(isVisible);
                     for (const additionWrapper of additionWrappers) {
-                        const comboboxes = Array.from(
-                            additionWrapper.querySelectorAll("button[role='combobox']")
-                        ).filter(isVisible);
-                        const createButton = getCreateButton(additionWrapper);
-                        if (comboboxes.length >= 2 && createButton) {
-                            return [comboboxes[0], comboboxes[1], createButton];
+                        const controls = resolveVariantControls(additionWrapper);
+                        if (controls) {
+                            return controls;
                         }
                     }
 
@@ -2530,7 +2621,34 @@ def get_variant_creation_controls(
                         const span = button.querySelector("span");
                         return isVisible(button) && span && span.textContent.trim() === "Create";
                     });
+                    function getButtonText(button) {
+                        return (button.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                    }
+                    function hasOptionInputNamed(button, suffix) {
+                        const root = button.closest("[class*='SingleSelectContainer']") || button.parentElement;
+                        return Boolean(root && Array.from(root.querySelectorAll("input[name]")).some((input) => {
+                            return (input.getAttribute('name') || '').toLowerCase().endsWith(suffix);
+                        }));
+                    }
                     if (comboboxes.length >= 2 && createButton) {
+                        const qualifierButton = comboboxes.find((button) => {
+                            const text = getButtonText(button);
+                            return (
+                                text.includes('qualifier') ||
+                                hasOptionInputNamed(button, '_qualifier') ||
+                                ['number', 'regular', 'uk', 'us', 'euro', 'kids'].includes(text)
+                            );
+                        });
+                        const sizeButton = comboboxes.find((button) => {
+                            const text = getButtonText(button);
+                            return (
+                                button !== qualifierButton &&
+                                (text.includes('size') || hasOptionInputNamed(button, '_value'))
+                            );
+                        });
+                        if (qualifierButton && sizeButton) {
+                            return [qualifierButton, sizeButton, createButton];
+                        }
                         return [comboboxes[0], comboboxes[1], createButton];
                     }
                     return null;
@@ -2568,7 +2686,34 @@ def get_variant_creation_controls(
                         const span = button.querySelector("span");
                         return isVisible(button) && span && span.textContent.trim() === "Create";
                     });
+                    function getButtonText(button) {
+                        return (button.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                    }
+                    function hasOptionInputNamed(button, suffix) {
+                        const root = button.closest("[class*='SingleSelectContainer']") || button.parentElement;
+                        return Boolean(root && Array.from(root.querySelectorAll("input[name]")).some((input) => {
+                            return (input.getAttribute('name') || '').toLowerCase().endsWith(suffix);
+                        }));
+                    }
                     if (comboboxes.length >= 2 && createButton) {
+                        const qualifierButton = comboboxes.find((button) => {
+                            const text = getButtonText(button);
+                            return (
+                                text.includes('qualifier') ||
+                                hasOptionInputNamed(button, '_qualifier') ||
+                                ['number', 'regular', 'uk', 'us', 'euro', 'kids'].includes(text)
+                            );
+                        });
+                        const sizeButton = comboboxes.find((button) => {
+                            const text = getButtonText(button);
+                            return (
+                                button !== qualifierButton &&
+                                (text.includes('size') || hasOptionInputNamed(button, '_value'))
+                            );
+                        });
+                        if (qualifierButton && sizeButton) {
+                            return [qualifierButton, sizeButton, createButton];
+                        }
                         return [comboboxes[0], comboboxes[1], createButton];
                     }
                     current = current.parentElement;
@@ -2602,10 +2747,45 @@ def wait_for_variant_create_button_enabled(
     timeout_seconds: float = 10,
 ) -> WebElement:
     def _locate_enabled_button(current_driver: webdriver.Firefox) -> WebElement | bool:
-        _, _, create_button = get_variant_creation_controls(current_driver)
-        aria_disabled = (create_button.get_attribute("aria-disabled") or "").strip().lower()
-        disabled_attribute = create_button.get_attribute("disabled")
-        if create_button.is_enabled() and aria_disabled != "true" and disabled_attribute is None:
+        create_button = current_driver.execute_script(
+            """
+            function isVisible(element) {
+                if (!element) {
+                    return false;
+                }
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return (
+                    style.display !== 'none' &&
+                    style.visibility !== 'hidden' &&
+                    rect.width > 0 &&
+                    rect.height > 0
+                );
+            }
+
+            function isEnabled(button) {
+                return (
+                    button.getAttribute('aria-disabled') !== 'true' &&
+                    !button.hasAttribute('disabled') &&
+                    !button.classList.contains('disabled')
+                );
+            }
+
+            const createButtons = Array.from(document.querySelectorAll('button')).filter((button) => {
+                const text = (button.textContent || '').replace(/\\s+/g, ' ').trim();
+                return isVisible(button) && isEnabled(button) && text === 'Create';
+            });
+            return (
+                createButtons.find((button) => {
+                    const iconTitle = button.querySelector('svg title');
+                    return iconTitle && iconTitle.textContent.trim() === 'AddCircle';
+                }) ||
+                createButtons[0] ||
+                null
+            );
+            """
+        )
+        if create_button is not None:
             return create_button
         return False
 
@@ -2929,21 +3109,28 @@ def fill_variant_page(
     variant_qualifier = product_input_row.values.get("variant_qualifier", "").strip()
     variant_sizes = get_variant_sizes_to_create(product_input_row)
 
-    if not variant_qualifier:
-        log_event("VARIANT", "Skipping Variant page: no Excel value provided for variant_qualifier.")
-        return
     if not variant_sizes:
         log_event("VARIANT", "Skipping Variant page: no size_variant values were provided in Excel.")
         return
 
-    for variant_size in variant_sizes:
-        qualifier_combobox, _, _ = get_variant_creation_controls(driver)
+    should_select_qualifier = bool(variant_qualifier)
+    if not should_select_qualifier:
         log_event(
             "VARIANT",
-            f"Creating size variant with qualifier '{variant_qualifier}' and size '{variant_size}'.",
+            "Skipping Variant Qualifier: no Excel value provided for variant_qualifier.",
         )
-        select_combobox_option(driver, qualifier_combobox, variant_qualifier, "Variant Qualifier")
-        log_event("VARIANT", f"Selected Variant Qualifier: {variant_qualifier}")
+
+    for variant_size in variant_sizes:
+        if should_select_qualifier:
+            qualifier_combobox, _, _ = get_variant_creation_controls(driver)
+            log_event(
+                "VARIANT",
+                f"Creating size variant with qualifier '{variant_qualifier}' and size '{variant_size}'.",
+            )
+            select_combobox_option(driver, qualifier_combobox, variant_qualifier, "Variant Qualifier")
+            log_event("VARIANT", f"Selected Variant Qualifier: {variant_qualifier}")
+        else:
+            log_event("VARIANT", f"Creating size variant without qualifier and size '{variant_size}'.")
         _, size_combobox, _ = get_variant_creation_controls(driver)
         select_combobox_option(driver, size_combobox, variant_size, "Variant Size")
         log_event("VARIANT", f"Selected Variant Size: {variant_size}")
