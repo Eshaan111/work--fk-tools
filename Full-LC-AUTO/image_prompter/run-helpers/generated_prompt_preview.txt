@@ -16,7 +16,7 @@ Suggest new background ideas for the uploaded product image.
 
 We have already used background ideas based on these phrases:
 
-Terracota Style With Plant and Gym equipment in background, Warm Limewash Studio, Pearl Microcement Studio, Soft Quartz Studio, Bleached Oak Panel Studio, Ivory Fabric Wall Studio, Cashmere Gradient Studio, Matte Travertine Studio, Alabaster Arch Studio, Satin Ivory Curve Studio, Mist Gray Ribbed Studio, Warm Marble Vein Studio, Parchment Plaster Studio, Soft Pebble Panel Studio, Champagne Suede Studio, Ivory Fluted Panel Studio, Bone Grid Panel Studio, Porcelain Block Studio, Soft Canvas Panel Studio, Soft Linen Panel Studio, Warm Sandstone Slab Studio, Dove Shadow Panel Studio, Frosted Resin Studio, Warm Cork Panel Studio, Brushed Clay Panel Studio, Mushroom Felt Studio, Oyster Composite Studio
+Terracota Style With Plant and Gym equipment in background
 
 Your job is to suggest NEW background ideas that are clearly different from the already-used ones.
 
@@ -142,7 +142,7 @@ Most ideas should follow this structure:
 PRODUCT CONTEXT
 
 Product Kind:
-PAJAMA
+BLACK-BAGGY
 
 Scene Goal:
 Professional ecommerce image background ideas for compositing.
@@ -195,6 +195,6 @@ IMPORTANT
 
 The ideas should be clearly distinct from:
 
-Terracota Style With Plant and Gym equipment in background, Warm Limewash Studio, Pearl Microcement Studio, Soft Quartz Studio, Bleached Oak Panel Studio, Ivory Fabric Wall Studio, Cashmere Gradient Studio, Matte Travertine Studio, Alabaster Arch Studio, Satin Ivory Curve Studio, Mist Gray Ribbed Studio, Warm Marble Vein Studio, Parchment Plaster Studio, Soft Pebble Panel Studio, Champagne Suede Studio, Ivory Fluted Panel Studio, Bone Grid Panel Studio, Porcelain Block Studio, Soft Canvas Panel Studio, Soft Linen Panel Studio, Warm Sandstone Slab Studio, Dove Shadow Panel Studio, Frosted Resin Studio, Warm Cork Panel Studio, Brushed Clay Panel Studio, Mushroom Felt Studio, Oyster Composite Studio
+Terracota Style With Plant and Gym equipment in background
 
 Generate 15 diverse ideas.

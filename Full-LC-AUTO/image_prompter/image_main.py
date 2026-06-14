@@ -480,12 +480,13 @@ def copy_full_chat_text_once() -> str:
     return get_clipboard_text()
 
 
-def wait_for_stable_full_chat_text() -> str:
+def wait_for_stable_full_chat_text(prompt_text: str = "") -> str:
     print(
         "Starting full-chat copy cycle every 0.5 seconds until two consecutive copies match and idea output is present..."
     )
     previous_copy: str | None = None
     attempt = 0
+    stuck_counter = 0
 
     while True:
         attempt += 1
@@ -503,6 +504,16 @@ def wait_for_stable_full_chat_text() -> str:
                 "Detected stable copied chat text with parseable idea output. Treating output as complete."
             )
             return current_copy
+
+        if prompt_text and current_copy.strip().endswith(prompt_text.strip()):
+            stuck_counter += 1
+            if stuck_counter >= 5:
+                print("Detected prompt still in input box (ENTER might have failed). Repressing ENTER...")
+                pyautogui.press("enter")
+                time.sleep(3)
+                stuck_counter = 0
+        else:
+            stuck_counter = 0
 
         if is_stable_copy and not has_ideas:
             print(
@@ -774,6 +785,7 @@ def extract_latest_output(full_chat_text: str, prompt_text: str) -> str:
 def capture_and_store_latest_output(prompt_text: str) -> str:
     click_chat_copy_target()
     stable_full_chat_text = wait_for_stable_full_chat_text()
+    stable_full_chat_text = wait_for_stable_full_chat_text(prompt_text)
     latest_output = extract_latest_output(stable_full_chat_text, prompt_text)
 
     LAST_FULL_CHAT_PATH.write_text(stable_full_chat_text + "\n", encoding="utf-8")
@@ -977,6 +989,7 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str:
     previous_copy: str | None = None
     start_time = time.time()
     attempt = 0
+    stuck_counter = 0
 
     while True:
         attempt += 1
@@ -1005,6 +1018,16 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str:
                 f"Saved final image-generation chat snapshot to: {IMAGE_GENERATION_FINAL_CHAT_PATH}"
             )
             return current_copy
+
+        if generation_prompt_text and current_copy.strip().endswith(generation_prompt_text.strip()):
+            stuck_counter += 1
+            if stuck_counter >= 5:
+                print("Detected generation prompt still in input box. Repressing ENTER...")
+                pyautogui.press("enter")
+                time.sleep(3)
+                stuck_counter = 0
+        else:
+            stuck_counter = 0
 
         if is_stable_copy and not has_generated_confirmation:
             print(
