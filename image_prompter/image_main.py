@@ -17,8 +17,8 @@ import pyautogui
 from openpyxl import load_workbook
 from pynput import keyboard
 
-LAPTOP_NAME = "VAIO"
-# LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "VAIO"
+LAPTOP_NAME = "ASUS"
 
 PRABHU_FIREFOX_PROFILE_ASUS = Path(
     r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"
@@ -38,20 +38,25 @@ RUN_HELPERS_DIR = image_prompter_path("run-helpers")
 FULL_GENERATED_IMAGES_DIR = image_prompter_path("FULL GENERATED IMAGES")
 IMAGES_FINAL_DIR = image_prompter_path("IMAGES-FINAL")
 NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
+PIXELS_FILE_ASUS = image_prompter_path("pixels-ASUS.json")
+PIXELS_FILE_VAIO = image_prompter_path("pixels-VAIO.json")
 NO_BG_IMAGES_ROOT_VAIO = Path(r"C:\NO-BG-IMAGES")
 LAPTOP_CONFIGS = {
     "ASUS": {
         "firefox_profile": PRABHU_FIREFOX_PROFILE_ASUS,
         "no_bg_images_root": NO_BG_IMAGES_ROOT_ASUS,
+        "pixel_json" : PIXELS_FILE_ASUS
     },
     "VAIO": {
         "firefox_profile": PRABHU_FIREFOX_PROFILE_VAIO,
         "no_bg_images_root": NO_BG_IMAGES_ROOT_VAIO,
+        "pixel_json" : PIXELS_FILE_VAIO
     },
 }
 ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME.upper()]
 PRABHU_FIREFOX_PROFILE = ACTIVE_LAPTOP_CONFIG["firefox_profile"]
 NO_BG_IMAGES_ROOT = ACTIVE_LAPTOP_CONFIG["no_bg_images_root"]
+PIXELS_FILE = ACTIVE_LAPTOP_CONFIG["pixel_json"]
 USED_IMAGE_DESIGNS_WORKBOOK = image_prompter_path("USED-IMAGE-DESIGNS.xlsx")
 PROMPT_TEMPLATE_PATH = image_prompter_path("image_edit_prompt_template.txt")
 IMAGE_GENERATION_PROMPT_TEMPLATE_PATH = image_prompter_path("image_generation_prompt")
@@ -98,7 +103,6 @@ SUPPORTED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.15
 START_HOTKEY_KEY = keyboard.Key.right
-PIXELS_FILE = IMAGE_PROMPTER_ROOT / "pixels.json"
 
 
 def load_pixels() -> dict[str, tuple[int, int]]:
