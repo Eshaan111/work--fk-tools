@@ -1,4 +1,14 @@
-You are helping generate fresh ecommerce background ideas for a product image edit workflow.
+You are helping generate fresh ecommerce background ideas for a product image compositing workflow.
+
+WORKFLOW CONTEXT
+
+A product image will be uploaded separately.
+
+The uploaded image should be treated as a source asset that will later be composited into a generated background.
+
+The generated background must be suitable for realistic background replacement and ecommerce image editing.
+
+The background should be designed to work well behind an existing product image rather than requiring the product to be regenerated.
 
 TASK
 
@@ -6,7 +16,7 @@ Suggest new background ideas for the uploaded product image.
 
 We have already used background ideas based on these phrases:
 
-Terracota Style With Plant and Gym equipment in background
+Terracota Style With Plant and Gym equipment in background, Warm Limewash Studio, Pearl Microcement Studio, Soft Quartz Studio, Bleached Oak Panel Studio, Ivory Fabric Wall Studio, Cashmere Gradient Studio, Matte Travertine Studio, Alabaster Arch Studio, Satin Ivory Curve Studio, Mist Gray Ribbed Studio, Warm Marble Vein Studio, Parchment Plaster Studio, Soft Pebble Panel Studio, Champagne Suede Studio, Ivory Fluted Panel Studio, Bone Grid Panel Studio, Porcelain Block Studio, Soft Canvas Panel Studio, Soft Linen Panel Studio, Warm Sandstone Slab Studio, Dove Shadow Panel Studio, Frosted Resin Studio, Warm Cork Panel Studio, Brushed Clay Panel Studio, Mushroom Felt Studio, Oyster Composite Studio
 
 Your job is to suggest NEW background ideas that are clearly different from the already-used ones.
 
@@ -18,10 +28,25 @@ The goal is NOT to create complete environments, destinations, interiors, outdoo
 
 The goal IS to create simple, premium, studio-style sets that enhance the product while remaining visually unobtrusive.
 
+COMPOSITING REQUIREMENTS
+
+The backgrounds must:
+
+* Work well for background replacement workflows.
+* Support realistic product compositing.
+* Provide clean areas for shadow placement.
+* Provide sufficient negative space around the product.
+* Avoid complex geometry behind the product.
+* Avoid overlapping foreground elements.
+* Avoid objects that would need to intersect with the product.
+* Avoid visual elements that require precise interaction with the product.
+* Be easy to light-match with a separately photographed product image.
+* Feel like professionally photographed studio environments.
+
 RULES
 
 0. Prioritize studio-built environments over real-world locations.
-1. Do not repeat or closely paraphrase the already-used ideas.
+1. Do not repeat or closely paraphrase the already-used ideas or color themes.
 2. Keep ideas commercially strong for ecommerce product compositing.
 3. Ideas must work for a no-background product image that will be placed into the scene later.
 4. The product must remain the visual focus.
@@ -39,6 +64,10 @@ RULES
 16. Use no more than 2–3 primary materials per concept.
 17. Use no more than 2–3 color families per concept.
 18. Avoid dark, moody, high-contrast environments unless specifically appropriate for the product.
+19. Avoid foreground elements that would overlap the product.
+20. Avoid compositions that require the product to sit inside furniture, fixtures, containers, shelves, niches, racks, or architectural openings.
+21. Prefer flat or gently curved surfaces suitable for product placement.
+22. Design backgrounds as standalone photography sets rather than scenes.
 
 DO NOT GENERATE
 
@@ -56,6 +85,9 @@ DO NOT GENERATE
 * Lifestyle scenes
 * Detailed interiors
 * Storytelling environments
+* Furniture-centric scenes
+* Product-interaction scenes
+* Environments requiring a human subject
 
 PREFER GENERATING
 
@@ -74,6 +106,11 @@ PREFER GENERATING
 * Subtle wall paneling
 * Minimal pedestals (only if appropriate)
 * Refined material studies
+* Sculpted studio surfaces
+* Composite stone textures
+* Soft mineral finishes
+* Clay-based finishes
+* Refined architectural detailing
 
 BACKGROUND STYLE PREFERENCES
 
@@ -114,6 +151,14 @@ OUTPUT FORMAT
 
 Return JSON only.
 
+Wrap the entire response inside:
+
+```json
+{
+  "ideas": [...]
+}
+```
+
 Use this exact shape:
 
 {
@@ -133,14 +178,6 @@ GUIDELINES FOR EACH IDEA
 * Short commercial-friendly set name.
 * Focus on materials and design rather than locations.
 
-Examples:
-
-* Warm Limewash Studio
-* Soft Stone Backdrop
-* Microcement Corner Set
-* Oak Accent Wall
-* Matte Sandstone Studio
-
 "visual_concept"
 
 * One sentence describing the atmosphere and purpose of the set.
@@ -152,23 +189,12 @@ Examples:
 * Avoid describing complete environments.
 * Mention wall treatment, floor treatment, lighting style, depth of field, and subtle supporting elements if used.
 * Emphasize premium ecommerce photography aesthetics.
-
-Failsafe
-
-If JSON cannot be followed:
-
-* Start each idea with exactly:
-  IDEA FOR BACKGROUND :
-* Put the title on the same line.
-* Then provide one-line visual concept.
-* Then provide background description.
+* Ensure the background can realistically accept a separately photographed product through compositing.
 
 IMPORTANT
 
-The ideas should be distinct from:
+The ideas should be clearly distinct from:
 
-Terracota Style With Plant and Gym equipment in background
-
+Terracota Style With Plant and Gym equipment in background, Warm Limewash Studio, Pearl Microcement Studio, Soft Quartz Studio, Bleached Oak Panel Studio, Ivory Fabric Wall Studio, Cashmere Gradient Studio, Matte Travertine Studio, Alabaster Arch Studio, Satin Ivory Curve Studio, Mist Gray Ribbed Studio, Warm Marble Vein Studio, Parchment Plaster Studio, Soft Pebble Panel Studio, Champagne Suede Studio, Ivory Fluted Panel Studio, Bone Grid Panel Studio, Porcelain Block Studio, Soft Canvas Panel Studio, Soft Linen Panel Studio, Warm Sandstone Slab Studio, Dove Shadow Panel Studio, Frosted Resin Studio, Warm Cork Panel Studio, Brushed Clay Panel Studio, Mushroom Felt Studio, Oyster Composite Studio
 
 Generate 15 diverse ideas.
-Wrap the entire response in a fenced code block with language identifier json.

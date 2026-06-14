@@ -1,0 +1,9 @@
+We’re so sorry, but the prompt may violate our guardrails around harassment, discrimination, bullying, or similar prohibited content. If you think we got it wrong, please retry or edit your prompt.
+
+
+We’re so sorry, but the prompt may violate our content policies. If you think we got it wrong, please retry or edit your prompt.
+
+
+    You've hit the plus plan limit for image generations requests. You can create more images when the limit resets in 10 hours and 35 minutes.
+
+    I’m unable to invoke the image generation/editing tool right now because the image generation rate limit has been reached for your account. Once the limit resets, send the request again and I can perform the background replacement edit using the uploaded image and the Chalk Mineral Studio specification.

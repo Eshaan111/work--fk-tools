@@ -2,11 +2,16 @@ IMAGE EDIT TASK
 
 ASSET DEFINITIONS
 
-SOURCE_PRODUCT:
+SOURCE_IMAGE:
 = The uploaded product image.
-= This is the ONLY object that must remain unchanged.
 
-Preserve exactly:
+SOURCE_IMAGE is the primary reference image.
+
+Use SOURCE_IMAGE as the editing source.
+
+The goal is background replacement and realistic compositing.
+
+Retain the product appearance from SOURCE_IMAGE as closely as possible, including:
 
 * Product shape
 * Product proportions
@@ -17,19 +22,17 @@ Preserve exactly:
 * Product branding
 * Product logos
 * Product material appearance
-* Product resolution
 
-Do NOT:
+Avoid introducing:
 
-* Redesign
-* Reinterpret
-* Restyle
-* Recolor
-* Reconstruct
-* Replace
-* Regenerate
-* Modify branding
-* Modify fabric appearance
+* New product designs
+* New branding
+* New logos
+* New colors
+* New materials
+* New garment details
+* Additional products
+* Additional accessories
 
 TARGET_BACKGROUND:
 
@@ -39,31 +42,44 @@ PRIMARY OBJECTIVE
 
 Create a premium ecommerce product photograph.
 
-The product is the hero.
+The uploaded product remains the hero subject.
 
 The background exists only to support the product.
 
 The final result should resemble a professional product photoshoot from premium fashion and athletic ecommerce brands.
 
+BACKGROUND REPLACEMENT TASK
+
+Replace the existing background with TARGET_BACKGROUND.
+
+Focus the edit on the environment surrounding the product.
+
+Maintain the product's overall appearance, pose, proportions, garment details, and visual identity from SOURCE_IMAGE.
+
+The final image should look like the original product was photographed inside the generated studio environment.
+
 EDIT INSTRUCTIONS
 
-1. Keep SOURCE_PRODUCT exactly unchanged.
-2. Preserve all product details precisely.
-3. Build a simple premium studio set around the product.
-4. Do not create a detailed environment or location.
-5. Do not create a scene that tells a story.
-6. Add realistic contact shadows beneath the product.
-7. Match perspective and lighting naturally.
-8. Product must remain the dominant visual element.
-9. Do not crop the product.
-10. Maintain original aspect ratio.
-11. Maintain high resolution.
-12. No text.
-13. No logos.
-14. No labels.
-15. No additional products.
-16. No mannequins.
-17. No people.
+1. Use SOURCE_IMAGE as the source asset.
+2. Replace the background with TARGET_BACKGROUND.
+3. Preserve the product appearance as closely as possible.
+4. Build a simple premium studio set around the product.
+5. Do not create a detailed environment or location.
+6. Do not create a narrative or lifestyle scene.
+7. Add realistic contact shadows beneath the product.
+8. Match perspective naturally.
+9. Match lighting naturally.
+10. Keep the product as the dominant visual element.
+11. Do not crop the product.
+12. Maintain the original framing whenever possible.
+13. Maintain high image quality.
+14. No text.
+15. No signage.
+16. No labels.
+17. No additional products.
+18. No mannequins.
+19. No additional people.
+20. No overlapping foreground objects.
 
 SOFT PROFESSIONAL RENDERING
 
@@ -76,11 +92,11 @@ SOFT PROFESSIONAL RENDERING
 * Slight camera softness.
 * Subtle depth of field.
 * Realistic material rendering.
-* Final image should look photographed, not generated.
+* Final image should look photographed rather than generated.
 * Avoid oversharpening.
 * Avoid HDR-style processing.
 * Avoid excessive micro-detail enhancement.
-* Avoid artificial AI-generated textures.
+* Avoid artificial textures.
 * Avoid hyperreal rendering.
 * Prefer natural photographic softness.
 
@@ -126,7 +142,7 @@ Avoid:
 * Visual clutter
 * Layered environments
 * Deep backgrounds
-* Scene-building
+* Storytelling scenes
 
 MATERIAL PREFERENCE
 
@@ -173,27 +189,36 @@ Avoid:
 COMPOSITION CONTROL
 
 * Product should occupy the majority of viewer attention.
-* Product should be visually larger than the background.
-* Background should feel secondary and understated.
+* Background should remain secondary.
 * Use generous negative space.
 * Background should not contain a focal point.
 * Avoid dramatic perspective lines.
 * Avoid strong leading lines.
 * Avoid complex depth cues.
-* Keep background visually quiet.
-* If a design choice competes with the product, simplify it.
+* Keep the background visually quiet.
+* Simplify any element that competes with the product.
+
+COMPOSITING REQUIREMENTS
+
+* Background must be suitable for realistic ecommerce compositing.
+* Background must provide clean placement space for the product.
+* Avoid foreground objects crossing the product.
+* Avoid structures requiring precise product interaction.
+* Avoid shelves, furniture, racks, containers, display fixtures, or architectural openings that would require the product to fit inside them.
+* Design the environment as a studio set rather than a location.
 
 CAMERA & PHOTOGRAPHY STYLE
 
 Photography Style:
+
 Premium Ecommerce Studio Product Photography
 
 Reference Style:
 
-* Nike product detail photography
+* Nike PDP photography
 * Lululemon ecommerce photography
-* Gymshark PDP imagery
-* Alo Yoga ecommerce imagery
+* Gymshark product imagery
+* Alo Yoga ecommerce photography
 * Vuori product photography
 * Premium fashion catalog photography
 
@@ -211,7 +236,7 @@ Avoid:
 
 * Editorial fashion shoots
 * Lifestyle campaigns
-* Luxury resort imagery
+* Resort imagery
 * Architectural photography
 * Concept art
 * CGI-style renders
@@ -240,7 +265,7 @@ TARGET_BACKGROUND DESCRIPTION
 
 FINAL PRIORITY ORDER
 
-1. Product accuracy
+1. Product appearance consistency
 2. Product visibility
 3. Realistic compositing
 4. Clean studio aesthetic
@@ -249,8 +274,8 @@ FINAL PRIORITY ORDER
 
 If any background element competes with the product, reduce or remove it.
 
-The background should feel like a premium studio set, not a location.
+The background should feel like a premium studio set rather than a real-world location.
 
 OUTPUT
 
-Generate OUTPUT_IMAGE by compositing SOURCE_PRODUCT into TARGET_BACKGROUND while preserving SOURCE_PRODUCT exactly.
+Generate a realistic ecommerce background replacement edit using SOURCE_IMAGE and TARGET_BACKGROUND.
