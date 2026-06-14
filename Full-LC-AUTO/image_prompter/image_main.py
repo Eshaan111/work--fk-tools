@@ -98,13 +98,27 @@ SUPPORTED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.15
 START_HOTKEY_KEY = keyboard.Key.right
-CHAT_CLICK_TARGET = (1237, 575)
+PIXELS_FILE = IMAGE_PROMPTER_ROOT / "pixels.json"
+
+
+def load_pixels() -> dict[str, tuple[int, int]]:
+    if not PIXELS_FILE.exists():
+        raise FileNotFoundError(
+            f"pixels.json not found at: {PIXELS_FILE}\n"
+            "Run set_pixels.py first to capture your screen coordinates."
+        )
+    raw = json.loads(PIXELS_FILE.read_text(encoding="utf-8"))
+    return {key: (int(val["x"]), int(val["y"])) for key, val in raw.items()}
+
+
+_PIXELS = load_pixels()
+CHAT_CLICK_TARGET: tuple[int, int] = _PIXELS["chat_neutral_click"]
 CHATGPT_PROMPT_BOX_PIXELS_VAIO = {
-    "position": (563, 398),
+    "position": _PIXELS["prompt_box_initial"],
     "rgb": (230, 255, 255),
 }
 CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection = {
-    "position": (783, 566),
+    "position": _PIXELS["prompt_box_post_injection"],
     "rgb": (230, 255, 255),
 }
 IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
