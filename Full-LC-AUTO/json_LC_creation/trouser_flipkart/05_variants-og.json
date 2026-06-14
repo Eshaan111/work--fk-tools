@@ -28,6 +28,7 @@
   "filled_checkpoint_label": "Variant rows created",
   "source_sku_from": "$context.price_stock_shipping.generated.Seller SKU ID",
   "variant_creation": {
+    "qualifier_column": "variant_qualifier",
     "sizes_column_prefix": "size_variant",
     "source_size_from": "$listing.size"
   },
