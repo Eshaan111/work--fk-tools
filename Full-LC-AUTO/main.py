@@ -828,6 +828,55 @@ def generate_sku_suffix(length: int = 7) -> str:
     return "".join(random.choices(alphabet, k=length))
 
 
+def build_sku_with_suffix(base_sku: str, shared_suffix: str) -> str:
+    normalized_base_sku = str(base_sku).strip()
+    if not normalized_base_sku:
+        return ""
+    return f"{normalized_base_sku}{shared_suffix}"
+
+
+def extract_generated_sku_suffix(generated_sku: str, base_sku: str) -> str:
+    normalized_generated_sku = str(generated_sku).strip()
+    normalized_base_sku = str(base_sku).strip()
+    if normalized_generated_sku and normalized_base_sku and normalized_generated_sku.startswith(normalized_base_sku):
+        return normalized_generated_sku[len(normalized_base_sku):]
+    return ""
+
+
+def resolve_variant_shared_sku_suffix(
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    source_sku: str,
+) -> str:
+    try:
+        source_price_row = load_product_input_row(
+            config.price_stock_shipping_excel,
+            listing_selection.kind,
+            listing_selection.size,
+        )
+    except ValueError as exc:
+        log_event(
+            "VARIANT",
+            "Could not load source Price/Stock/Shipping row to reuse its SKU suffix. "
+            f"Generating a fresh suffix instead: {exc}",
+        )
+        return generate_sku_suffix()
+
+    source_base_sku = source_price_row.values.get("Seller SKU ID", "").strip()
+    suffix = extract_generated_sku_suffix(source_sku, source_base_sku)
+    if suffix:
+        log_event("VARIANT", f"Reusing generated SKU suffix from source listing: {suffix}")
+        return suffix
+
+    generated_suffix = generate_sku_suffix()
+    log_event(
+        "VARIANT",
+        "Source SKU did not expose a reusable suffix from the Price workbook template. "
+        f"Generated a fresh shared suffix instead: {generated_suffix}",
+    )
+    return generated_suffix
+
+
 def normalize_field_value(value: str) -> str:
     normalized = str(value).strip()
     if not normalized:
@@ -2754,17 +2803,44 @@ def update_variant_row_sku(
 
 
 def update_pasted_variant_row_skus(
+    config: BotConfig,
+    listing_selection: ListingSelection,
     driver: webdriver.Firefox,
     source_sku: str,
-    source_size_value: str,
     target_row_sizes: list[str],
 ) -> None:
-    if not source_sku:
-        log_event("VARIANT", "Skipping variant SKU rewrite: source SKU was not available.")
+    if not target_row_sizes:
+        log_event("VARIANT", "Skipping variant SKU rewrite: no target rows were selected.")
         return
 
+    shared_suffix = resolve_variant_shared_sku_suffix(config, listing_selection, source_sku)
+
     for row_size_text in target_row_sizes:
-        updated_sku = build_variant_row_sku(source_sku, source_size_value, row_size_text)
+        target_size = row_size_text.strip().split()[0]
+        try:
+            price_row = load_product_input_row(
+                config.price_stock_shipping_excel,
+                listing_selection.kind,
+                target_size,
+            )
+        except ValueError as exc:
+            log_event(
+                "VARIANT",
+                "Could not find Price/Stock/Shipping row for variant size "
+                f"{target_size}. Falling back to copied-row size replacement: {exc}",
+            )
+            updated_sku = build_variant_row_sku(source_sku, listing_selection.size, row_size_text)
+        else:
+            target_base_sku = price_row.values.get("Seller SKU ID", "").strip()
+            if not target_base_sku:
+                log_event(
+                    "VARIANT",
+                    f"Price/Stock/Shipping row for size {target_size} has no Seller SKU ID. "
+                    "Falling back to copied-row size replacement.",
+                )
+                updated_sku = build_variant_row_sku(source_sku, listing_selection.size, row_size_text)
+            else:
+                updated_sku = build_sku_with_suffix(target_base_sku, shared_suffix)
         log_event(
             "VARIANT",
             f"Rewriting SKU for row {row_size_text}: source '{source_sku}' -> '{updated_sku}'",
@@ -2824,6 +2900,8 @@ def copy_source_variant_into_selected_rows(
 
 
 def fill_variant_page(
+    config: BotConfig,
+    listing_selection: ListingSelection,
     driver: webdriver.Firefox,
     product_input_row: ProductInputRow,
     source_sku: str,
@@ -2861,9 +2939,10 @@ def fill_variant_page(
     log_event("VARIANT", f"Using source size row for copy/paste: {source_size_text}")
     selected_target_sizes = copy_source_variant_into_selected_rows(driver, source_size_text)
     update_pasted_variant_row_skus(
+        config,
+        listing_selection,
         driver,
         source_sku,
-        product_input_row.size,
         selected_target_sizes,
     )
 
@@ -3789,6 +3868,8 @@ def run_variants_flow_step(
     if price_fill_result is not None:
         source_sku = price_fill_result.generated_values.get("Seller SKU ID", source_sku)
     fill_variant_page(
+        config,
+        listing_selection,
         driver,
         variant_row,
         source_sku,
