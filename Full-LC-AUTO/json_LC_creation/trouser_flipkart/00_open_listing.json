@@ -1,0 +1,32 @@
+{
+  "order": 1,
+  "step_name": "open_listing",
+  "handler": "navigation_step",
+  "page_name": "Open listing flow",
+  "actions": [
+    {
+      "type": "open_listing_page",
+      "url": "https://seller.flipkart.com/index.html#dashboard/addListings/single?vertical=trouser&vid=716",
+      "checkpoint_label": "Listing page opened"
+    },
+    {
+      "type": "dismiss_optional_ad_popup",
+      "timeout_seconds": 5,
+      "checkpoint_label": "Optional popup handling complete"
+    },
+    {
+      "type": "fill_brand_name",
+      "brand_name": "$context.brand_name",
+      "checkpoint_label": "Brand entered"
+    },
+    {
+      "type": "click_create_new_listing",
+      "checkpoint_label": "Create new listing clicked"
+    },
+    {
+      "type": "click_optional_continue",
+      "timeout_seconds": 5,
+      "checkpoint_label": "Optional continue handling complete"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "order": 4,
+  "step_name": "price_stock_shipping",
+  "handler": "field_fill_page",
+  "field_fill_mode": "price_stock_shipping",
+  "page_name": "Price, Stock and Shipping Information"
+}

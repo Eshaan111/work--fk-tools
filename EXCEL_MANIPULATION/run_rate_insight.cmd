@@ -1,8 +1,8 @@
 @echo off
 setlocal
 
-set "APP_DIR=C:\work-mom\Code-Tools\EXCEL_MANIPULATION"
-set "VENV_ACTIVATE=C:\work-mom\Code-Tools\.venv\Scripts\activate.bat"
+set "APP_DIR=C:\Users\ESHAAN\HAKUR\work--fk-tools\EXCEL_MANIPULATION"
+set "VENV_ACTIVATE=C:\Users\ESHAAN\HAKUR\work--fk-tools\.venv\Scripts\activate.bat"
 
 if not exist "%VENV_ACTIVATE%" (
     echo Virtual environment activate script not found:

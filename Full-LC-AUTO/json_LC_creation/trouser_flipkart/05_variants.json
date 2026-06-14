@@ -1,0 +1,6 @@
+{
+  "order": 6,
+  "step_name": "variants",
+  "handler": "variant_page",
+  "page_name": "Variant addition"
+}

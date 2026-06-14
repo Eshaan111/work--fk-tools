@@ -1,0 +1,7 @@
+{
+  "order": 3,
+  "step_name": "product_description",
+  "handler": "field_fill_page",
+  "field_fill_mode": "product_description",
+  "page_name": "Product Description"
+}

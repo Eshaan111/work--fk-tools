@@ -35,7 +35,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-LAPTOP_NAME = os.getenv("FK_LAPTOP_NAME", "VAIO").upper()
+# LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
+LAPTOP_NAME = "ASUS"
+
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
 )
@@ -171,6 +173,8 @@ DEFAULT_LISTING_URL = (
     "?vertical=jean&vid=667"
 )
 DEFAULT_BRAND_NAME = "STARVIELLE"
+DEFAULT_FLOW_SURFACE = "flipkart"
+FLOW_CONFIG_ROOT = PROJECT_ROOT / "json_LC_creation"
 USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION = True
 DEFAULT_JEANS_KIND = "Beige"
 DEFAULT_LISTING_SIZE = "28"
@@ -733,7 +737,17 @@ def load_field_definitions(json_path: Path) -> list[FieldDefinition]:
         raise ValueError(f"Price/Stock/Shipping JSON file was not found: {json_path}")
 
     payload = json.loads(json_path.read_text(encoding="utf-8"))
-    return [FieldDefinition(**field) for field in payload["fields"]]
+    return [build_field_definition(field) for field in payload["fields"]]
+
+
+def build_field_definition(field_payload: dict[str, object]) -> FieldDefinition:
+    return FieldDefinition(
+        order=int(field_payload["order"]),
+        label=str(field_payload["label"]),
+        required=bool(field_payload["required"]),
+        input_type=str(field_payload["input_type"]),
+        locator_hint=str(field_payload["locator_hint"]),
+    )
 
 
 def xpath_literal(value: str) -> str:
@@ -2912,7 +2926,7 @@ TAB_XPATHS = {
     "Variant addition": "//button[@role='tab' and .//span[contains(normalize-space(), 'Variant addition')]]",
 }
 
-PRODUCT_PAGE_FLOWS = {
+LEGACY_PRODUCT_PAGE_FLOWS = {
     "jeans": (
         "additional_description",
         "product_description",
@@ -2932,6 +2946,341 @@ PRODUCT_PAGE_FLOWS = {
 @dataclass(slots=True)
 class FlowState:
     price_fill_result: FillResult | None = None
+    context: dict[str, object] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
+class FlowStepDefinition:
+    order: int
+    step_id: str
+    handler: str
+    spec_file: str
+    spec_payload: dict[str, object]
+
+
+@dataclass(slots=True)
+class FlowPageDefinition:
+    order: int
+    step_name: str
+    page_file: str
+    handler: str
+    tab_label: str | None = None
+    tab_xpath: str | None = None
+    checkpoint_label: str | None = None
+    worksheet_name: str | None = None
+    field_json_config_attr: str | None = None
+    excel_config_attr: str | None = None
+    log_stage: str | None = None
+    log_message: str | None = None
+    filled_checkpoint_label: str | None = None
+    verify: dict[str, object] | None = None
+    snapshot_name: str | None = None
+    brand_name: str | None = None
+    locator_strategy: str | None = None
+    source_snapshot: str | None = None
+    fields: list[FieldDefinition] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class FlowDefinition:
+    surface: str
+    product_type: str
+    flow_name: str
+    flow_directory: Path
+    manifest_context: dict[str, object]
+    steps: list[FlowStepDefinition]
+
+
+def load_json_payload(json_path: Path) -> dict[str, object]:
+    return json.loads(json_path.read_text(encoding="utf-8"))
+
+
+def resolve_flow_directory(product_type: str, surface: str = DEFAULT_FLOW_SURFACE) -> Path:
+    return FLOW_CONFIG_ROOT / f"{product_type}_{surface}"
+
+
+def load_listing_flow_definition(
+    product_type: str,
+    surface: str = DEFAULT_FLOW_SURFACE,
+) -> FlowDefinition | None:
+    flow_directory = resolve_flow_directory(product_type, surface)
+    flow_manifest_path = flow_directory / "flow.json"
+    if not flow_manifest_path.exists():
+        return None
+
+    payload = load_json_payload(flow_manifest_path)
+    step_entries = payload.get("steps")
+    if step_entries is None:
+        legacy_page_entries = payload.get("pages", [])
+        if not isinstance(legacy_page_entries, list) or not legacy_page_entries:
+            raise ValueError(f"Flow manifest has no steps/pages: {flow_manifest_path}")
+        step_entries = [
+            {
+                "order": page_entry["order"],
+                "step_id": Path(str(page_entry["page_file"])).stem,
+                "handler": "field_fill_page",
+                "spec_file": page_entry["page_file"],
+            }
+            for page_entry in legacy_page_entries
+        ]
+
+    if not isinstance(step_entries, list) or not step_entries:
+        raise ValueError(f"Flow manifest has no steps: {flow_manifest_path}")
+
+    steps: list[FlowStepDefinition] = []
+    for step_entry in step_entries:
+        if not isinstance(step_entry, dict):
+            raise ValueError(f"Invalid step entry in flow manifest: {flow_manifest_path}")
+        spec_file = str(step_entry["spec_file"]).strip()
+        step_path = flow_directory / spec_file
+        if not step_path.exists():
+            raise ValueError(f"Flow step JSON was not found: {step_path}")
+
+        spec_payload = load_json_payload(step_path)
+        steps.append(
+            FlowStepDefinition(
+                order=int(step_entry.get("order", spec_payload.get("order", 0))),
+                step_id=str(step_entry.get("step_id", spec_payload.get("step_name", spec_file))),
+                handler=str(step_entry.get("handler", spec_payload.get("handler", ""))),
+                spec_file=spec_file,
+                spec_payload=spec_payload,
+            )
+        )
+
+    steps.sort(key=lambda step: step.order)
+    return FlowDefinition(
+        surface=str(payload.get("surface", surface)),
+        product_type=str(payload.get("product_type", product_type)),
+        flow_name=str(payload.get("flow_name", "listing_creation")),
+        flow_directory=flow_directory,
+        manifest_context=payload.get("context", {}) if isinstance(payload.get("context"), dict) else {},
+        steps=steps,
+    )
+
+
+def build_page_definition_from_spec(
+    step_definition: FlowStepDefinition,
+) -> FlowPageDefinition:
+    spec_payload = step_definition.spec_payload
+    tab_payload = spec_payload.get("tab") if isinstance(spec_payload.get("tab"), dict) else {}
+    data_source = (
+        spec_payload.get("data_source")
+        if isinstance(spec_payload.get("data_source"), dict)
+        else {}
+    )
+    verification = (
+        spec_payload.get("verification")
+        if isinstance(spec_payload.get("verification"), dict)
+        else None
+    )
+    tab_locator_candidates = (
+        tab_payload.get("locator_candidates")
+        if isinstance(tab_payload, dict)
+        else None
+    )
+    tab_xpath: str | None = None
+    if isinstance(tab_locator_candidates, list):
+        for candidate in tab_locator_candidates:
+            if (
+                isinstance(candidate, dict)
+                and str(candidate.get("type", "")).lower() == "xpath"
+                and candidate.get("value")
+            ):
+                tab_xpath = str(candidate["value"])
+                break
+
+    fields_payload = spec_payload.get("fields", [])
+    return FlowPageDefinition(
+        order=int(spec_payload.get("order", step_definition.order)),
+        step_name=str(spec_payload.get("step_name", step_definition.step_id)),
+        page_file=step_definition.spec_file,
+        handler=step_definition.handler,
+        tab_label=str(tab_payload.get("label")) if tab_payload.get("label") else None,
+        tab_xpath=tab_xpath,
+        checkpoint_label=(
+            str(spec_payload["checkpoint_label"])
+            if spec_payload.get("checkpoint_label")
+            else None
+        ),
+        worksheet_name=(
+            str(data_source["worksheet"])
+            if isinstance(data_source, dict) and data_source.get("worksheet")
+            else None
+        ),
+        field_json_config_attr=(
+            str(spec_payload["field_json_config_attr"])
+            if spec_payload.get("field_json_config_attr")
+            else None
+        ),
+        excel_config_attr=(
+            str(data_source["workbook_attr"])
+            if isinstance(data_source, dict) and data_source.get("workbook_attr")
+            else None
+        ),
+        log_stage=str(spec_payload["log_stage"]) if spec_payload.get("log_stage") else None,
+        log_message=str(spec_payload["log_message"]) if spec_payload.get("log_message") else None,
+        filled_checkpoint_label=(
+            str(spec_payload["filled_checkpoint_label"])
+            if spec_payload.get("filled_checkpoint_label")
+            else None
+        ),
+        verify=verification,
+        snapshot_name=(
+            str(spec_payload["snapshot_name"])
+            if spec_payload.get("snapshot_name")
+            else None
+        ),
+        brand_name=str(spec_payload["brand_name"]) if spec_payload.get("brand_name") else None,
+        locator_strategy=(
+            str(spec_payload["locator_strategy"])
+            if spec_payload.get("locator_strategy")
+            else None
+        ),
+        source_snapshot=(
+            str(spec_payload["source_snapshot"])
+            if spec_payload.get("source_snapshot")
+            else None
+        ),
+        fields=[
+            build_field_definition(field_payload)
+            for field_payload in fields_payload
+            if isinstance(field_payload, dict)
+        ],
+    )
+
+
+def resolve_runtime_reference(
+    value: object,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    flow_state: FlowState,
+) -> object:
+    if not isinstance(value, str) or not value.startswith("$"):
+        return value
+
+    if value.startswith("$context."):
+        return flow_state.context.get(value.removeprefix("$context."))
+    if value.startswith("$listing."):
+        return getattr(listing_selection, value.removeprefix("$listing."))
+    if value.startswith("$config."):
+        return getattr(config, value.removeprefix("$config."))
+    if value == "$state.price_fill_result":
+        return flow_state.price_fill_result
+    return value
+
+
+def update_flow_context(
+    flow_state: FlowState,
+    save_to_context: object,
+    saved_values: dict[str, object],
+) -> None:
+    if not isinstance(save_to_context, dict):
+        return
+    for context_key, source_key in save_to_context.items():
+        if isinstance(source_key, str) and source_key in saved_values:
+            flow_state.context[str(context_key)] = saved_values[source_key]
+
+
+def run_navigation_step(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    flow_state: FlowState,
+    step_definition: FlowStepDefinition,
+) -> None:
+    actions = step_definition.spec_payload.get("actions", [])
+    if not isinstance(actions, list):
+        raise ValueError(f"Navigation step '{step_definition.step_id}' must define a list of actions.")
+
+    for action in actions:
+        if not isinstance(action, dict):
+            raise ValueError(f"Navigation step '{step_definition.step_id}' has an invalid action entry.")
+        action_type = str(action.get("type", "")).strip()
+        checkpoint_label = (
+            str(action["checkpoint_label"])
+            if action.get("checkpoint_label")
+            else None
+        )
+
+        if action_type == "open_listing_page":
+            listing_url = resolve_runtime_reference(
+                action.get("url", "$config.listing_url"),
+                config,
+                listing_selection,
+                flow_state,
+            )
+            if not isinstance(listing_url, str):
+                raise ValueError("open_listing_page action must resolve to a URL string.")
+            log_event("NAV", f"Opening listing page: {listing_url}")
+            open_listing_page(driver, listing_url)
+            log_event("NAV", "Listing page opened in Firefox.")
+        elif action_type == "dismiss_optional_ad_popup":
+            dismiss_optional_ad_popup(
+                driver,
+                timeout_seconds=int(action.get("timeout_seconds", 5)),
+            )
+        elif action_type == "fill_brand_name":
+            brand_name = resolve_runtime_reference(
+                action.get("brand_name", "$context.brand_name"),
+                config,
+                listing_selection,
+                flow_state,
+            )
+            if not isinstance(brand_name, str) or not brand_name.strip():
+                raise ValueError("fill_brand_name action must resolve to a non-empty brand name.")
+            fill_brand_name(driver, brand_name)
+        elif action_type == "click_create_new_listing":
+            click_create_new_listing(driver)
+        elif action_type == "click_optional_continue":
+            click_optional_continue(
+                driver,
+                timeout_seconds=int(action.get("timeout_seconds", 5)),
+            )
+        elif action_type == "click_save_and_go_back":
+            click_save_and_go_back_button(driver)
+        else:
+            raise ValueError(
+                f"Unsupported navigation action '{action_type}' in step '{step_definition.step_id}'."
+            )
+
+        if checkpoint_label:
+            checkpoint_pause(pause_controller, checkpoint_label, driver, config)
+
+
+def run_open_listing_bootstrap_step(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    flow_definition: FlowDefinition | None,
+) -> bool:
+    if flow_definition is None:
+        return False
+
+    open_step = next(
+        (
+            step
+            for step in flow_definition.steps
+            if step.handler == "navigation_step" and step.step_id == "open_listing"
+        ),
+        None,
+    )
+    if open_step is None:
+        return False
+
+    flow_state = FlowState()
+    flow_state.context.update(flow_definition.manifest_context)
+    flow_state.context.setdefault("brand_name", DEFAULT_BRAND_NAME)
+    run_navigation_step(
+        driver,
+        pause_controller,
+        config,
+        listing_selection,
+        flow_state,
+        open_step,
+    )
+    return True
 
 
 def open_flow_tab(
@@ -2940,8 +3289,10 @@ def open_flow_tab(
     config: BotConfig,
     tab_label: str,
     checkpoint_label: str,
+    tab_xpath: str | None = None,
 ) -> None:
-    open_tab_via_autogui(driver, tab_label, TAB_XPATHS[tab_label])
+    resolved_tab_xpath = tab_xpath or TAB_XPATHS[tab_label]
+    open_tab_via_autogui(driver, tab_label, resolved_tab_xpath)
     checkpoint_pause(pause_controller, checkpoint_label, driver, config)
 
 
@@ -2952,15 +3303,95 @@ def verify_flow_page_switch(
     cycle_label: str,
     tab_labels: tuple[str, str],
     checkpoint_label: str,
+    tab_xpaths: tuple[str, str] | None = None,
 ) -> None:
+    resolved_tab_sequence = []
+    for index, tab_label in enumerate(tab_labels):
+        tab_xpath = tab_xpaths[index] if tab_xpaths is not None else TAB_XPATHS[tab_label]
+        resolved_tab_sequence.append((tab_label, tab_xpath))
     cycle_page_switch_verification_until_toast(
         driver,
         pause_controller,
         config,
         cycle_label=cycle_label,
-        tab_sequence=[(tab_label, TAB_XPATHS[tab_label]) for tab_label in tab_labels],
+        tab_sequence=resolved_tab_sequence,
     )
     checkpoint_pause(pause_controller, checkpoint_label, driver, config)
+
+
+def run_page_verification_from_definition(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    page_definition: FlowPageDefinition,
+) -> None:
+    verify_payload = page_definition.verify
+    if not verify_payload:
+        return
+    if not bool(verify_payload.get("enabled", True)):
+        return
+
+    tab_labels = verify_payload.get("tab_labels")
+    if tab_labels is None and isinstance(verify_payload.get("tab_sequence"), list):
+        tab_labels = verify_payload.get("tab_sequence")
+    if not isinstance(tab_labels, list) or len(tab_labels) != 2:
+        raise ValueError(
+            f"Flow page '{page_definition.step_name}' must define exactly two verification tabs."
+        )
+
+    cycle_label = str(
+        verify_payload.get("cycle_label")
+        or verify_payload.get("page_name")
+        or page_definition.step_name
+    )
+    checkpoint_label = str(
+        verify_payload.get("checkpoint_label")
+        or f"Verification completed for {page_definition.step_name}"
+    )
+
+    tab_xpaths_payload = verify_payload.get("tab_xpaths")
+    tab_xpaths: tuple[str, str] | None = None
+    if isinstance(tab_xpaths_payload, list) and len(tab_xpaths_payload) == 2:
+        tab_xpaths = (str(tab_xpaths_payload[0]), str(tab_xpaths_payload[1]))
+
+    verify_flow_page_switch(
+        driver,
+        pause_controller,
+        config,
+        cycle_label,
+        (str(tab_labels[0]), str(tab_labels[1])),
+        checkpoint_label,
+        tab_xpaths=tab_xpaths,
+    )
+
+
+def load_page_input_row(
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    page_definition: FlowPageDefinition,
+) -> ProductInputRow:
+    if not page_definition.excel_config_attr:
+        raise ValueError(f"Flow page '{page_definition.step_name}' is missing excel_config_attr.")
+    workbook_path = getattr(config, page_definition.excel_config_attr)
+    return load_product_input_row(
+        workbook_path,
+        listing_selection.kind,
+        listing_selection.size,
+        worksheet_name=page_definition.worksheet_name,
+    )
+
+
+def load_page_field_definitions(
+    config: BotConfig,
+    page_definition: FlowPageDefinition,
+) -> list[FieldDefinition]:
+    if page_definition.fields:
+        return page_definition.fields
+    if not page_definition.field_json_config_attr:
+        raise ValueError(
+            f"Flow page '{page_definition.step_name}' is missing field_json_config_attr."
+        )
+    return load_field_definitions(getattr(config, page_definition.field_json_config_attr))
 
 
 def run_additional_description_flow_step(
@@ -2968,50 +3399,66 @@ def run_additional_description_flow_step(
     pause_controller: PauseController,
     config: BotConfig,
     listing_selection: ListingSelection,
+    page_definition: FlowPageDefinition | None = None,
     verify_after: bool = True,
 ) -> None:
+    page_definition = page_definition or FlowPageDefinition(
+        order=1,
+        step_name="additional_description",
+        page_file="",
+        handler="additional_description",
+        tab_label="Additional Description",
+        checkpoint_label="Additional Description tab opened",
+        worksheet_name=get_additional_description_sheet_name(listing_selection.product_type),
+        field_json_config_attr="additional_description_json",
+        excel_config_attr="additional_description_excel",
+        log_stage="ADDL",
+        log_message="Starting Additional Description field fill from Excel + JSON mapping...",
+        filled_checkpoint_label="Additional Description fields filled",
+        verify={
+            "enabled": verify_after,
+            "cycle_label": "Additional Description page",
+            "tab_labels": ["Additional Description", "Product Description"],
+            "checkpoint_label": "Changes saved detected after Additional Description click cycle",
+        },
+    )
     open_flow_tab(
         driver,
         pause_controller,
         config,
-        "Additional Description",
-        "Additional Description tab opened",
+        page_definition.tab_label or "Additional Description",
+        page_definition.checkpoint_label or "Additional Description tab opened",
+        tab_xpath=page_definition.tab_xpath,
     )
-    additional_description_row = load_product_input_row(
-        config.additional_description_excel,
-        listing_selection.kind,
-        listing_selection.size,
-        worksheet_name=get_additional_description_sheet_name(listing_selection.product_type),
-    )
-    additional_description_field_definitions = load_field_definitions(
-        config.additional_description_json
-    )
+    additional_description_row = load_page_input_row(config, listing_selection, page_definition)
+    additional_description_field_definitions = load_page_field_definitions(config, page_definition)
     log_event(
         "DATA",
         f"Loaded Additional Description row: kind={additional_description_row.kind}, "
         f"size={additional_description_row.size}",
     )
-    log_event("ADDL", "Starting Additional Description field fill from Excel + JSON mapping...")
+    log_event(
+        page_definition.log_stage or "ADDL",
+        page_definition.log_message or "Starting Additional Description field fill from Excel + JSON mapping...",
+    )
     fill_additional_description_fields(
         driver,
         additional_description_field_definitions,
         additional_description_row,
     )
-    checkpoint_pause(pause_controller, "Additional Description fields filled", driver, config)
+    checkpoint_pause(
+        pause_controller,
+        page_definition.filled_checkpoint_label or "Additional Description fields filled",
+        driver,
+        config,
+    )
 
     if verify_after:
         log_event(
             "VERIFY",
             "Additional Description filling completed. Starting VERIFYING CHANGES CYCLE.",
         )
-        verify_flow_page_switch(
-            driver,
-            pause_controller,
-            config,
-            "Additional Description page",
-            ("Additional Description", "Product Description"),
-            "Changes saved detected after Additional Description click cycle",
-        )
+        run_page_verification_from_definition(driver, pause_controller, config, page_definition)
 
 
 def run_product_description_flow_step(
@@ -3019,45 +3466,63 @@ def run_product_description_flow_step(
     pause_controller: PauseController,
     config: BotConfig,
     listing_selection: ListingSelection,
+    page_definition: FlowPageDefinition | None = None,
 ) -> None:
+    page_definition = page_definition or FlowPageDefinition(
+        order=2,
+        step_name="product_description",
+        page_file="",
+        handler="product_description",
+        tab_label="Product Description",
+        checkpoint_label="Product Description tab opened",
+        worksheet_name=get_product_description_sheet_name(listing_selection.product_type),
+        field_json_config_attr="product_description_json",
+        excel_config_attr="product_description_excel",
+        log_stage="DESC",
+        log_message="Starting Product Description field fill from Excel + JSON mapping...",
+        filled_checkpoint_label="Product Description fields filled",
+        verify={
+            "enabled": True,
+            "cycle_label": "Product Description page",
+            "tab_labels": ["Product Description", "Price, Stock and Shipping Information"],
+            "checkpoint_label": "Changes saved detected after Product Description click cycle",
+        },
+    )
     open_flow_tab(
         driver,
         pause_controller,
         config,
-        "Product Description",
-        "Product Description tab opened",
+        page_definition.tab_label or "Product Description",
+        page_definition.checkpoint_label or "Product Description tab opened",
+        tab_xpath=page_definition.tab_xpath,
     )
-    product_description_row = load_product_input_row(
-        config.product_description_excel,
-        listing_selection.kind,
-        listing_selection.size,
-        worksheet_name=get_product_description_sheet_name(listing_selection.product_type),
-    )
-    product_description_field_definitions = load_field_definitions(config.product_description_json)
+    product_description_row = load_page_input_row(config, listing_selection, page_definition)
+    product_description_field_definitions = load_page_field_definitions(config, page_definition)
     log_event(
         "DATA",
         f"Loaded Product Description row: kind={product_description_row.kind}, "
         f"size={product_description_row.size}",
     )
-    log_event("DESC", "Starting Product Description field fill from Excel + JSON mapping...")
+    log_event(
+        page_definition.log_stage or "DESC",
+        page_definition.log_message or "Starting Product Description field fill from Excel + JSON mapping...",
+    )
     fill_product_description_fields(
         driver,
         product_description_field_definitions,
         product_description_row,
     )
-    checkpoint_pause(pause_controller, "Product Description fields filled", driver, config)
+    checkpoint_pause(
+        pause_controller,
+        page_definition.filled_checkpoint_label or "Product Description fields filled",
+        driver,
+        config,
+    )
     log_event(
         "VERIFY",
         "Product Description filling completed. Starting VERIFYING CHANGES CYCLE.",
     )
-    verify_flow_page_switch(
-        driver,
-        pause_controller,
-        config,
-        "Product Description page",
-        ("Product Description", "Price, Stock and Shipping Information"),
-        "Changes saved detected after Product Description click cycle",
-    )
+    run_page_verification_from_definition(driver, pause_controller, config, page_definition)
 
 
 def run_price_stock_shipping_flow_step(
@@ -3065,26 +3530,42 @@ def run_price_stock_shipping_flow_step(
     pause_controller: PauseController,
     config: BotConfig,
     listing_selection: ListingSelection,
+    page_definition: FlowPageDefinition | None = None,
 ) -> FillResult:
+    page_definition = page_definition or FlowPageDefinition(
+        order=3,
+        step_name="price_stock_shipping",
+        page_file="",
+        handler="price_stock_shipping",
+        tab_label="Price, Stock and Shipping Information",
+        checkpoint_label="Selling info tab opened",
+        field_json_config_attr="price_stock_shipping_json",
+        excel_config_attr="price_stock_shipping_excel",
+        filled_checkpoint_label="Price/Stock/Shipping fields filled",
+        snapshot_name=PHASE_ONE_SNAPSHOT_NAME,
+        verify={
+            "enabled": True,
+            "cycle_label": "SKU page",
+            "tab_labels": ["Price, Stock and Shipping Information", "Image addition"],
+            "checkpoint_label": "Changes saved detected after SKU-page click cycle",
+        },
+    )
     open_flow_tab(
         driver,
         pause_controller,
         config,
-        "Price, Stock and Shipping Information",
-        "Selling info tab opened",
+        page_definition.tab_label or "Price, Stock and Shipping Information",
+        page_definition.checkpoint_label or "Selling info tab opened",
+        tab_xpath=page_definition.tab_xpath,
     )
     phase_one_snapshot_path = save_named_html_snapshot(
         driver,
         config.snapshot_directory,
-        PHASE_ONE_SNAPSHOT_NAME,
+        page_definition.snapshot_name or PHASE_ONE_SNAPSHOT_NAME,
     )
     log_event("SNAPSHOT", f"Saved phase snapshot: {phase_one_snapshot_path}")
-    product_input_row = load_product_input_row(
-        config.price_stock_shipping_excel,
-        listing_selection.kind,
-        listing_selection.size,
-    )
-    field_definitions = load_field_definitions(config.price_stock_shipping_json)
+    product_input_row = load_page_input_row(config, listing_selection, page_definition)
+    field_definitions = load_page_field_definitions(config, page_definition)
     log_event(
         "DATA",
         f"Loaded Price/Stock/Shipping row for filling: kind={product_input_row.kind}, "
@@ -3108,7 +3589,7 @@ def run_price_stock_shipping_flow_step(
     )
     checkpoint_pause(
         pause_controller,
-        "Price/Stock/Shipping fields filled",
+        page_definition.filled_checkpoint_label or "Price/Stock/Shipping fields filled",
         driver,
         config,
     )
@@ -3116,14 +3597,7 @@ def run_price_stock_shipping_flow_step(
         "VERIFY",
         "Price/Stock/Shipping verification completed. Starting VERIFYING CHANGES CYCLE.",
     )
-    verify_flow_page_switch(
-        driver,
-        pause_controller,
-        config,
-        "SKU page",
-        ("Price, Stock and Shipping Information", "Image addition"),
-        "Changes saved detected after SKU-page click cycle",
-    )
+    run_page_verification_from_definition(driver, pause_controller, config, page_definition)
     return price_fill_result
 
 
@@ -3132,33 +3606,50 @@ def run_images_flow_step(
     pause_controller: PauseController,
     config: BotConfig,
     verify_before_variants: bool,
+    page_definition: FlowPageDefinition | None = None,
 ) -> None:
+    page_definition = page_definition or FlowPageDefinition(
+        order=4,
+        step_name="images",
+        page_file="",
+        handler="images",
+        tab_label="Image addition",
+        checkpoint_label="Images tab opened",
+        filled_checkpoint_label="Images uploaded",
+        brand_name=DEFAULT_BRAND_NAME,
+        verify={
+            "enabled": verify_before_variants,
+            "cycle_label": "Images page",
+            "tab_labels": ["Image addition", "Variant addition"],
+            "checkpoint_label": "Changes saved detected after Images page click cycle",
+        },
+    )
     open_flow_tab(
         driver,
         pause_controller,
         config,
-        "Image addition",
-        "Images tab opened",
+        page_definition.tab_label or "Image addition",
+        page_definition.checkpoint_label or "Images tab opened",
+        tab_xpath=page_definition.tab_xpath,
     )
-    selected_image_folder = preview_selected_image_folder(config, DEFAULT_BRAND_NAME)
+    brand_name = page_definition.brand_name or DEFAULT_BRAND_NAME
+    selected_image_folder = preview_selected_image_folder(config, brand_name)
     if selected_image_folder is not None:
         checkpoint_pause(pause_controller, "Image folder selected", driver, config)
-        upload_image_folder(driver, selected_image_folder, DEFAULT_BRAND_NAME, pause_controller, config)
-        checkpoint_pause(pause_controller, "Images uploaded", driver, config)
+        upload_image_folder(driver, selected_image_folder, brand_name, pause_controller, config)
+        checkpoint_pause(
+            pause_controller,
+            page_definition.filled_checkpoint_label or "Images uploaded",
+            driver,
+            config,
+        )
 
     if verify_before_variants:
         log_event(
             "VERIFY",
             "Images step completed. Starting VERIFYING CHANGES CYCLE before Variant page.",
         )
-        verify_flow_page_switch(
-            driver,
-            pause_controller,
-            config,
-            "Images page",
-            ("Image addition", "Variant addition"),
-            "Changes saved detected after Images page click cycle",
-        )
+        run_page_verification_from_definition(driver, pause_controller, config, page_definition)
 
 
 def run_variants_flow_step(
@@ -3167,34 +3658,231 @@ def run_variants_flow_step(
     config: BotConfig,
     listing_selection: ListingSelection,
     price_fill_result: FillResult | None,
+    source_sku_override: str | None = None,
+    page_definition: FlowPageDefinition | None = None,
 ) -> None:
-    if price_fill_result is None:
+    if price_fill_result is None and not source_sku_override:
         raise ValueError("Variant step needs the Price/Stock/Shipping fill result.")
 
+    page_definition = page_definition or FlowPageDefinition(
+        order=5,
+        step_name="variants",
+        page_file="",
+        handler="variants",
+        tab_label="Variant addition",
+        checkpoint_label="Variant tab opened",
+        worksheet_name="Jeans Variant Inputs",
+        excel_config_attr="variants_excel",
+        filled_checkpoint_label="Variant rows created",
+    )
     open_flow_tab(
         driver,
         pause_controller,
         config,
-        "Variant addition",
-        "Variant tab opened",
+        page_definition.tab_label or "Variant addition",
+        page_definition.checkpoint_label or "Variant tab opened",
+        tab_xpath=page_definition.tab_xpath,
     )
-    variant_row = load_product_input_row(
-        config.variants_excel,
-        listing_selection.kind,
-        listing_selection.size,
-        worksheet_name="Jeans Variant Inputs",
-    )
+    variant_row = load_page_input_row(config, listing_selection, page_definition)
     log_event(
         "DATA",
         f"Loaded Variant row: kind={variant_row.kind}, size={variant_row.size}",
     )
-    log_event("VARIANT", "Starting Variant page creation loop from Excel mapping...")
+    log_event(
+        page_definition.log_stage or "VARIANT",
+        page_definition.log_message or "Starting Variant page creation loop from Excel mapping...",
+    )
+    source_sku = source_sku_override or ""
+    if price_fill_result is not None:
+        source_sku = price_fill_result.generated_values.get("Seller SKU ID", source_sku)
     fill_variant_page(
         driver,
         variant_row,
-        price_fill_result.generated_values.get("Seller SKU ID", ""),
+        source_sku,
     )
-    checkpoint_pause(pause_controller, "Variant rows created", driver, config)
+    checkpoint_pause(
+        pause_controller,
+        page_definition.filled_checkpoint_label or "Variant rows created",
+        driver,
+        config,
+    )
+
+
+def run_flow_step_from_definition(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    step_definition: FlowStepDefinition,
+    flow_state: FlowState,
+    flow_step_ids: set[str],
+) -> None:
+    if step_definition.handler == "navigation_step":
+        run_navigation_step(
+            driver,
+            pause_controller,
+            config,
+            listing_selection,
+            flow_state,
+            step_definition,
+        )
+        return
+
+    page_definition = build_page_definition_from_spec(step_definition)
+    verification_payload = (
+        page_definition.verify if isinstance(page_definition.verify, dict) else {}
+    )
+
+    if step_definition.handler == "field_fill_page":
+        field_fill_mode = str(step_definition.spec_payload.get("field_fill_mode", "")).strip()
+        if field_fill_mode == "additional_description":
+            verify_after = bool(verification_payload.get("enabled", True))
+            run_additional_description_flow_step(
+                driver,
+                pause_controller,
+                config,
+                listing_selection,
+                page_definition=page_definition,
+                verify_after=verify_after,
+            )
+        elif field_fill_mode == "product_description":
+            run_product_description_flow_step(
+                driver,
+                pause_controller,
+                config,
+                listing_selection,
+                page_definition=page_definition,
+            )
+        elif field_fill_mode == "price_stock_shipping":
+            flow_state.price_fill_result = run_price_stock_shipping_flow_step(
+                driver,
+                pause_controller,
+                config,
+                listing_selection,
+                page_definition=page_definition,
+            )
+            if flow_state.price_fill_result.generated_values:
+                saved_values: dict[str, object] = {}
+                for generated_label, generated_value in flow_state.price_fill_result.generated_values.items():
+                    default_context_key = f"{page_definition.step_name}.generated.{generated_label}"
+                    flow_state.context[default_context_key] = generated_value
+                    log_event(
+                        "FLOW",
+                        f"Saved generated value to context: {default_context_key} = {generated_value}",
+                    )
+                    saved_values[generated_label] = generated_value
+                update_flow_context(
+                    flow_state,
+                    step_definition.spec_payload.get("save_to_context"),
+                    saved_values,
+                )
+        else:
+            raise ValueError(
+                f"Unsupported field_fill_mode '{field_fill_mode}' in step '{step_definition.step_id}'."
+            )
+    elif step_definition.handler == "image_upload_page":
+        image_source_payload = (
+            step_definition.spec_payload.get("image_source")
+            if isinstance(step_definition.spec_payload.get("image_source"), dict)
+            else {}
+        )
+        if image_source_payload.get("brand_name_from"):
+            resolved_brand_name = resolve_runtime_reference(
+                image_source_payload.get("brand_name_from"),
+                config,
+                listing_selection,
+                flow_state,
+            )
+            if isinstance(resolved_brand_name, str) and resolved_brand_name.strip():
+                page_definition.brand_name = resolved_brand_name
+        verify_before_variants = bool(
+            verification_payload.get("enabled", "variants" in flow_step_ids)
+        )
+        run_images_flow_step(
+            driver,
+            pause_controller,
+            config,
+            verify_before_variants=verify_before_variants,
+            page_definition=page_definition,
+        )
+    elif step_definition.handler == "variant_page":
+        source_sku_override = resolve_runtime_reference(
+            step_definition.spec_payload.get(
+                "source_sku_from",
+                "$context.price_stock_shipping.generated.Seller SKU ID",
+            ),
+            config,
+            listing_selection,
+            flow_state,
+        )
+        run_variants_flow_step(
+            driver,
+            pause_controller,
+            config,
+            listing_selection,
+            flow_state.price_fill_result,
+            source_sku_override=str(source_sku_override) if source_sku_override else None,
+            page_definition=page_definition,
+        )
+    else:
+        raise ValueError(f"Unknown flow handler: {step_definition.handler}")
+
+
+def run_flow_page_from_definition(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    page_definition: FlowPageDefinition,
+    flow_state: FlowState,
+    flow_step_names: set[str],
+) -> None:
+    # Legacy compatibility wrapper for the older hardcoded page-only flow path.
+    if page_definition.handler == "additional_description":
+        verify_after = bool((page_definition.verify or {}).get("enabled", True))
+        run_additional_description_flow_step(
+            driver,
+            pause_controller,
+            config,
+            listing_selection,
+            page_definition=page_definition,
+            verify_after=verify_after,
+        )
+    elif page_definition.handler == "product_description":
+        run_product_description_flow_step(
+            driver,
+            pause_controller,
+            config,
+            listing_selection,
+            page_definition=page_definition,
+        )
+    elif page_definition.handler == "price_stock_shipping":
+        flow_state.price_fill_result = run_price_stock_shipping_flow_step(
+            driver,
+            pause_controller,
+            config,
+            listing_selection,
+            page_definition=page_definition,
+        )
+    elif page_definition.handler == "images":
+        run_images_flow_step(
+            driver,
+            pause_controller,
+            config,
+            page_definition=page_definition,
+            verify_before_variants="variants" in flow_step_names,
+        )
+    elif page_definition.handler == "variants":
+        run_variants_flow_step(
+            driver,
+            pause_controller,
+            config,
+            listing_selection,
+            flow_state.price_fill_result,
+            page_definition=page_definition,
+        )
+    else:
+        raise ValueError(f"Unknown flow handler: {page_definition.handler}")
 
 
 def run_listing_page_flow(
@@ -3203,47 +3891,45 @@ def run_listing_page_flow(
     config: BotConfig,
     listing_selection: ListingSelection,
 ) -> None:
-    flow_steps = PRODUCT_PAGE_FLOWS[listing_selection.product_type]
+    flow_definition = load_listing_flow_definition(listing_selection.product_type)
     flow_state = FlowState()
+    if flow_definition is not None:
+        flow_state.context.update(flow_definition.manifest_context)
+        flow_state.context.setdefault("brand_name", DEFAULT_BRAND_NAME)
+        flow_step_ids = {step.step_id for step in flow_definition.steps}
+        log_event(
+            "FLOW",
+            f"Running JSON flow {flow_definition.flow_name} for "
+            f"{flow_definition.product_type}/{flow_definition.surface}: "
+            f"{' -> '.join(step.step_id for step in flow_definition.steps)}",
+        )
+        for step_definition in flow_definition.steps:
+            run_flow_step_from_definition(
+                driver,
+                pause_controller,
+                config,
+                listing_selection,
+                step_definition,
+                flow_state,
+                flow_step_ids,
+            )
+        return
+
+    flow_steps = LEGACY_PRODUCT_PAGE_FLOWS[listing_selection.product_type]
     log_event(
         "FLOW",
-        f"Running {listing_selection.product_type} flow: {' -> '.join(flow_steps)}",
+        f"Running legacy {listing_selection.product_type} flow: {' -> '.join(flow_steps)}",
     )
-
     for step_name in flow_steps:
-        if step_name == "additional_description":
-            run_additional_description_flow_step(
-                driver,
-                pause_controller,
-                config,
-                listing_selection,
-            )
-        elif step_name == "product_description":
-            run_product_description_flow_step(driver, pause_controller, config, listing_selection)
-        elif step_name == "price_stock_shipping":
-            flow_state.price_fill_result = run_price_stock_shipping_flow_step(
-                driver,
-                pause_controller,
-                config,
-                listing_selection,
-            )
-        elif step_name == "images":
-            run_images_flow_step(
-                driver,
-                pause_controller,
-                config,
-                verify_before_variants="variants" in flow_steps,
-            )
-        elif step_name == "variants":
-            run_variants_flow_step(
-                driver,
-                pause_controller,
-                config,
-                listing_selection,
-                flow_state.price_fill_result,
-            )
-        else:
-            raise ValueError(f"Unknown flow step: {step_name}")
+        run_flow_page_from_definition(
+            driver,
+            pause_controller,
+            config,
+            listing_selection,
+            FlowPageDefinition(order=0, step_name=step_name, page_file="", handler=step_name),
+            flow_state,
+            set(flow_steps),
+        )
 
 
 def print_runtime_context(config: BotConfig) -> None:
@@ -3275,6 +3961,7 @@ def main() -> None:
         selected_profile = prompt_for_profile()
         additional_test_run_only = prompt_for_additional_test_run()
         listing_selection = prompt_for_listing_selection()
+        json_flow_definition = load_listing_flow_definition(listing_selection.product_type)
         config = BotConfig(
             profile_name=selected_profile,
             image_directory=listing_selection.image_directory,
@@ -3294,6 +3981,11 @@ def main() -> None:
             f"Listing selection: type={listing_selection.product_type}, "
             f"kind={listing_selection.kind}, size={listing_selection.size}",
         )
+        log_event(
+            "BOOT",
+            "JSON flow mode: "
+            f"{'enabled' if json_flow_definition is not None else 'disabled'}",
+        )
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
 
@@ -3312,19 +4004,27 @@ def main() -> None:
     pause_controller = PauseController()
     pause_controller.start()
 
-    log_event("NAV", f"Opening listing page: {config.listing_url}")
-    open_listing_page(driver, config.listing_url)
-    log_event("NAV", "Listing page opened in Firefox.")
-    checkpoint_pause(pause_controller, "Listing page opened", driver, config)
-    dismiss_optional_ad_popup(driver)
-    checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
-    fill_brand_name(driver, DEFAULT_BRAND_NAME)
-    checkpoint_pause(pause_controller, "Brand entered", driver, config)
-    click_create_new_listing(driver)
-    checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
-    click_optional_continue(driver)
-    checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
     if additional_test_run_only:
+        used_json_open_step = run_open_listing_bootstrap_step(
+            driver,
+            pause_controller,
+            config,
+            listing_selection,
+            json_flow_definition,
+        )
+        if not used_json_open_step:
+            log_event("NAV", f"Opening listing page: {config.listing_url}")
+            open_listing_page(driver, config.listing_url)
+            log_event("NAV", "Listing page opened in Firefox.")
+            checkpoint_pause(pause_controller, "Listing page opened", driver, config)
+            dismiss_optional_ad_popup(driver)
+            checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
+            fill_brand_name(driver, DEFAULT_BRAND_NAME)
+            checkpoint_pause(pause_controller, "Brand entered", driver, config)
+            click_create_new_listing(driver)
+            checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
+            click_optional_continue(driver)
+            checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
         log_event(
             "TEST",
             "Additional Description test mode is enabled. Skipping image upload, "
@@ -3349,8 +4049,23 @@ def main() -> None:
             driver.quit()
         return
 
+    if json_flow_definition is None:
+        log_event("NAV", f"Opening listing page: {config.listing_url}")
+        open_listing_page(driver, config.listing_url)
+        log_event("NAV", "Listing page opened in Firefox.")
+        checkpoint_pause(pause_controller, "Listing page opened", driver, config)
+        dismiss_optional_ad_popup(driver)
+        checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
+        fill_brand_name(driver, DEFAULT_BRAND_NAME)
+        checkpoint_pause(pause_controller, "Brand entered", driver, config)
+        click_create_new_listing(driver)
+        checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
+        click_optional_continue(driver)
+        checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
+
     run_listing_page_flow(driver, pause_controller, config, listing_selection)
-    click_save_and_go_back_button(driver)
+    if json_flow_definition is None:
+        click_save_and_go_back_button(driver)
     log_event(
         "DONE",
         f"{listing_selection.product_type.title()} flow completed.",

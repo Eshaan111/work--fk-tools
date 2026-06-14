@@ -1444,6 +1444,9 @@ class Dashboard(QMainWindow):
         if stock_col not in self.df.columns or status_col not in self.df.columns:
             return
 
+        if not pd.api.types.is_numeric_dtype(self.df[stock_col]):
+            self.df[stock_col] = pd.to_numeric(self.df[stock_col], errors="coerce")
+
         active_mask = mask & (self.df[status_col].astype(str).str.strip().str.upper() == "ACTIVE")
         inactive_mask = mask & (self.df[status_col].astype(str).str.strip().str.upper() == "INACTIVE")
 
