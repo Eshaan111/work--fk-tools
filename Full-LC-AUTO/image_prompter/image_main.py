@@ -402,7 +402,17 @@ def open_firefox_normal_window() -> None:
     )
 
 
+def clear_clipboard() -> None:
+    subprocess.run(
+        ["powershell.exe", "-NoProfile", "-Command", "Set-Clipboard -Value $null"],
+        check=True,
+    )
+
+
 def set_clipboard_text(text: str) -> None:
+    if not text:
+        clear_clipboard()
+        return
     powershell_script = r"Set-Clipboard -Value ([Console]::In.ReadToEnd())"
     subprocess.run(
         ["powershell.exe", "-NoProfile", "-Command", powershell_script],
@@ -449,9 +459,11 @@ def paste_text_via_clipboard(text: str, field_label: str) -> None:
 def paste_image_via_clipboard(image_path: Path, field_label: str) -> None:
     print(f"Loading image into clipboard: {image_path}")
     set_clipboard_image(image_path)
-    time.sleep(0.35)
+    time.sleep(0.5)
     print(f"Pasting image into {field_label}...")
     pyautogui.hotkey("ctrl", "v")
+    time.sleep(0.5)
+    clear_clipboard()
 
 
 def click_chat_copy_target() -> None:
@@ -475,12 +487,13 @@ def hold_click_chatgpt_boot_focus_target() -> None:
 
 def copy_full_chat_text_once() -> str:
     pyautogui.press("esc")
-    time.sleep(0.2)
+    time.sleep(0.25)
     click_chat_copy_target()
+    time.sleep(0.25)
     pyautogui.hotkey("ctrl", "a")
-    time.sleep(0.15)
+    time.sleep(0.3)
     pyautogui.hotkey("ctrl", "c")
-    time.sleep(0.2)
+    time.sleep(0.3)
     return get_clipboard_text()
 
 
@@ -509,9 +522,9 @@ def wait_for_stable_full_chat_text(prompt_text: str = "") -> str:
             )
             return current_copy
 
-        prompt_words = prompt_text.split()[-10:]
-        copy_words = current_copy.split()[-25:]
-        is_stuck = bool(prompt_text and any(copy_words[i:i+len(prompt_words)] == prompt_words for i in range(len(copy_words) - len(prompt_words) + 1)))
+        prompt_tail = prompt_text.split()[-10:]
+        copy_tail = current_copy.split()[-10:]
+        is_stuck = bool(prompt_tail and copy_tail == prompt_tail)
         print(f"Stuck check: {is_stuck} (counter: {stuck_counter + 1 if is_stuck else 0}/5)")
         if is_stuck:
             stuck_counter += 1
@@ -1029,9 +1042,9 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str:
             )
             return current_copy
 
-        gen_prompt_words = generation_prompt_text.split()[-10:]
-        copy_words = current_copy.split()[-25:]
-        is_stuck = bool(generation_prompt_text and any(copy_words[i:i+len(gen_prompt_words)] == gen_prompt_words for i in range(len(copy_words) - len(gen_prompt_words) + 1)))
+        gen_prompt_tail = generation_prompt_text.split()[-10:]
+        copy_tail = current_copy.split()[-10:]
+        is_stuck = bool(gen_prompt_tail and copy_tail == gen_prompt_tail)
         print(f"Stuck check: {is_stuck} (counter: {stuck_counter + 1 if is_stuck else 0}/5)")
         if is_stuck:
             stuck_counter += 1
@@ -1065,9 +1078,9 @@ def run_generation_prompt_for_image(
 ) -> str:
     print("Starting follow-up image generation prompt and image paste flow...")
     pyautogui.press("w")
-    time.sleep(0.5)
+    time.sleep(0.8)
     paste_text_via_clipboard(generation_prompt_text, "focused ChatGPT prompt box")
-    time.sleep(0.9)
+    time.sleep(1.5)
     paste_image_via_clipboard(image_path, "focused ChatGPT prompt box")
     print("Waiting 10 seconds before submitting the image generation prompt...")
     time.sleep(10)
