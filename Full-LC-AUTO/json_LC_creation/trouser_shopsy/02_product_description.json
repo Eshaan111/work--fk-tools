@@ -25,7 +25,7 @@
   },
   "field_json_config_attr": "product_description_json",
   "excel_config_attr": "product_description_excel",
-  "source_snapshot": "Full-LC-AUTO/assets/PRODUCT -TROUSER.htm",
+  "source_snapshot": "Full-LC-AUTO/assets/PRODUCT -TROUSER SHOPSY.htm",
   "locator_strategy": "Prefer locating the field label text first, then target the nearest input, single-select combobox, multi-select combobox, textarea, or tag-style field inside the same attribute wrapper. Repeated combobox ids must always be scoped to the field label wrapper.",
   "log_stage": "DESC",
   "log_message": "Starting Product Description field fill from Excel + JSON mapping...",
@@ -49,5 +49,136 @@
     ],
     "checkpoint_label": "Changes saved detected after Product Description click cycle"
   },
-  "fields": []
+  "fields": [
+    {
+      "order": 1,
+      "label": "Style Code",
+      "required": true,
+      "input_type": "text",
+      "locator_hint": "label text 'Style Code' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),'Style Code')]]//input[@type='text']"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "label": "Size",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Size' -> nearest single-select combobox. Special handling applies: the code first sets the size qualifier dropdown, then fills the main Size dropdown.",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Size')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "label": "Brand Color",
+      "required": true,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Brand Color' -> nearest tag-style text input; type the value and commit it into the pills field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Brand Color')]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "label": "Type",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Type' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Type')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "label": "Ideal For",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Ideal For' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Ideal For')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "label": "Fabric",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Fabric' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Fabric')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "label": "Occasion",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Occasion' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Occasion')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "label": "Color",
+      "required": true,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Color' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Color')]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "label": "Pack of",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Pack of' -> nearest input[type='number']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Pack of')]]//input[@type='number']"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "label": "Suitable For",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Suitable For' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[starts-with(normalize-space(),'Suitable For')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    }
+  ]
 }

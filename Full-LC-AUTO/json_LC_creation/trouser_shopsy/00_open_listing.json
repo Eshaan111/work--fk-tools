@@ -6,7 +6,7 @@
   "actions": [
     {
       "type": "open_listing_page",
-      "url": "$config.listing_url",
+      "url": "https://seller.flipkart.com/index.html#dashboard/addListings/single?vertical=shopsy_trouser",
       "checkpoint_label": "Listing page opened"
     },
     {

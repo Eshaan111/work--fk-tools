@@ -36,8 +36,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-# LAPTOP_NAME = "ASUS"
-LAPTOP_NAME = "VAIO"
+LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "VAIO"
 
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
@@ -374,55 +374,68 @@ class FlowTargetOption:
     flow_directory: Path
 
 
-def get_product_description_excel_path(product_type: str) -> Path:
-    if product_type == "jeans":
+def get_product_description_excel_path(product_type: str , surface_type: str) -> Path:
+    if product_type == "jeans" and surface_type == "flipkart":
         return active_path("product_description_excel", "Jeans Product Description Excel")
-    if product_type == "trouser":
+    if product_type == "trouser" and surface_type == "flipkart":
         return TROUSER_DATA_INPUTS_ROOT / "Product-Description-inputs.xlsx"
+    if product_type == "trouser" and surface_type == "shopsy":
+        return TROUSER_DATA_INPUTS_ROOT / "Product-Description-inputs-Shopsy.xlsx"
     return active_path("product_description_shorts_excel", "Shorts Product Description Excel")
 
 
-def get_product_description_json_path(product_type: str) -> Path:
-    if product_type == "jeans":
+def get_product_description_json_path(product_type: str, surface_type: str) -> Path:
+    if product_type == "jeans" and surface_type == "flipkart":
         return active_path("product_description_json", "Jeans Product Description JSON")
-    if product_type == "trouser":
+    if product_type == "trouser" and surface_type == "flipkart":
         return PROJECT_ROOT / "json_LC_creation" / "trouser_flipkart" / "02_product_description.json"
+    if product_type == "trouser" and surface_type == "shopsy":
+        return PROJECT_ROOT / "json_LC_creation" / "trouser_shopsy" / "02_product_description.json"
     return active_path("product_description_shorts_json", "Shorts Product Description JSON")
 
 
-def get_product_description_sheet_name(product_type: str) -> str:
-    if product_type == "jeans":
+def get_product_description_sheet_name(product_type: str, surface_type: str) -> str:
+    if product_type == "jeans" and surface_type == "flipkart":
         return "Jeans Product Inputs"
-    if product_type == "trouser":
+    if product_type == "trouser" and surface_type == "flipkart":
         return "Trouser Product Inputs"
     return "Shorts Product Inputs"
 
 
-def get_additional_description_excel_path(product_type: str) -> Path:
-    if product_type == "jeans":
+def get_additional_description_excel_path(product_type: str, surface_type: str) -> Path:
+    if product_type == "jeans" and surface_type == "flipkart":
         return active_path("additional_description_excel", "Jeans Additional Description Excel")
-    if product_type == "trouser":
+    if product_type == "trouser" and surface_type == "flipkart":
         return TROUSER_DATA_INPUTS_ROOT / "Additional-Description-inputs.xlsx"
+    if product_type == "trouser" and surface_type == "shopsy":
+        return TROUSER_DATA_INPUTS_ROOT / "Additional-Description-inputs-Shopsy.xlsx"
     return active_path("additional_description_shorts_excel", "Shorts Additional Description Excel")
 
 
-def get_additional_description_json_path(product_type: str) -> Path:
-    if product_type == "jeans":
+def get_additional_description_json_path(product_type: str, surface_type: str) -> Path:
+    if product_type == "jeans" and surface_type == "flipkart":
         return active_path("additional_description_json", "Jeans Additional Description JSON")
-    if product_type == "trouser":
+    if product_type == "trouser" and surface_type == "flipkart":
         return (
             PROJECT_ROOT
             / "json_LC_creation"
             / "trouser_flipkart"
             / "01_additional_description.json"
         )
+    if product_type == "trouser" and surface_type == "shopsy":
+        return (
+            PROJECT_ROOT
+            / "json_LC_creation"
+            / "trouser_shopsy"
+            / "01_additional_description.json"
+        )
     return active_path("additional_description_shorts_json", "Shorts Additional Description JSON")
 
 
-def get_additional_description_sheet_name(product_type: str) -> str:
-    if product_type == "jeans":
+def get_additional_description_sheet_name(product_type: str, surface_type: str) -> str:
+    if product_type == "jeans" and surface_type == "flipkart":
         return "Jeans Addl Desc Inputs"
-    if product_type == "trouser":
+    if product_type == "trouser" and surface_type == "flipkart":
         return "Trouser Addl Desc Inputs"
     return "Shorts Addl Desc Inputs"
 
@@ -663,8 +676,9 @@ def prompt_for_listing_selection() -> ListingSelection:
         )
     selected_flow = available_flow_targets[selected_flow_index - 1]
     product_type = selected_flow.product_type
+    surface_type = selected_flow.surface
 
-    if product_type == "jeans":
+    if product_type == "jeans" and surface_type == "flipkart":
         print("Choose jeans kind:")
         print("1. Beige")
         print("2. Ice")
@@ -680,7 +694,13 @@ def prompt_for_listing_selection() -> ListingSelection:
             configured_image_directory,
             f"{selected_kind} jeans image directory",
         )
-    elif product_type == "trouser":
+    elif product_type == "trouser" and surface_type == "flipkart":
+        selected_kind = "Trouser"
+        image_directory = require_configured_path(
+            ACTIVE_LAPTOP_CONFIG.get("trouser_image_directory"),
+            "default trouser image directory",
+        )
+    elif product_type == "trouser" and surface_type == "shopsy":
         selected_kind = "Trouser"
         image_directory = require_configured_path(
             ACTIVE_LAPTOP_CONFIG.get("trouser_image_directory"),
@@ -696,7 +716,7 @@ def prompt_for_listing_selection() -> ListingSelection:
     size_value = input(f"Enter size [{DEFAULT_LISTING_SIZE}]: ").strip() or DEFAULT_LISTING_SIZE
     return ListingSelection(
         product_type=product_type,
-        surface=selected_flow.surface,
+        surface=surface_type,
         kind=selected_kind,
         size=size_value,
         image_directory=image_directory,
@@ -4145,10 +4165,10 @@ def main() -> None:
         config = BotConfig(
             profile_name=selected_profile,
             image_directory=listing_selection.image_directory,
-            product_description_excel=get_product_description_excel_path(listing_selection.product_type),
-            product_description_json=get_product_description_json_path(listing_selection.product_type),
-            additional_description_excel=get_additional_description_excel_path(listing_selection.product_type),
-            additional_description_json=get_additional_description_json_path(listing_selection.product_type),
+            product_description_excel=get_product_description_excel_path(listing_selection.product_type,listing_selection.surface),
+            product_description_json=get_product_description_json_path(listing_selection.product_type,listing_selection.surface),
+            additional_description_excel=get_additional_description_excel_path(listing_selection.product_type,listing_selection.surface),
+            additional_description_json=get_additional_description_json_path(listing_selection.product_type,listing_selection.surface),
         )
         print_runtime_context(config)
         log_event(
