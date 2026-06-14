@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import random
-# import repy
+import re
 import string
 import threading
 import tkinter as tk
@@ -36,14 +36,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "VAIO"
 
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
 )
 DEFAULT_IMAGE_DIRECTORY_VAIO: Path | None = Path(r"C:\LISTING IMAGES AUTOMATED\Shorts")
 DEFAULT_TROUSER_IMAGE_DIRECTORY_ASUS = Path(r"C:\work-mom\AUTO-LISTINGS\TROUSER")
-DEFAULT_TROUSER_IMAGE_DIRECTORY_VAIO: Path | None = None
+DEFAULT_TROUSER_IMAGE_DIRECTORY_VAIO = Path(r"C:\LISTING IMAGES AUTOMATED\Trouser")
 JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "1": ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
     "2": ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
@@ -2893,10 +2894,15 @@ def has_changes_saved_toast(driver: webdriver.Firefox) -> bool:
 
 
 def get_tab_progress_text(driver: webdriver.Firefox, tab_xpath: str) -> str:
-    tab_buttons = driver.find_elements(By.XPATH, tab_xpath)
-    if not tab_buttons:
-        return ""
-    return " ".join((tab_buttons[0].text or "").split())
+    for _attempt in range(3):
+        try:
+            tab_buttons = driver.find_elements(By.XPATH, tab_xpath)
+            if not tab_buttons:
+                return ""
+            return " ".join((tab_buttons[0].text or "").split())
+        except StaleElementReferenceException:
+            sleep(0.3)
+    return ""
 
 
 def extract_nonzero_tab_progress(progress_text: str) -> tuple[int, int] | None:
