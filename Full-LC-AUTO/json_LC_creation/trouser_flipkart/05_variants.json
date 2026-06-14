@@ -2,5 +2,38 @@
   "order": 6,
   "step_name": "variants",
   "handler": "variant_page",
-  "page_name": "Variant addition"
+  "page_name": "Variant addition",
+  "tab": {
+    "label": "Variant addition",
+    "locator_candidates": [
+      {
+        "type": "xpath",
+        "value": "//button[@role='tab' and .//span[contains(normalize-space(), 'Variant addition')]]"
+      }
+    ]
+  },
+  "checkpoint_label": "Variant tab opened",
+  "data_source": {
+    "type": "excel_row",
+    "workbook_attr": "variants_excel",
+    "worksheet": "Jeans Variant Inputs",
+    "match_by": {
+      "kind": "$listing.kind",
+      "size": "$listing.size"
+    }
+  },
+  "excel_config_attr": "variants_excel",
+  "log_stage": "VARIANT",
+  "log_message": "Starting Variant page creation loop from Excel mapping...",
+  "filled_checkpoint_label": "Variant rows created",
+  "source_sku_from": "$context.price_stock_shipping.generated.Seller SKU ID",
+  "variant_creation": {
+    "qualifier_column": "variant_qualifier",
+    "sizes_column_prefix": "size_variant",
+    "source_size_from": "$listing.size"
+  },
+  "copy_paste": {
+    "enabled": true,
+    "rewrite_target_skus": true
+  }
 }

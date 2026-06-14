@@ -3,5 +3,208 @@
   "step_name": "product_description",
   "handler": "field_fill_page",
   "field_fill_mode": "product_description",
-  "page_name": "Product Description"
+  "page_name": "Product Description",
+  "tab": {
+    "label": "Product Description",
+    "locator_candidates": [
+      {
+        "type": "xpath",
+        "value": "//button[@role='tab' and .//span[contains(normalize-space(), 'Product Description')]]"
+      }
+    ]
+  },
+  "checkpoint_label": "Product Description tab opened",
+  "data_source": {
+    "type": "excel_row",
+    "workbook_attr": "product_description_excel",
+    "worksheet": "Trouser Product Inputs",
+    "match_by": {
+      "kind": "$listing.kind",
+      "size": "$listing.size"
+    }
+  },
+  "field_json_config_attr": "product_description_json",
+  "excel_config_attr": "product_description_excel",
+  "source_snapshot": "Full-LC-AUTO/assets/PRODUCT -TROUSER.htm",
+  "locator_strategy": "Prefer locating the field label text first, then target the nearest input, single-select combobox, multi-select combobox, textarea, or tag-style field inside the same attribute wrapper. Repeated combobox ids must always be scoped to the field label wrapper.",
+  "log_stage": "DESC",
+  "log_message": "Starting Product Description field fill from Excel + JSON mapping...",
+  "filled_checkpoint_label": "Product Description fields filled",
+  "verification": {
+    "enabled": true,
+    "mode": "tab_cycle",
+    "cycle_label": "Product Description page",
+    "tab_sequence": [
+      "Product Description",
+      "Price, Stock and Shipping Information"
+    ],
+    "success_conditions": [
+      {
+        "type": "toast",
+        "value": "Changes saved!"
+      },
+      {
+        "type": "tab_progress_nonzero"
+      }
+    ],
+    "checkpoint_label": "Changes saved detected after Product Description click cycle"
+  },
+  "fields": [
+    {
+      "order": 1,
+      "label": "Style Code",
+      "required": true,
+      "input_type": "text",
+      "locator_hint": "label text 'Style Code' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),'Style Code')]]//input[@type='text']"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "label": "Size",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Size' -> nearest single-select combobox. Special handling applies: the code first sets the size qualifier dropdown like 'Regular' or 'Number', then fills the main Size dropdown.",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()='Size']]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "label": "Occasion",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Occasion' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),'Occasion')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "label": "Brand Color",
+      "required": true,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Brand Color' -> nearest tag-style text input / pill entry control",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),'Brand Color')]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "label": "Pattern",
+      "required": true,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Pattern' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()='Pattern']]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "label": "Type",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Type' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()='Type']]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "label": "Suitable For",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Suitable For' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),'Suitable For')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "label": "Fit",
+      "required": true,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Fit' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()='Fit']]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "label": "Color",
+      "required": true,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Color' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()='Color']]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "label": "Ideal For",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Ideal For' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),'Ideal For')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "label": "Fabric",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Fabric' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()='Fabric']]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "label": "Pack of",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Pack of' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),'Pack of')]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    }
+  ]
 }

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import random
-import re
+# import repy
 import string
 import threading
 import tkinter as tk
@@ -42,6 +42,8 @@ DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
 )
 DEFAULT_IMAGE_DIRECTORY_VAIO: Path | None = Path(r"C:\LISTING IMAGES AUTOMATED\Shorts")
+DEFAULT_TROUSER_IMAGE_DIRECTORY_ASUS = Path(r"C:\work-mom\AUTO-LISTINGS\TROUSER")
+DEFAULT_TROUSER_IMAGE_DIRECTORY_VAIO: Path | None = None
 JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "1": ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
     "2": ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
@@ -58,11 +60,16 @@ JEANS_KIND_OPTIONS_VAIO: dict[str, tuple[str, Path | None]] = {
 }
 DEFAULT_SNAPSHOT_DIRECTORY_ASUS = PROJECT_ROOT / "snapshots"
 DEFAULT_SNAPSHOT_DIRECTORY_VAIO = PROJECT_ROOT / "snapshots"
+DATA_INPUTS_ROOT = PROJECT_ROOT / "data inputs"
+COMMON_DATA_INPUTS_ROOT = DATA_INPUTS_ROOT / "common"
+JEANS_DATA_INPUTS_ROOT = DATA_INPUTS_ROOT / "jeans"
+SHORTS_DATA_INPUTS_ROOT = DATA_INPUTS_ROOT / "shorts"
+TROUSER_DATA_INPUTS_ROOT = DATA_INPUTS_ROOT / "trouser"
 DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_ASUS = (
-    PROJECT_ROOT / "data inputs" / "Price-Stock-Shipping-inputs.xlsx"
+    COMMON_DATA_INPUTS_ROOT / "Price-Stock-Shipping-inputs.xlsx"
 )
 DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_VAIO = (
-    PROJECT_ROOT / "data inputs" / "Price-Stock-Shipping-inputs.xlsx"
+    COMMON_DATA_INPUTS_ROOT / "Price-Stock-Shipping-inputs.xlsx"
 )
 DEFAULT_PRICE_STOCK_SHIPPING_JSON_ASUS = (
     PROJECT_ROOT / "assets" / "Price-Stock-Shipping-inputs.json"
@@ -71,16 +78,16 @@ DEFAULT_PRICE_STOCK_SHIPPING_JSON_VAIO = (
     PROJECT_ROOT / "assets" / "Price-Stock-Shipping-inputs.json"
 )
 DEFAULT_PRODUCT_DESCRIPTION_EXCEL_ASUS = (
-    PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Jeans.xlsx"
+    JEANS_DATA_INPUTS_ROOT / "Product-Description-inputs.xlsx"
 )
 DEFAULT_PRODUCT_DESCRIPTION_EXCEL_VAIO = (
-    PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Jeans.xlsx"
+    JEANS_DATA_INPUTS_ROOT / "Product-Description-inputs.xlsx"
 )
 DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL_ASUS = (
-    PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Shorts.xlsx"
+    SHORTS_DATA_INPUTS_ROOT / "Product-Description-inputs.xlsx"
 )
 DEFAULT_PRODUCT_DESCRIPTION_SHORTS_EXCEL_VAIO = (
-    PROJECT_ROOT / "data inputs" / "Product-Description-inputs-Shorts.xlsx"
+    SHORTS_DATA_INPUTS_ROOT / "Product-Description-inputs.xlsx"
 )
 DEFAULT_PRODUCT_DESCRIPTION_JSON_ASUS = (
     PROJECT_ROOT / "assets" / "Product-Description-inputs-Jeans.json"
@@ -95,16 +102,16 @@ DEFAULT_PRODUCT_DESCRIPTION_SHORTS_JSON_VAIO = (
     PROJECT_ROOT / "assets" / "Product-Description-inputs-Shorts.json"
 )
 DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL_ASUS = (
-    PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Jeans.xlsx"
+    JEANS_DATA_INPUTS_ROOT / "Additional-Description-inputs.xlsx"
 )
 DEFAULT_ADDITIONAL_DESCRIPTION_EXCEL_VAIO = (
-    PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Jeans.xlsx"
+    JEANS_DATA_INPUTS_ROOT / "Additional-Description-inputs.xlsx"
 )
 DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL_ASUS = (
-    PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Shorts.xlsx"
+    SHORTS_DATA_INPUTS_ROOT / "Additional-Description-inputs.xlsx"
 )
 DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_EXCEL_VAIO = (
-    PROJECT_ROOT / "data inputs" / "Additional-Description-inputs-Shorts.xlsx"
+    SHORTS_DATA_INPUTS_ROOT / "Additional-Description-inputs.xlsx"
 )
 DEFAULT_ADDITIONAL_DESCRIPTION_JSON_ASUS = (
     PROJECT_ROOT / "assets" / "Additional-Description-inputs-Jeans.json"
@@ -118,8 +125,8 @@ DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON_ASUS = (
 DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON_VAIO = (
     PROJECT_ROOT / "assets" / "Additional-Description-inputs-Shorts.json"
 )
-DEFAULT_VARIANTS_EXCEL_ASUS = PROJECT_ROOT / "data inputs" / "Variants-excel_jean.xlsx"
-DEFAULT_VARIANTS_EXCEL_VAIO = PROJECT_ROOT / "data inputs" / "Variants-excel_jean.xlsx"
+DEFAULT_VARIANTS_EXCEL_ASUS = COMMON_DATA_INPUTS_ROOT / "Variants-excel.xlsx"
+DEFAULT_VARIANTS_EXCEL_VAIO = COMMON_DATA_INPUTS_ROOT / "Variants-excel.xlsx"
 FIREFOX_PROFILES_ASUS: dict[str, Path | None] = {
     "seema": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\ekyb3fej.Seema"),
     # "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\7kkhlz7p.prabhu-bt"),
@@ -132,6 +139,7 @@ FIREFOX_PROFILES_VAIO: dict[str, Path | None] = {
 LAPTOP_CONFIGS = {
     "ASUS": {
         "default_image_directory": DEFAULT_IMAGE_DIRECTORY_ASUS,
+        "trouser_image_directory": DEFAULT_TROUSER_IMAGE_DIRECTORY_ASUS,
         "jeans_kind_options": JEANS_KIND_OPTIONS_ASUS,
         "snapshot_directory": DEFAULT_SNAPSHOT_DIRECTORY_ASUS,
         "price_stock_shipping_excel": DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_ASUS,
@@ -149,6 +157,7 @@ LAPTOP_CONFIGS = {
     },
     "VAIO": {
         "default_image_directory": DEFAULT_IMAGE_DIRECTORY_VAIO,
+        "trouser_image_directory": DEFAULT_TROUSER_IMAGE_DIRECTORY_VAIO,
         "jeans_kind_options": JEANS_KIND_OPTIONS_VAIO,
         "snapshot_directory": DEFAULT_SNAPSHOT_DIRECTORY_VAIO,
         "price_stock_shipping_excel": DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_VAIO,
@@ -351,49 +360,74 @@ class FillResult:
 @dataclass(slots=True)
 class ListingSelection:
     product_type: str
+    surface: str
     kind: str
     size: str
     image_directory: Path
 
 
+@dataclass(slots=True)
+class FlowTargetOption:
+    product_type: str
+    surface: str
+    flow_directory: Path
+
+
 def get_product_description_excel_path(product_type: str) -> Path:
-    return (
-        active_path("product_description_excel", "Jeans Product Description Excel")
-        if product_type == "jeans"
-        else active_path("product_description_shorts_excel", "Shorts Product Description Excel")
-    )
+    if product_type == "jeans":
+        return active_path("product_description_excel", "Jeans Product Description Excel")
+    if product_type == "trouser":
+        return TROUSER_DATA_INPUTS_ROOT / "Product-Description-inputs.xlsx"
+    return active_path("product_description_shorts_excel", "Shorts Product Description Excel")
 
 
 def get_product_description_json_path(product_type: str) -> Path:
-    return (
-        active_path("product_description_json", "Jeans Product Description JSON")
-        if product_type == "jeans"
-        else active_path("product_description_shorts_json", "Shorts Product Description JSON")
-    )
+    if product_type == "jeans":
+        return active_path("product_description_json", "Jeans Product Description JSON")
+    if product_type == "trouser":
+        return PROJECT_ROOT / "json_LC_creation" / "trouser_flipkart" / "02_product_description.json"
+    return active_path("product_description_shorts_json", "Shorts Product Description JSON")
 
 
 def get_product_description_sheet_name(product_type: str) -> str:
-    return "Jeans Product Inputs" if product_type == "jeans" else "Shorts Product Inputs"
+    if product_type == "jeans":
+        return "Jeans Product Inputs"
+    if product_type == "trouser":
+        return "Trouser Product Inputs"
+    return "Shorts Product Inputs"
 
 
 def get_additional_description_excel_path(product_type: str) -> Path:
-    return (
-        active_path("additional_description_excel", "Jeans Additional Description Excel")
-        if product_type == "jeans"
-        else active_path("additional_description_shorts_excel", "Shorts Additional Description Excel")
-    )
+    if product_type == "jeans":
+        return active_path("additional_description_excel", "Jeans Additional Description Excel")
+    if product_type == "trouser":
+        return TROUSER_DATA_INPUTS_ROOT / "Additional-Description-inputs.xlsx"
+    return active_path("additional_description_shorts_excel", "Shorts Additional Description Excel")
 
 
 def get_additional_description_json_path(product_type: str) -> Path:
-    return (
-        active_path("additional_description_json", "Jeans Additional Description JSON")
-        if product_type == "jeans"
-        else active_path("additional_description_shorts_json", "Shorts Additional Description JSON")
-    )
+    if product_type == "jeans":
+        return active_path("additional_description_json", "Jeans Additional Description JSON")
+    if product_type == "trouser":
+        return (
+            PROJECT_ROOT
+            / "json_LC_creation"
+            / "trouser_flipkart"
+            / "01_additional_description.json"
+        )
+    return active_path("additional_description_shorts_json", "Shorts Additional Description JSON")
 
 
 def get_additional_description_sheet_name(product_type: str) -> str:
-    return "Jeans Addl Desc Inputs" if product_type == "jeans" else "Shorts Addl Desc Inputs"
+    if product_type == "jeans":
+        return "Jeans Addl Desc Inputs"
+    if product_type == "trouser":
+        return "Trouser Addl Desc Inputs"
+    return "Shorts Addl Desc Inputs"
+
+
+def get_variants_sheet_name(product_type: str) -> str:
+    return "Jeans Variant Inputs"
 
 
 class PauseController:
@@ -605,10 +639,29 @@ def prompt_for_additional_test_run() -> bool:
 
 
 def prompt_for_listing_selection() -> ListingSelection:
-    product_type_value = input("What do you want to list - jeans or shorts? [jeans]: ").strip().lower()
-    product_type = product_type_value or "jeans"
-    if product_type not in {"jeans", "shorts"}:
-        raise ValueError("Please choose either 'jeans' or 'shorts'.")
+    available_flow_targets = discover_flow_target_options()
+    if not available_flow_targets:
+        raise ValueError(f"No flow folders with flow.json were found in {FLOW_CONFIG_ROOT}")
+
+    default_option_index = next(
+        (
+            index
+            for index, option in enumerate(available_flow_targets, start=1)
+            if option.product_type == "jeans" and option.surface == DEFAULT_FLOW_SURFACE
+        ),
+        1,
+    )
+    print("Choose listing flow:")
+    for index, option in enumerate(available_flow_targets, start=1):
+        print(f"{index}. {option.product_type} / {option.surface}")
+    selected_flow_value = input(f"Enter option [{default_option_index}]: ").strip()
+    selected_flow_index = int(selected_flow_value or str(default_option_index))
+    if selected_flow_index < 1 or selected_flow_index > len(available_flow_targets):
+        raise ValueError(
+            f"Please choose a valid flow option from 1 to {len(available_flow_targets)}."
+        )
+    selected_flow = available_flow_targets[selected_flow_index - 1]
+    product_type = selected_flow.product_type
 
     if product_type == "jeans":
         print("Choose jeans kind:")
@@ -626,13 +679,23 @@ def prompt_for_listing_selection() -> ListingSelection:
             configured_image_directory,
             f"{selected_kind} jeans image directory",
         )
+    elif product_type == "trouser":
+        selected_kind = "Trouser"
+        image_directory = require_configured_path(
+            ACTIVE_LAPTOP_CONFIG.get("trouser_image_directory"),
+            "default trouser image directory",
+        )
     else:
-        selected_kind = "Shorts"
-        image_directory = active_path("default_image_directory", "default shorts image directory")
+        selected_kind = product_type.title()
+        image_directory = active_path(
+            "default_image_directory",
+            f"default {product_type} image directory",
+        )
 
     size_value = input(f"Enter size [{DEFAULT_LISTING_SIZE}]: ").strip() or DEFAULT_LISTING_SIZE
     return ListingSelection(
         product_type=product_type,
+        surface=selected_flow.surface,
         kind=selected_kind,
         size=size_value,
         image_directory=image_directory,
@@ -2221,10 +2284,7 @@ def fill_product_description_fields(
     skipped_fields: set[str] = set()
 
     size_qualifier_value = product_input_row.values.get("Size Qualifier", "").strip()
-    main_size_value = (
-        product_input_row.values.get("Size2", "").strip()
-        or product_input_row.values.get("Size", "").strip()
-    )
+    main_size_value = product_input_row.size.strip()
 
     for field in field_definitions:
         raw_value = product_input_row.values.get(field.label, "").strip()
@@ -2236,7 +2296,7 @@ def fill_product_description_fields(
                 log_event("DESC", "Skipping Size Qualifier: no Excel value provided.")
 
             if not main_size_value:
-                log_event("DESC", "Skipping Size: no Excel value provided in Size2/Size columns.")
+                log_event("DESC", "Skipping Size: no row match size value was available.")
                 continue
 
             log_event("DESC", f"Preparing main Size dropdown selection after qualifier -> {main_size_value}")
@@ -2999,6 +3059,33 @@ def resolve_flow_directory(product_type: str, surface: str = DEFAULT_FLOW_SURFAC
     return FLOW_CONFIG_ROOT / f"{product_type}_{surface}"
 
 
+def discover_flow_target_options() -> list[FlowTargetOption]:
+    options: list[FlowTargetOption] = []
+    if not FLOW_CONFIG_ROOT.exists():
+        return options
+
+    for flow_directory in sorted(FLOW_CONFIG_ROOT.iterdir(), key=lambda path: path.name.lower()):
+        if not flow_directory.is_dir():
+            continue
+        if not (flow_directory / "flow.json").exists():
+            continue
+        if "_" not in flow_directory.name:
+            continue
+        product_type, surface = flow_directory.name.rsplit("_", 1)
+        product_type = product_type.strip().lower()
+        surface = surface.strip().lower()
+        if not product_type or not surface:
+            continue
+        options.append(
+            FlowTargetOption(
+                product_type=product_type,
+                surface=surface,
+                flow_directory=flow_directory,
+            )
+        )
+    return options
+
+
 def load_listing_flow_definition(
     product_type: str,
     surface: str = DEFAULT_FLOW_SURFACE,
@@ -3671,7 +3758,7 @@ def run_variants_flow_step(
         handler="variants",
         tab_label="Variant addition",
         checkpoint_label="Variant tab opened",
-        worksheet_name="Jeans Variant Inputs",
+        worksheet_name=get_variants_sheet_name(listing_selection.product_type),
         excel_config_attr="variants_excel",
         filled_checkpoint_label="Variant rows created",
     )
@@ -3891,7 +3978,10 @@ def run_listing_page_flow(
     config: BotConfig,
     listing_selection: ListingSelection,
 ) -> None:
-    flow_definition = load_listing_flow_definition(listing_selection.product_type)
+    flow_definition = load_listing_flow_definition(
+        listing_selection.product_type,
+        listing_selection.surface,
+    )
     flow_state = FlowState()
     if flow_definition is not None:
         flow_state.context.update(flow_definition.manifest_context)
@@ -3961,7 +4051,10 @@ def main() -> None:
         selected_profile = prompt_for_profile()
         additional_test_run_only = prompt_for_additional_test_run()
         listing_selection = prompt_for_listing_selection()
-        json_flow_definition = load_listing_flow_definition(listing_selection.product_type)
+        json_flow_definition = load_listing_flow_definition(
+            listing_selection.product_type,
+            listing_selection.surface,
+        )
         config = BotConfig(
             profile_name=selected_profile,
             image_directory=listing_selection.image_directory,
@@ -3978,7 +4071,7 @@ def main() -> None:
         )
         log_event(
             "BOOT",
-            f"Listing selection: type={listing_selection.product_type}, "
+            f"Listing selection: type={listing_selection.product_type}, surface={listing_selection.surface}, "
             f"kind={listing_selection.kind}, size={listing_selection.size}",
         )
         log_event(
