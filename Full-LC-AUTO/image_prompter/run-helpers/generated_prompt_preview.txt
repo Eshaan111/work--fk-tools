@@ -16,7 +16,7 @@ Suggest new background ideas for the uploaded product image.
 
 We have already used background ideas based on these phrases:
 
-Terracota Style With Plant and Gym equipment in background
+Terracota Style With Plant and Gym equipment in background, Chalk Mineral Studio
 
 Your job is to suggest NEW background ideas that are clearly different from the already-used ones.
 
@@ -195,6 +195,6 @@ IMPORTANT
 
 The ideas should be clearly distinct from:
 
-Terracota Style With Plant and Gym equipment in background
+Terracota Style With Plant and Gym equipment in background, Chalk Mineral Studio
 
 Generate 15 diverse ideas.

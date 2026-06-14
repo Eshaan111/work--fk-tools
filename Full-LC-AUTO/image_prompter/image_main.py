@@ -17,8 +17,8 @@ import pyautogui
 from openpyxl import load_workbook
 from pynput import keyboard
 
-# LAPTOP_NAME = "VAIO"
-LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "VAIO"
+# LAPTOP_NAME = "ASUS"
 
 PRABHU_FIREFOX_PROFILE_ASUS = Path(
     r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"
@@ -101,6 +101,10 @@ START_HOTKEY_KEY = keyboard.Key.right
 CHAT_CLICK_TARGET = (1237, 575)
 CHATGPT_PROMPT_BOX_PIXELS_VAIO = {
     "position": (563, 398),
+    "rgb": (230, 255, 255),
+}
+CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection = {
+    "position": (783, 566),
     "rgb": (230, 255, 255),
 }
 IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
@@ -458,7 +462,7 @@ def click_chat_copy_target() -> None:
 
 
 def hold_click_chatgpt_boot_focus_target() -> None:
-    target_x, target_y = (563, 10)
+    target_x, target_y = CHATGPT_PROMPT_BOX_PIXELS_VAIO["position"]
     print(
         f"Clicking ChatGPT boot focus target ({target_x}, {target_y}) every 0.5 seconds for 10 seconds..."
     )
@@ -513,7 +517,7 @@ def wait_for_stable_full_chat_text(prompt_text: str = "") -> str:
             stuck_counter += 1
             if stuck_counter >= 5:
                 print("Detected prompt still in input box (ENTER might have failed). Repressing ENTER...")
-                pyautogui.click(CHATGPT_PROMPT_BOX_PIXELS_VAIO["position"])
+                pyautogui.click(CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection["position"])
                 time.sleep(0.5)
                 pyautogui.press("enter")
                 time.sleep(3)
@@ -1033,7 +1037,7 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str:
             stuck_counter += 1
             if stuck_counter >= 5:
                 print("Detected generation prompt still in input box. Repressing ENTER...")
-                pyautogui.click(CHATGPT_PROMPT_BOX_PIXELS_VAIO["position"])
+                pyautogui.click(CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection["position"])
                 time.sleep(0.5)
                 pyautogui.press("enter")
                 time.sleep(3)
@@ -1148,8 +1152,8 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
     paste_image_via_clipboard(context.image_paths[0], "focused ChatGPT prompt box")
     print("Waiting 10 seconds before submitting the ChatGPT prompt...")
     time.sleep(10)
-    # pyautogui.press("enter")
-    print("Pressed Enter to submit the prompt (commented out).")
+    pyautogui.press("enter")
+    print("Pressed Enter to submit the prompt")
     print("Waiting 5 seconds before starting output-completion detection...")
     time.sleep(5)
     latest_output = capture_and_store_latest_output(context.prompt_text)
