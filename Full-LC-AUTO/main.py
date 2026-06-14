@@ -212,6 +212,13 @@ BRAND_NAME_TO_CODE = {
         (code, " ".join(name.strip().upper().split())) for code, name in BRAND_CODE_MAP.items()
     )
 }
+SURFACE_FOLDER_SUFFIX = {
+    "shopsy": "'s",
+    "flipkart": "'f",
+}
+FOLDER_SUFFIX_SURFACE = {
+    suffix.upper(): surface for surface, suffix in SURFACE_FOLDER_SUFFIX.items()
+}
 PROFILE_ALIASES = {
     "s": "seema",
     "seema": "seema",
@@ -332,7 +339,7 @@ class BotConfig:
 class ImageFolder:
     folder_path: Path
     folder_number: int
-    exhausted_brands: set[str]
+    exhausted_brand_surfaces: dict[str, set[str]]
     image_paths: list[Path]
 
 
@@ -364,6 +371,7 @@ class ListingSelection:
     surface: str
     kind: str
     size: str
+    brand_name: str
     image_directory: Path
 
 
@@ -520,14 +528,36 @@ def parse_folder_number(folder_name: str) -> int:
     return int(first_token)
 
 
-def parse_exhausted_brands(folder_name: str) -> set[str]:
+def parse_brand_folder_token(token: str, folder_name: str) -> tuple[str, set[str]]:
+    normalized_token = token.strip().upper()
+    token_match = re.fullmatch(r"([A-Z]+)('?[SF])?", normalized_token)
+    if token_match is None:
+        raise ValueError(f"Unknown brand code '{token}' in folder '{folder_name}'")
+
+    brand_code, suffix = token_match.groups()
+    if brand_code not in BRAND_CODE_MAP:
+        raise ValueError(f"Unknown brand code '{token}' in folder '{folder_name}'")
+
+    if not suffix:
+        # Backward compatibility: old folder names without a suffix mean the brand
+        # was already consumed for every supported surface.
+        return BRAND_CODE_MAP[brand_code], set(SURFACE_FOLDER_SUFFIX)
+
+    normalized_suffix = suffix if suffix.startswith("'") else f"'{suffix}"
+    surface_name = FOLDER_SUFFIX_SURFACE.get(normalized_suffix.upper())
+    if surface_name is None:
+        raise ValueError(f"Unknown brand surface suffix '{token}' in folder '{folder_name}'")
+
+    return BRAND_CODE_MAP[brand_code], {surface_name}
+
+
+def parse_exhausted_brands(folder_name: str) -> dict[str, set[str]]:
     tokens = [part.strip().upper() for part in folder_name.split("-")[1:] if part.strip()]
-    exhausted_brands: set[str] = set()
+    exhausted_brands: dict[str, set[str]] = {}
 
     for token in tokens:
-        if token not in BRAND_CODE_MAP:
-            raise ValueError(f"Unknown brand code '{token}' in folder '{folder_name}'")
-        exhausted_brands.add(BRAND_CODE_MAP[token])
+        brand_name, surfaces = parse_brand_folder_token(token, folder_name)
+        exhausted_brands.setdefault(brand_name, set()).update(surfaces)
 
     return exhausted_brands
 
@@ -559,7 +589,7 @@ def load_image_folders(image_root: Path) -> list[ImageFolder]:
             ImageFolder(
                 folder_path=folder_path,
                 folder_number=parse_folder_number(folder_path.name),
-                exhausted_brands=parse_exhausted_brands(folder_path.name),
+                exhausted_brand_surfaces=parse_exhausted_brands(folder_path.name),
                 image_paths=collect_ordered_images(folder_path),
             )
         )
@@ -567,11 +597,16 @@ def load_image_folders(image_root: Path) -> list[ImageFolder]:
     return sorted(image_folders, key=lambda folder: folder.folder_number)
 
 
-def choose_image_folder_for_brand(image_root: Path, brand_name: str) -> ImageFolder | None:
+def choose_image_folder_for_brand(
+    image_root: Path,
+    brand_name: str,
+    surface_name: str,
+) -> ImageFolder | None:
     normalized_brand = normalize_brand_name(brand_name)
 
     for image_folder in load_image_folders(image_root):
-        if normalized_brand not in image_folder.exhausted_brands:
+        exhausted_surfaces = image_folder.exhausted_brand_surfaces.get(normalized_brand, set())
+        if surface_name not in exhausted_surfaces:
             return image_folder
 
     return None
@@ -584,17 +619,32 @@ def get_brand_code(brand_name: str) -> str:
     return BRAND_NAME_TO_CODE[normalized_brand]
 
 
-def build_exhausted_folder_name(image_folder: ImageFolder, brand_name: str) -> str:
-    folder_codes = {
-        get_brand_code(exhausted_brand) for exhausted_brand in image_folder.exhausted_brands
+def build_exhausted_folder_name(
+    image_folder: ImageFolder,
+    brand_name: str,
+    surface_name: str,
+) -> str:
+    exhausted_brand_surfaces = {
+        exhausted_brand: set(exhausted_surfaces)
+        for exhausted_brand, exhausted_surfaces in image_folder.exhausted_brand_surfaces.items()
     }
-    folder_codes.add(get_brand_code(brand_name))
-    sorted_codes = sorted(folder_codes)
-    return "-".join([str(image_folder.folder_number), *sorted_codes])
+    exhausted_brand_surfaces.setdefault(normalize_brand_name(brand_name), set()).add(surface_name)
+
+    folder_tokens: list[str] = []
+    for exhausted_brand in sorted(exhausted_brand_surfaces):
+        brand_code = get_brand_code(exhausted_brand)
+        for exhausted_surface in sorted(exhausted_brand_surfaces[exhausted_brand]):
+            folder_tokens.append(f"{brand_code}{SURFACE_FOLDER_SUFFIX[exhausted_surface]}")
+
+    return "-".join([str(image_folder.folder_number), *folder_tokens])
 
 
-def mark_image_folder_exhausted(image_folder: ImageFolder, brand_name: str) -> Path:
-    new_folder_name = build_exhausted_folder_name(image_folder, brand_name)
+def mark_image_folder_exhausted(
+    image_folder: ImageFolder,
+    brand_name: str,
+    surface_name: str,
+) -> Path:
+    new_folder_name = build_exhausted_folder_name(image_folder, brand_name, surface_name)
     new_folder_path = image_folder.folder_path.with_name(new_folder_name)
 
     if new_folder_path == image_folder.folder_path:
@@ -609,7 +659,9 @@ def mark_image_folder_exhausted(image_folder: ImageFolder, brand_name: str) -> P
 
     image_folder.folder_path.rename(new_folder_path)
     image_folder.folder_path = new_folder_path
-    image_folder.exhausted_brands.add(normalize_brand_name(brand_name))
+    image_folder.exhausted_brand_surfaces.setdefault(normalize_brand_name(brand_name), set()).add(
+        surface_name
+    )
     log_event("IMAGES", f"Renamed image folder to: {new_folder_path.name}")
     return new_folder_path
 
@@ -650,6 +702,28 @@ def prompt_for_profile() -> str:
 def prompt_for_additional_test_run() -> bool:
     selected_value = input("Run Additional Description test flow only? (y/N): ").strip().lower()
     return selected_value in {"y", "yes"}
+
+
+def prompt_for_brand() -> str:
+    brand_options = sorted(BRAND_CODE_MAP.items(), key=lambda item: item[0])
+    print("Choose brand:")
+    for index, (_, brand_name) in enumerate(brand_options, start=1):
+        print(f"{index}. {brand_name}")
+
+    default_index = next(
+        (
+            index
+            for index, (_, brand_name) in enumerate(brand_options, start=1)
+            if normalize_brand_name(brand_name) == normalize_brand_name(DEFAULT_BRAND_NAME)
+        ),
+        1,
+    )
+    selected_value = input(f"Enter option [{default_index}]: ").strip()
+    selected_index = int(selected_value or str(default_index))
+    if selected_index < 1 or selected_index > len(brand_options):
+        raise ValueError(f"Please choose a valid brand option from 1 to {len(brand_options)}.")
+
+    return brand_options[selected_index - 1][1]
 
 
 def prompt_for_listing_selection() -> ListingSelection:
@@ -708,11 +782,13 @@ def prompt_for_listing_selection() -> ListingSelection:
         )
 
     size_value = input(f"Enter size [{DEFAULT_LISTING_SIZE}]: ").strip() or DEFAULT_LISTING_SIZE
+    brand_name = prompt_for_brand()
     return ListingSelection(
         product_type=product_type,
         surface=surface_type,
         kind=selected_kind,
         size=size_value,
+        brand_name=brand_name,
         image_directory=image_directory,
     )
 
@@ -2206,12 +2282,20 @@ def click_optional_continue(driver: webdriver.Firefox, timeout_seconds: int = 5)
     log_event("LISTING", "Clicked optional Continue button.")
 
 
-def preview_selected_image_folder(config: BotConfig, brand_name: str) -> ImageFolder | None:
+def preview_selected_image_folder(
+    config: BotConfig,
+    brand_name: str,
+    surface_name: str,
+) -> ImageFolder | None:
     if not str(config.image_directory):
         log_event("IMAGES", "Image directory not configured yet, skipping image folder selection.")
         return None
 
-    selected_folder = choose_image_folder_for_brand(config.image_directory, brand_name)
+    selected_folder = choose_image_folder_for_brand(
+        config.image_directory,
+        brand_name,
+        surface_name,
+    )
     if selected_folder is None:
         log_event("IMAGES", f"No image folder is available for brand: {brand_name}")
         return None
@@ -2226,7 +2310,7 @@ def preview_selected_image_folder(config: BotConfig, brand_name: str) -> ImageFo
     log_event(
         "IMAGES",
         "Folder name after successful upload would become: "
-        f"{build_exhausted_folder_name(selected_folder, brand_name)}",
+        f"{build_exhausted_folder_name(selected_folder, brand_name, surface_name)}",
     )
     return selected_folder
 
@@ -2281,6 +2365,7 @@ def upload_image_folder(
     driver: webdriver.Firefox,
     image_folder: ImageFolder,
     brand_name: str,
+    surface_name: str,
     pause_controller: PauseController,
     config: BotConfig,
 ) -> None:
@@ -2308,7 +2393,7 @@ def upload_image_folder(
             f"{len(image_folder.image_paths) - len(IMAGE_SLOT_IDS)} extra image(s) were skipped.",
         )
 
-    mark_image_folder_exhausted(image_folder, brand_name)
+    mark_image_folder_exhausted(image_folder, brand_name, surface_name)
 
 
 def open_selling_info_tab(driver: webdriver.Firefox) -> None:
@@ -3549,7 +3634,7 @@ def run_open_listing_bootstrap_step(
 
     flow_state = FlowState()
     flow_state.context.update(flow_definition.manifest_context)
-    flow_state.context.setdefault("brand_name", DEFAULT_BRAND_NAME)
+    flow_state.context.setdefault("brand_name", listing_selection.brand_name)
     run_navigation_step(
         driver,
         pause_controller,
@@ -3883,6 +3968,7 @@ def run_images_flow_step(
     driver: webdriver.Firefox,
     pause_controller: PauseController,
     config: BotConfig,
+    listing_selection: ListingSelection,
     verify_before_variants: bool,
     page_definition: FlowPageDefinition | None = None,
 ) -> None:
@@ -3894,7 +3980,7 @@ def run_images_flow_step(
         tab_label="Image addition",
         checkpoint_label="Images tab opened",
         filled_checkpoint_label="Images uploaded",
-        brand_name=DEFAULT_BRAND_NAME,
+        brand_name=listing_selection.brand_name,
         verify={
             "enabled": verify_before_variants,
             "cycle_label": "Images page",
@@ -3910,11 +3996,22 @@ def run_images_flow_step(
         page_definition.checkpoint_label or "Images tab opened",
         tab_xpath=page_definition.tab_xpath,
     )
-    brand_name = page_definition.brand_name or DEFAULT_BRAND_NAME
-    selected_image_folder = preview_selected_image_folder(config, brand_name)
+    brand_name = page_definition.brand_name or listing_selection.brand_name
+    selected_image_folder = preview_selected_image_folder(
+        config,
+        brand_name,
+        listing_selection.surface,
+    )
     if selected_image_folder is not None:
         checkpoint_pause(pause_controller, "Image folder selected", driver, config)
-        upload_image_folder(driver, selected_image_folder, brand_name, pause_controller, config)
+        upload_image_folder(
+            driver,
+            selected_image_folder,
+            brand_name,
+            listing_selection.surface,
+            pause_controller,
+            config,
+        )
         checkpoint_pause(
             pause_controller,
             page_definition.filled_checkpoint_label or "Images uploaded",
@@ -4082,6 +4179,7 @@ def run_flow_step_from_definition(
             driver,
             pause_controller,
             config,
+            listing_selection,
             verify_before_variants=verify_before_variants,
             page_definition=page_definition,
         )
@@ -4149,6 +4247,7 @@ def run_flow_page_from_definition(
             driver,
             pause_controller,
             config,
+            listing_selection,
             page_definition=page_definition,
             verify_before_variants="variants" in flow_step_names,
         )
@@ -4178,7 +4277,7 @@ def run_listing_page_flow(
     flow_state = FlowState()
     if flow_definition is not None:
         flow_state.context.update(flow_definition.manifest_context)
-        flow_state.context.setdefault("brand_name", DEFAULT_BRAND_NAME)
+        flow_state.context.setdefault("brand_name", listing_selection.brand_name)
         flow_step_ids = {step.step_id for step in flow_definition.steps}
         log_event(
             "FLOW",
@@ -4265,7 +4364,7 @@ def main() -> None:
         log_event(
             "BOOT",
             f"Listing selection: type={listing_selection.product_type}, surface={listing_selection.surface}, "
-            f"kind={listing_selection.kind}, size={listing_selection.size}",
+            f"kind={listing_selection.kind}, size={listing_selection.size}, brand={listing_selection.brand_name}",
         )
         log_event(
             "BOOT",
@@ -4305,7 +4404,7 @@ def main() -> None:
             checkpoint_pause(pause_controller, "Listing page opened", driver, config)
             dismiss_optional_ad_popup(driver)
             checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
-            fill_brand_name(driver, DEFAULT_BRAND_NAME)
+            fill_brand_name(driver, listing_selection.brand_name)
             checkpoint_pause(pause_controller, "Brand entered", driver, config)
             click_create_new_listing(driver)
             checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
@@ -4342,7 +4441,7 @@ def main() -> None:
         checkpoint_pause(pause_controller, "Listing page opened", driver, config)
         dismiss_optional_ad_popup(driver)
         checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
-        fill_brand_name(driver, DEFAULT_BRAND_NAME)
+        fill_brand_name(driver, listing_selection.brand_name)
         checkpoint_pause(pause_controller, "Brand entered", driver, config)
         click_create_new_listing(driver)
         checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
