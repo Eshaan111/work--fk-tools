@@ -207,6 +207,10 @@ BRAND_CODE_MAP = {
     "FADE": "FADEVIELLE",
     "FLEE": "FLEECRANE",
 }
+PROFILE_BRAND_CODES = {
+    "prabhu": ("STAR", "GENZ"),
+    "seema": ("FADE", "FLEE", "IND"),
+}
 BRAND_NAME_TO_CODE = {
     normalize_name: code for code, normalize_name in (
         (code, " ".join(name.strip().upper().split())) for code, name in BRAND_CODE_MAP.items()
@@ -704,9 +708,20 @@ def prompt_for_additional_test_run() -> bool:
     return selected_value in {"y", "yes"}
 
 
-def prompt_for_brand() -> str:
-    brand_options = sorted(BRAND_CODE_MAP.items(), key=lambda item: item[0])
-    print("Choose brand:")
+def get_brand_options_for_profile(profile_name: str) -> list[tuple[str, str]]:
+    brand_codes = PROFILE_BRAND_CODES.get(profile_name, tuple(BRAND_CODE_MAP))
+    unknown_codes = [brand_code for brand_code in brand_codes if brand_code not in BRAND_CODE_MAP]
+    if unknown_codes:
+        raise ValueError(
+            f"Unknown brand code(s) configured for profile '{profile_name}': "
+            f"{', '.join(unknown_codes)}"
+        )
+    return [(brand_code, BRAND_CODE_MAP[brand_code]) for brand_code in brand_codes]
+
+
+def prompt_for_brand(profile_name: str) -> str:
+    brand_options = get_brand_options_for_profile(profile_name)
+    print(f"Choose brand for {profile_name} profile:")
     for index, (_, brand_name) in enumerate(brand_options, start=1):
         print(f"{index}. {brand_name}")
 
@@ -726,7 +741,7 @@ def prompt_for_brand() -> str:
     return brand_options[selected_index - 1][1]
 
 
-def prompt_for_listing_selection() -> ListingSelection:
+def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
     available_flow_targets = discover_flow_target_options()
     if not available_flow_targets:
         raise ValueError(f"No flow folders with flow.json were found in {FLOW_CONFIG_ROOT}")
@@ -782,7 +797,7 @@ def prompt_for_listing_selection() -> ListingSelection:
         )
 
     size_value = input(f"Enter size [{DEFAULT_LISTING_SIZE}]: ").strip() or DEFAULT_LISTING_SIZE
-    brand_name = prompt_for_brand()
+    brand_name = prompt_for_brand(profile_name)
     return ListingSelection(
         product_type=product_type,
         surface=surface_type,
@@ -3634,7 +3649,7 @@ def run_open_listing_bootstrap_step(
 
     flow_state = FlowState()
     flow_state.context.update(flow_definition.manifest_context)
-    flow_state.context.setdefault("brand_name", listing_selection.brand_name)
+    flow_state.context["brand_name"] = listing_selection.brand_name
     run_navigation_step(
         driver,
         pause_controller,
@@ -4277,7 +4292,7 @@ def run_listing_page_flow(
     flow_state = FlowState()
     if flow_definition is not None:
         flow_state.context.update(flow_definition.manifest_context)
-        flow_state.context.setdefault("brand_name", listing_selection.brand_name)
+        flow_state.context["brand_name"] = listing_selection.brand_name
         flow_step_ids = {step.step_id for step in flow_definition.steps}
         log_event(
             "FLOW",
@@ -4342,7 +4357,7 @@ def main() -> None:
     try:
         selected_profile = prompt_for_profile()
         additional_test_run_only = prompt_for_additional_test_run()
-        listing_selection = prompt_for_listing_selection()
+        listing_selection = prompt_for_listing_selection(selected_profile)
         json_flow_definition = load_listing_flow_definition(
             listing_selection.product_type,
             listing_selection.surface,
