@@ -36,8 +36,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-LAPTOP_NAME = "ASUS"
-# LAPTOP_NAME = "VAIO"
+# LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "VAIO"
 
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
@@ -197,6 +197,9 @@ IMAGE_SLOT_IDS = [
     "thumbnail_3",
     "thumbnail_4",
 ]
+IMAGE_UPLOAD_VERIFY_TIMEOUT_SECONDS = 60
+IMAGE_UPLOAD_RETRY_PASSES = 2
+SUCCESS_CLOSE_DELAY_SECONDS = 5
 # Legacy fixed-point VERIFYING CHANGES CYCLE values kept only for reference.
 # PRODUCT_DESCRIPTION_TAB_CLICK_POINT_ASUS = (770, 380)
 # SKU_PAGE_ALTERNATE_CLICK_POINT_ASUS = (518, 379)
@@ -229,11 +232,17 @@ PROFILE_ALIASES = {
     "p": "prabhu",
     "prabhu": "prabhu",
 }
+CURRENT_RUN_LABEL = "setup"
+
+
+def set_current_run_label(run_label: str) -> None:
+    global CURRENT_RUN_LABEL
+    CURRENT_RUN_LABEL = run_label
 
 
 def log_event(stage: str, message: str) -> None:
     timestamp = datetime.now().strftime("%H:%M:%S")
-    print(f"[{timestamp}] [{stage}] {message}")
+    print(f"[{timestamp} {CURRENT_RUN_LABEL}] [{stage}] {message}")
 
 
 def require_configured_path(path_value: Path | None, path_label: str) -> Path:
@@ -1021,7 +1030,10 @@ def find_matching_label_element(
     exact_matches: list[WebElement] = []
     partial_matches: list[WebElement] = []
     for label_element in label_elements:
-        normalized_text = normalize_field_label(label_element.text)
+        try:
+            normalized_text = normalize_field_label(label_element.text)
+        except StaleElementReferenceException:
+            continue
         if normalized_text == normalized_target:
             exact_matches.append(label_element)
         elif (
@@ -1043,8 +1055,11 @@ def locate_field_label_element(
 ) -> WebElement:
     immediate_match = find_matching_label_element(driver, field_label)
     if immediate_match is not None:
-        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", immediate_match)
-        return immediate_match
+        try:
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", immediate_match)
+            return immediate_match
+        except StaleElementReferenceException:
+            pass
 
     def wait_callback(_: webdriver.Firefox) -> WebElement | None:
         return find_matching_label_element(driver, field_label)
@@ -1056,8 +1071,11 @@ def locate_field_label_element(
         )
         try:
             label_element = WebDriverWait(driver, timeout_per_scroll).until(wait_callback)
-            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", label_element)
-            return label_element
+            try:
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", label_element)
+                return label_element
+            except StaleElementReferenceException:
+                continue
         except TimeoutException:
             continue
 
@@ -1113,76 +1131,86 @@ def get_editable_field_element(
     prefer_combobox: bool,
     timeout_per_scroll: float = 3,
 ) -> WebElement:
-    label_element = locate_field_label_element(
-        driver,
-        field_label,
-        timeout_per_scroll=timeout_per_scroll,
-    )
-    field_element = driver.execute_script(
-        """
-        const label = arguments[0];
-        const preferCombobox = arguments[1];
-        const wrapperSelectors = [
-            ".styles__AttributeWrapper-sc-ske8mu-5",
-            ".styles__FocusWrapper-sc-7uiywl-3",
-            ".styles__EditAttributeItemWrapper-sc-gni56x-0",
-            ".styles__AttributeItemFieldWrapper-sc-ske8mu-0",
-        ];
+    last_stale_error: StaleElementReferenceException | None = None
+    for _ in range(3):
+        try:
+            label_element = locate_field_label_element(
+                driver,
+                field_label,
+                timeout_per_scroll=timeout_per_scroll,
+            )
+            field_element = driver.execute_script(
+                """
+                const label = arguments[0];
+                const preferCombobox = arguments[1];
+                const wrapperSelectors = [
+                    ".styles__AttributeWrapper-sc-ske8mu-5",
+                    ".styles__FocusWrapper-sc-7uiywl-3",
+                    ".styles__EditAttributeItemWrapper-sc-gni56x-0",
+                    ".styles__AttributeItemFieldWrapper-sc-ske8mu-0",
+                ];
 
-        function isEditableInput(element) {
-            if (!element || element.tagName !== "INPUT") {
-                return false;
-            }
-            if (element.type === "radio" || element.readOnly || element.disabled) {
-                return false;
-            }
-            return true;
-        }
+                function isEditableInput(element) {
+                    if (!element || element.tagName !== "INPUT") {
+                        return false;
+                    }
+                    if (element.type === "radio" || element.readOnly || element.disabled) {
+                        return false;
+                    }
+                    return true;
+                }
 
-        function isEditableTextarea(element) {
-            if (!element || element.tagName !== "TEXTAREA") {
-                return false;
-            }
-            return !element.readOnly && !element.disabled;
-        }
+                function isEditableTextarea(element) {
+                    if (!element || element.tagName !== "TEXTAREA") {
+                        return false;
+                    }
+                    return !element.readOnly && !element.disabled;
+                }
 
-        function findControl(root) {
-            if (!root) {
+                function findControl(root) {
+                    if (!root) {
+                        return null;
+                    }
+                    if (preferCombobox) {
+                        return root.querySelector("button[role='combobox'], [role='combobox']");
+                    }
+                    const inputs = Array.from(root.querySelectorAll("input"));
+                    const textareas = Array.from(root.querySelectorAll("textarea"));
+                    return inputs.find(isEditableInput) || textareas.find(isEditableTextarea) || null;
+                }
+
+                for (const selector of wrapperSelectors) {
+                    const wrapper = label.closest(selector);
+                    const control = findControl(wrapper);
+                    if (control) {
+                        return control;
+                    }
+                }
+
+                let current = label.parentElement;
+                while (current) {
+                    const control = findControl(current);
+                    if (control) {
+                        return control;
+                    }
+                    current = current.parentElement;
+                }
                 return null;
-            }
-            if (preferCombobox) {
-                return root.querySelector("button[role='combobox'], [role='combobox']");
-            }
-            const inputs = Array.from(root.querySelectorAll("input"));
-            const textareas = Array.from(root.querySelectorAll("textarea"));
-            return inputs.find(isEditableInput) || textareas.find(isEditableTextarea) || null;
-        }
+                """,
+                label_element,
+                prefer_combobox,
+            )
+            if field_element is None:
+                raise TimeoutException(f"Could not find editable element for label: {field_label}")
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", field_element)
+            return field_element
+        except StaleElementReferenceException as error:
+            last_stale_error = error
+            sleep(0.2)
 
-        for (const selector of wrapperSelectors) {
-            const wrapper = label.closest(selector);
-            const control = findControl(wrapper);
-            if (control) {
-                return control;
-            }
-        }
-
-        let current = label.parentElement;
-        while (current) {
-            const control = findControl(current);
-            if (control) {
-                return control;
-            }
-            current = current.parentElement;
-        }
-        return null;
-        """,
-        label_element,
-        prefer_combobox,
-    )
-    if field_element is None:
-        raise TimeoutException(f"Could not find editable element for label: {field_label}")
-    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", field_element)
-    return field_element
+    raise StaleElementReferenceException(
+        f"Editable element for field '{field_label}' kept going stale."
+    ) from last_stale_error
 
 
 def set_input_value(
@@ -2362,20 +2390,28 @@ def is_image_slot_uploaded(driver: webdriver.Firefox, slot_id: str) -> bool:
     return has_thumbnail and has_check_icon and not has_plus_icon
 
 
+def get_incomplete_uploaded_image_slots(
+    driver: webdriver.Firefox,
+    slot_ids: list[str],
+) -> list[str]:
+    return [
+        slot_id for slot_id in slot_ids
+        if not is_image_slot_uploaded(driver, slot_id)
+    ]
+
+
 def wait_for_uploaded_image_slots(
     driver: webdriver.Firefox,
     slot_ids: list[str],
-    timeout_seconds: int = 45,
+    timeout_seconds: int = IMAGE_UPLOAD_VERIFY_TIMEOUT_SECONDS,
 ) -> None:
     def all_slots_uploaded(_: webdriver.Firefox) -> bool:
-        return all(is_image_slot_uploaded(driver, slot_id) for slot_id in slot_ids)
+        return not get_incomplete_uploaded_image_slots(driver, slot_ids)
 
     try:
         WebDriverWait(driver, timeout_seconds).until(all_slots_uploaded)
     except TimeoutException as error:
-        incomplete_slots = [
-            slot_id for slot_id in slot_ids if not is_image_slot_uploaded(driver, slot_id)
-        ]
+        incomplete_slots = get_incomplete_uploaded_image_slots(driver, slot_ids)
         raise TimeoutException(
             "Image upload verification timed out. Incomplete slot(s): "
             + ", ".join(incomplete_slots)
@@ -2396,17 +2432,32 @@ def upload_image_folder(
         raise ValueError(f"No images found in folder: {image_folder.folder_path}")
 
     upload_count = min(len(image_folder.image_paths), len(IMAGE_SLOT_IDS))
-    for index, (slot_id, image_path) in enumerate(
-        zip(IMAGE_SLOT_IDS[:upload_count], image_folder.image_paths),
-        start=1,
-    ):
+    slot_image_paths = list(zip(IMAGE_SLOT_IDS[:upload_count], image_folder.image_paths))
+    for index, (slot_id, image_path) in enumerate(slot_image_paths, start=1):
         checkpoint_pause(pause_controller, f"Before upload slot {index}", driver, config)
         click_image_slot(driver, slot_id)
         upload_image_to_selected_slot(driver, image_path)
         checkpoint_pause(pause_controller, f"After upload slot {index}", driver, config)
 
     uploaded_slot_ids = IMAGE_SLOT_IDS[:upload_count]
-    wait_for_uploaded_image_slots(driver, uploaded_slot_ids)
+    slot_image_path_by_id = dict(slot_image_paths)
+    for retry_pass in range(IMAGE_UPLOAD_RETRY_PASSES + 1):
+        try:
+            wait_for_uploaded_image_slots(driver, uploaded_slot_ids)
+            break
+        except TimeoutException:
+            incomplete_slot_ids = get_incomplete_uploaded_image_slots(driver, uploaded_slot_ids)
+            if retry_pass >= IMAGE_UPLOAD_RETRY_PASSES:
+                raise
+            log_event(
+                "IMAGES",
+                "Retrying incomplete image upload slot(s): "
+                + ", ".join(incomplete_slot_ids),
+            )
+            for slot_id in incomplete_slot_ids:
+                image_path = slot_image_path_by_id[slot_id]
+                click_image_slot(driver, slot_id)
+                upload_image_to_selected_slot(driver, image_path)
     checkpoint_pause(pause_controller, "After verifying uploaded image slots", driver, config)
 
     if len(image_folder.image_paths) > len(IMAGE_SLOT_IDS):
@@ -4367,18 +4418,21 @@ def run_single_listing_session(
     json_flow_definition: FlowDefinition | None,
     run_index: int,
     total_runs: int,
-) -> None:
+) -> bool:
+    set_current_run_label(f"run {run_index}/{total_runs}")
     try:
         log_event("BOOT", f"Launching Firefox WebDriver for run {run_index}/{total_runs}...")
         driver = build_firefox_driver(config)
         log_event("BOOT", f"Firefox WebDriver launched successfully for run {run_index}/{total_runs}.")
     except WebDriverException as exc:
-        raise SystemExit(
+        log_event(
+            "ERROR",
             "Could not start Firefox WebDriver. Make sure Firefox is installed, the selected "
             "profile is valid, and that the same profile is not already open in another Firefox "
-            "window. You can also set GECKODRIVER_PATH/FIREFOX_BINARY if needed.\n"
-            f"Original error: {exc}"
-        ) from exc
+            "window. You can also set GECKODRIVER_PATH/FIREFOX_BINARY if needed.",
+        )
+        log_event("ERROR", f"Run {run_index}/{total_runs} failed before browser launch: {exc}")
+        return False
 
     pause_controller = PauseController()
     pause_controller.start()
@@ -4443,6 +4497,22 @@ def run_single_listing_session(
         if json_flow_definition is None:
             click_save_and_go_back_button(driver)
         log_event("DONE", f"{listing_selection.product_type.title()} flow completed for run {run_index}/{total_runs}.")
+        log_event("BOOT", f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds before closing browser.")
+        sleep(SUCCESS_CLOSE_DELAY_SECONDS)
+        return True
+    except Exception as exc:
+        try:
+            snapshot_path = save_html_snapshot(
+                driver,
+                config.snapshot_directory,
+                f"run {run_index} error before close",
+            )
+            log_event("ERROR", f"Saved failure snapshot before closing browser: {snapshot_path}")
+        except Exception as snapshot_error:
+            log_event("ERROR", f"Could not save failure snapshot: {snapshot_error}")
+        log_event("ERROR", f"Run {run_index}/{total_runs} failed: {exc}")
+        log_event("RUN", f"Aborting current run {run_index}/{total_runs}; continuing with next run if available.")
+        return False
     finally:
         pause_controller.stop()
         driver.quit()
@@ -4481,14 +4551,26 @@ def main() -> None:
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
 
+    completed_runs = 0
+    failed_runs = 0
     for run_index in range(1, run_count + 1):
-        run_single_listing_session(
+        run_succeeded = run_single_listing_session(
             config,
             listing_selection,
             json_flow_definition,
             run_index,
             run_count,
         )
+        if run_succeeded:
+            completed_runs += 1
+        else:
+            failed_runs += 1
+
+    set_current_run_label("summary")
+    log_event(
+        "DONE",
+        f"Batch finished. Successful run(s): {completed_runs}. Failed run(s): {failed_runs}.",
+    )
 
 
 if __name__ == "__main__":
