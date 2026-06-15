@@ -36,8 +36,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-# LAPTOP_NAME = "ASUS"
-LAPTOP_NAME = "VAIO"
+LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "VAIO"
 
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
@@ -703,9 +703,17 @@ def prompt_for_profile() -> str:
     return resolve_profile_name(selected_value or env_profile)
 
 
-def prompt_for_additional_test_run() -> bool:
-    selected_value = input("Run Additional Description test flow only? (y/N): ").strip().lower()
-    return selected_value in {"y", "yes"}
+# def prompt_for_additional_test_run() -> bool:
+#     selected_value = input("Run Additional Description test flow only? (y/N): ").strip().lower()
+#     return selected_value in {"y", "yes"}
+
+
+def prompt_for_run_count() -> int:
+    selected_value = input("How many runs should the bot execute? [1]: ").strip()
+    run_count = int(selected_value or "1")
+    if run_count < 1:
+        raise ValueError("Run count must be at least 1.")
+    return run_count
 
 
 def get_brand_options_for_profile(profile_name: str) -> list[tuple[str, str]]:
@@ -4353,10 +4361,98 @@ def print_runtime_context(config: BotConfig) -> None:
     log_event("BOOT", "Pause control: press Space in this terminal to pause at the next safe step.")
 
 
+def run_single_listing_session(
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    json_flow_definition: FlowDefinition | None,
+    run_index: int,
+    total_runs: int,
+) -> None:
+    try:
+        log_event("BOOT", f"Launching Firefox WebDriver for run {run_index}/{total_runs}...")
+        driver = build_firefox_driver(config)
+        log_event("BOOT", f"Firefox WebDriver launched successfully for run {run_index}/{total_runs}.")
+    except WebDriverException as exc:
+        raise SystemExit(
+            "Could not start Firefox WebDriver. Make sure Firefox is installed, the selected "
+            "profile is valid, and that the same profile is not already open in another Firefox "
+            "window. You can also set GECKODRIVER_PATH/FIREFOX_BINARY if needed.\n"
+            f"Original error: {exc}"
+        ) from exc
+
+    pause_controller = PauseController()
+    pause_controller.start()
+
+    try:
+        log_event("RUN", f"Starting run {run_index} of {total_runs}.")
+        # Additional Description test-only flow kept commented out intentionally.
+        # if additional_test_run_only:
+        #     used_json_open_step = run_open_listing_bootstrap_step(
+        #         driver,
+        #         pause_controller,
+        #         config,
+        #         listing_selection,
+        #         json_flow_definition,
+        #     )
+        #     if not used_json_open_step:
+        #         log_event("NAV", f"Opening listing page: {config.listing_url}")
+        #         open_listing_page(driver, config.listing_url)
+        #         log_event("NAV", "Listing page opened in Firefox.")
+        #         checkpoint_pause(pause_controller, "Listing page opened", driver, config)
+        #         dismiss_optional_ad_popup(driver)
+        #         checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
+        #         fill_brand_name(driver, listing_selection.brand_name)
+        #         checkpoint_pause(pause_controller, "Brand entered", driver, config)
+        #         click_create_new_listing(driver)
+        #         checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
+        #         click_optional_continue(driver)
+        #         checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
+        #     log_event(
+        #         "TEST",
+        #         "Additional Description test mode is enabled. Skipping image upload, "
+        #         "SKU page, and Product Description filling.",
+        #     )
+        #     run_additional_description_flow_step(
+        #         driver,
+        #         pause_controller,
+        #         config,
+        #         listing_selection,
+        #         verify_after=False,
+        #     )
+        #     log_event(
+        #         "DONE",
+        #         f"Additional Description test flow completed for run {run_index}/{total_runs}.",
+        #     )
+        #     return
+
+        if json_flow_definition is None:
+            log_event("NAV", f"Opening listing page: {config.listing_url}")
+            open_listing_page(driver, config.listing_url)
+            log_event("NAV", "Listing page opened in Firefox.")
+            checkpoint_pause(pause_controller, "Listing page opened", driver, config)
+            dismiss_optional_ad_popup(driver)
+            checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
+            fill_brand_name(driver, listing_selection.brand_name)
+            checkpoint_pause(pause_controller, "Brand entered", driver, config)
+            click_create_new_listing(driver)
+            checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
+            click_optional_continue(driver)
+            checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
+
+        run_listing_page_flow(driver, pause_controller, config, listing_selection)
+        if json_flow_definition is None:
+            click_save_and_go_back_button(driver)
+        log_event("DONE", f"{listing_selection.product_type.title()} flow completed for run {run_index}/{total_runs}.")
+    finally:
+        pause_controller.stop()
+        driver.quit()
+        log_event("BOOT", f"Closed browser for run {run_index}/{total_runs}.")
+
+
 def main() -> None:
     try:
         selected_profile = prompt_for_profile()
-        additional_test_run_only = prompt_for_additional_test_run()
+        run_count = prompt_for_run_count()
         listing_selection = prompt_for_listing_selection(selected_profile)
         json_flow_definition = load_listing_flow_definition(
             listing_selection.product_type,
@@ -4371,11 +4467,7 @@ def main() -> None:
             additional_description_json=get_additional_description_json_path(listing_selection.product_type,listing_selection.surface),
         )
         print_runtime_context(config)
-        log_event(
-            "BOOT",
-            "Additional Description test mode: "
-            f"{'enabled' if additional_test_run_only else 'disabled'}",
-        )
+        log_event("BOOT", f"Configured run count: {run_count}")
         log_event(
             "BOOT",
             f"Listing selection: type={listing_selection.product_type}, surface={listing_selection.surface}, "
@@ -4389,92 +4481,14 @@ def main() -> None:
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
 
-    try:
-        log_event("BOOT", "Launching Firefox WebDriver...")
-        driver = build_firefox_driver(config)
-        log_event("BOOT", "Firefox WebDriver launched successfully.")
-    except WebDriverException as exc:
-        raise SystemExit(
-            "Could not start Firefox WebDriver. Make sure Firefox is installed, the selected "
-            "profile is valid, and that the same profile is not already open in another Firefox "
-            "window. You can also set GECKODRIVER_PATH/FIREFOX_BINARY if needed.\n"
-            f"Original error: {exc}"
-        ) from exc
-
-    pause_controller = PauseController()
-    pause_controller.start()
-
-    if additional_test_run_only:
-        used_json_open_step = run_open_listing_bootstrap_step(
-            driver,
-            pause_controller,
+    for run_index in range(1, run_count + 1):
+        run_single_listing_session(
             config,
             listing_selection,
             json_flow_definition,
+            run_index,
+            run_count,
         )
-        if not used_json_open_step:
-            log_event("NAV", f"Opening listing page: {config.listing_url}")
-            open_listing_page(driver, config.listing_url)
-            log_event("NAV", "Listing page opened in Firefox.")
-            checkpoint_pause(pause_controller, "Listing page opened", driver, config)
-            dismiss_optional_ad_popup(driver)
-            checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
-            fill_brand_name(driver, listing_selection.brand_name)
-            checkpoint_pause(pause_controller, "Brand entered", driver, config)
-            click_create_new_listing(driver)
-            checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
-            click_optional_continue(driver)
-            checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
-        log_event(
-            "TEST",
-            "Additional Description test mode is enabled. Skipping image upload, "
-            "SKU page, and Product Description filling.",
-        )
-        run_additional_description_flow_step(
-            driver,
-            pause_controller,
-            config,
-            listing_selection,
-            verify_after=False,
-        )
-        log_event(
-            "DONE",
-            "Additional Description test flow completed. Close the browser window to stop the session.",
-        )
-
-        try:
-            input("Press Enter here after you are done with the browser session...")
-        finally:
-            pause_controller.stop()
-            driver.quit()
-        return
-
-    if json_flow_definition is None:
-        log_event("NAV", f"Opening listing page: {config.listing_url}")
-        open_listing_page(driver, config.listing_url)
-        log_event("NAV", "Listing page opened in Firefox.")
-        checkpoint_pause(pause_controller, "Listing page opened", driver, config)
-        dismiss_optional_ad_popup(driver)
-        checkpoint_pause(pause_controller, "Optional popup handling complete", driver, config)
-        fill_brand_name(driver, listing_selection.brand_name)
-        checkpoint_pause(pause_controller, "Brand entered", driver, config)
-        click_create_new_listing(driver)
-        checkpoint_pause(pause_controller, "Create new listing clicked", driver, config)
-        click_optional_continue(driver)
-        checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
-
-    run_listing_page_flow(driver, pause_controller, config, listing_selection)
-    if json_flow_definition is None:
-        click_save_and_go_back_button(driver)
-    log_event(
-        "DONE",
-        f"{listing_selection.product_type.title()} flow completed.",
-    )
-
-    try:
-        input("Press Enter here after you are done with the browser session...")
-    finally:
-        pause_controller.stop()
 
 
 if __name__ == "__main__":
