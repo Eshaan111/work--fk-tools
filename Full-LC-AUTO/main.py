@@ -35,9 +35,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+RUN_HELPERS_DIRECTORY = PROJECT_ROOT / "run_helpers"
+ERROR_LATEST_PATH = RUN_HELPERS_DIRECTORY / "error_latest.txt"
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-# LAPTOP_NAME = "ASUS"
-LAPTOP_NAME = "VAIO"
+LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "VAIO"
 
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
@@ -243,6 +245,11 @@ def set_current_run_label(run_label: str) -> None:
 def log_event(stage: str, message: str) -> None:
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp} {CURRENT_RUN_LABEL}] [{stage}] {message}")
+
+
+def write_latest_error(error_message: str) -> None:
+    RUN_HELPERS_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    ERROR_LATEST_PATH.write_text(f"{str(error_message).strip()}\n", encoding="utf-8")
 
 
 def require_configured_path(path_value: Path | None, path_label: str) -> Path:
@@ -3006,6 +3013,85 @@ def get_variant_row_sku_input(
     return row.find_element(By.XPATH, ".//input[contains(@id,'-sku_id') and @type='text']")
 
 
+def get_variant_row_listing_status_combobox(
+    driver: webdriver.Firefox,
+    row_size_text: str,
+) -> WebElement:
+    row = get_variant_row_by_size_text(driver, row_size_text)
+    status_xpath = (
+        ".//*[contains(@id,'-listing_status')]"
+        "//*[self::button or self::input or self::div]"
+        "["
+        "@role='combobox'"
+        " or @aria-haspopup='listbox'"
+        " or @aria-haspopup='dialog'"
+        " or contains(@class,'SelectInput')"
+        "]"
+    )
+    return row.find_element(By.XPATH, status_xpath)
+
+
+def get_variant_row_listing_status_value(
+    driver: webdriver.Firefox,
+    row_size_text: str,
+) -> str:
+    row = get_variant_row_by_size_text(driver, row_size_text)
+    readonly_status_xpath = (
+        ".//div[contains(@id,'-listing_status')]"
+        "//span[contains(@class,'variant-cell-readonly-value')]"
+    )
+    readonly_status_elements = row.find_elements(By.XPATH, readonly_status_xpath)
+    if readonly_status_elements:
+        readonly_status_element = readonly_status_elements[0]
+        return (
+            readonly_status_element.get_attribute("title")
+            or readonly_status_element.text
+            or ""
+        ).strip()
+
+    status_combobox = get_variant_row_listing_status_combobox(driver, row_size_text)
+    status_value = driver.execute_script(
+        """
+        const element = arguments[0];
+
+        function cleanText(node) {
+            if (!node) {
+                return "";
+            }
+            const clone = node.cloneNode(true);
+            clone.querySelectorAll("svg, title").forEach((child) => child.remove());
+            return (clone.textContent || "").trim();
+        }
+
+        const candidates = [
+            element.querySelector("input"),
+            element.querySelector("[class*='SingleValue']"),
+            element.querySelector("[class*='ButtonText']"),
+            element.querySelector("[class*='LabelText']"),
+            element.querySelector("span"),
+            element,
+        ].filter(Boolean);
+
+        for (const candidate of candidates) {
+            const parts = [
+                candidate.getAttribute("value"),
+                candidate.getAttribute("title"),
+                candidate.getAttribute("aria-label"),
+                cleanText(candidate),
+            ];
+            for (const part of parts) {
+                if (part && String(part).trim()) {
+                    return String(part).trim();
+                }
+            }
+        }
+        return "";
+        """,
+        status_combobox,
+    )
+    return str(status_value or "").strip()
+
+
 def build_variant_row_sku(
     source_sku: str,
     source_size_value: str,
@@ -3054,6 +3140,40 @@ def update_variant_row_sku(
     raise TimeoutException(last_error)
 
 
+def update_variant_row_listing_status(
+    driver: webdriver.Firefox,
+    row_size_text: str,
+    listing_status: str,
+) -> None:
+    normalized_status = str(listing_status).strip()
+    if not normalized_status:
+        log_event("VARIANT", f"Skipping Listing Status for row {row_size_text}: no value provided.")
+        return
+
+    current_value = get_variant_row_listing_status_value(driver, row_size_text)
+    if field_values_match(current_value, normalized_status):
+        log_event(
+            "VARIANT",
+            f"Variant row {row_size_text} already has Listing Status: {current_value}",
+        )
+        return
+
+    status_combobox = get_variant_row_listing_status_combobox(driver, row_size_text)
+    select_combobox_option(
+        driver,
+        status_combobox,
+        normalized_status,
+        f"Variant row {row_size_text} Listing Status",
+    )
+    refreshed_value = get_variant_row_listing_status_value(driver, row_size_text)
+    if not field_values_match(refreshed_value, normalized_status):
+        raise TimeoutException(
+            f"Variant row {row_size_text} Listing Status read back as '{refreshed_value}' "
+            f"instead of '{normalized_status}'."
+        )
+    log_event("VARIANT", f"Updated variant row {row_size_text} Listing Status to: {normalized_status}")
+
+
 def update_pasted_variant_row_skus(
     config: BotConfig,
     listing_selection: ListingSelection,
@@ -3065,10 +3185,9 @@ def update_pasted_variant_row_skus(
         log_event("VARIANT", "Skipping variant SKU rewrite: no target rows were selected.")
         return
 
-    shared_suffix = resolve_variant_shared_sku_suffix(config, listing_selection, source_sku)
-
     for row_size_text in target_row_sizes:
         target_size = row_size_text.strip().split()[0]
+        target_listing_status = ""
         try:
             price_row = load_product_input_row(
                 config.price_stock_shipping_excel,
@@ -3092,12 +3211,15 @@ def update_pasted_variant_row_skus(
                 )
                 updated_sku = build_variant_row_sku(source_sku, listing_selection.size, row_size_text)
             else:
-                updated_sku = build_sku_with_suffix(target_base_sku, shared_suffix)
+                updated_sku = build_sku_with_suffix(target_base_sku, generate_sku_suffix())
+            target_listing_status = price_row.values.get("Listing Status", "").strip()
         log_event(
             "VARIANT",
             f"Rewriting SKU for row {row_size_text}: source '{source_sku}' -> '{updated_sku}'",
         )
         update_variant_row_sku(driver, row_size_text, updated_sku)
+        if target_listing_status:
+            update_variant_row_listing_status(driver, row_size_text, target_listing_status)
 
 
 def wait_for_variant_paste_button_enabled(
@@ -3155,6 +3277,7 @@ def fill_variant_page(
     config: BotConfig,
     listing_selection: ListingSelection,
     driver: webdriver.Firefox,
+    pause_controller: PauseController,
     product_input_row: ProductInputRow,
     source_sku: str,
 ) -> None:
@@ -3210,6 +3333,7 @@ def fill_variant_page(
         source_sku,
         selected_target_sizes,
     )
+    log_event("VARIANT", "Variant row updates complete. Final save will be triggered at the end of the flow.")
 
 
 def wait_for_changes_saved_toast(
@@ -4148,6 +4272,7 @@ def run_variants_flow_step(
         config,
         listing_selection,
         driver,
+        pause_controller,
         variant_row,
         source_sku,
     )
@@ -4431,7 +4556,9 @@ def run_single_listing_session(
             "profile is valid, and that the same profile is not already open in another Firefox "
             "window. You can also set GECKODRIVER_PATH/FIREFOX_BINARY if needed.",
         )
-        log_event("ERROR", f"Run {run_index}/{total_runs} failed before browser launch: {exc}")
+        error_message = f"Run {run_index}/{total_runs} failed before browser launch: {exc}"
+        write_latest_error(error_message)
+        log_event("ERROR", error_message)
         return False
 
     pause_controller = PauseController()
@@ -4494,8 +4621,7 @@ def run_single_listing_session(
             checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
 
         run_listing_page_flow(driver, pause_controller, config, listing_selection)
-        if json_flow_definition is None:
-            click_save_and_go_back_button(driver)
+        click_save_and_go_back_button(driver)
         log_event("DONE", f"{listing_selection.product_type.title()} flow completed for run {run_index}/{total_runs}.")
         log_event("BOOT", f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds before closing browser.")
         sleep(SUCCESS_CLOSE_DELAY_SECONDS)
@@ -4510,7 +4636,9 @@ def run_single_listing_session(
             log_event("ERROR", f"Saved failure snapshot before closing browser: {snapshot_path}")
         except Exception as snapshot_error:
             log_event("ERROR", f"Could not save failure snapshot: {snapshot_error}")
-        log_event("ERROR", f"Run {run_index}/{total_runs} failed: {exc}")
+        error_message = f"Run {run_index}/{total_runs} failed: {exc}"
+        write_latest_error(error_message)
+        log_event("ERROR", error_message)
         log_event("RUN", f"Aborting current run {run_index}/{total_runs}; continuing with next run if available.")
         return False
     finally:
