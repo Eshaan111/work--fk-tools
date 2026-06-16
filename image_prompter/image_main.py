@@ -17,8 +17,8 @@ import pyautogui
 from openpyxl import load_workbook
 from pynput import keyboard
 
-# LAPTOP_NAME = "VAIO"
-LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "VAIO"
+# LAPTOP_NAME = "ASUS"
 
 PRABHU_FIREFOX_PROFILE_ASUS = Path(
     r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"

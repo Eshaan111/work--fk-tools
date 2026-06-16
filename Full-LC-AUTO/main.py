@@ -38,8 +38,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 RUN_HELPERS_DIRECTORY = PROJECT_ROOT / "run_helpers"
 ERROR_LATEST_PATH = RUN_HELPERS_DIRECTORY / "error_latest.txt"
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-LAPTOP_NAME = "ASUS"
-# LAPTOP_NAME = "VAIO"
+# LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "VAIO"
 
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
@@ -386,6 +386,13 @@ class FillResult:
 
 
 @dataclass(slots=True)
+class PendingImageFolderUse:
+    image_folder: ImageFolder
+    brand_name: str
+    surface_name: str
+
+
+@dataclass(slots=True)
 class ListingSelection:
     product_type: str
     surface: str
@@ -684,6 +691,36 @@ def mark_image_folder_exhausted(
     )
     log_event("IMAGES", f"Renamed image folder to: {new_folder_path.name}")
     return new_folder_path
+
+
+def queue_image_folder_exhaustion(
+    flow_state: FlowState,
+    image_folder: ImageFolder,
+    brand_name: str,
+    surface_name: str,
+) -> None:
+    flow_state.pending_image_folder_use = PendingImageFolderUse(
+        image_folder=image_folder,
+        brand_name=brand_name,
+        surface_name=surface_name,
+    )
+    log_event(
+        "IMAGES",
+        "Image folder will be renamed only after Save & Go Back is clicked.",
+    )
+
+
+def commit_pending_image_folder_exhaustion(flow_state: FlowState) -> None:
+    pending_use = flow_state.pending_image_folder_use
+    if pending_use is None:
+        return
+
+    mark_image_folder_exhausted(
+        pending_use.image_folder,
+        pending_use.brand_name,
+        pending_use.surface_name,
+    )
+    flow_state.pending_image_folder_use = None
 
 
 def resolve_profile_path(profile_name: str) -> Path:
@@ -2474,8 +2511,6 @@ def upload_image_folder(
             f"{len(image_folder.image_paths) - len(IMAGE_SLOT_IDS)} extra image(s) were skipped.",
         )
 
-    mark_image_folder_exhausted(image_folder, brand_name, surface_name)
-
 
 def open_selling_info_tab(driver: webdriver.Firefox) -> None:
     selling_info_tab_locator = (
@@ -3480,6 +3515,7 @@ LEGACY_PRODUCT_PAGE_FLOWS = {
 @dataclass(slots=True)
 class FlowState:
     price_fill_result: FillResult | None = None
+    pending_image_folder_use: PendingImageFolderUse | None = None
     context: dict[str, object] = field(default_factory=dict)
 
 
@@ -3742,6 +3778,25 @@ def update_flow_context(
             flow_state.context[str(context_key)] = saved_values[source_key]
 
 
+def flow_definition_saves_and_exits(flow_definition: FlowDefinition | None) -> bool:
+    if flow_definition is None:
+        return False
+
+    for step in flow_definition.steps:
+        if step.handler != "navigation_step":
+            continue
+        actions = step.spec_payload.get("actions", [])
+        if not isinstance(actions, list):
+            continue
+        for action in actions:
+            if (
+                isinstance(action, dict)
+                and str(action.get("type", "")).strip() == "click_save_and_go_back"
+            ):
+                return True
+    return False
+
+
 def run_navigation_step(
     driver: webdriver.Firefox,
     pause_controller: PauseController,
@@ -3800,6 +3855,7 @@ def run_navigation_step(
             )
         elif action_type == "click_save_and_go_back":
             click_save_and_go_back_button(driver)
+            commit_pending_image_folder_exhaustion(flow_state)
         else:
             raise ValueError(
                 f"Unsupported navigation action '{action_type}' in step '{step_definition.step_id}'."
@@ -4168,6 +4224,7 @@ def run_images_flow_step(
     config: BotConfig,
     listing_selection: ListingSelection,
     verify_before_variants: bool,
+    flow_state: FlowState,
     page_definition: FlowPageDefinition | None = None,
 ) -> None:
     page_definition = page_definition or FlowPageDefinition(
@@ -4209,6 +4266,12 @@ def run_images_flow_step(
             listing_selection.surface,
             pause_controller,
             config,
+        )
+        queue_image_folder_exhaustion(
+            flow_state,
+            selected_image_folder,
+            brand_name,
+            listing_selection.surface,
         )
         checkpoint_pause(
             pause_controller,
@@ -4380,6 +4443,7 @@ def run_flow_step_from_definition(
             config,
             listing_selection,
             verify_before_variants=verify_before_variants,
+            flow_state=flow_state,
             page_definition=page_definition,
         )
     elif step_definition.handler == "variant_page":
@@ -4449,6 +4513,7 @@ def run_flow_page_from_definition(
             listing_selection,
             page_definition=page_definition,
             verify_before_variants="variants" in flow_step_names,
+            flow_state=flow_state,
         )
     elif page_definition.handler == "variants":
         run_variants_flow_step(
@@ -4468,7 +4533,7 @@ def run_listing_page_flow(
     pause_controller: PauseController,
     config: BotConfig,
     listing_selection: ListingSelection,
-) -> None:
+) -> FlowState:
     flow_definition = load_listing_flow_definition(
         listing_selection.product_type,
         listing_selection.surface,
@@ -4494,7 +4559,7 @@ def run_listing_page_flow(
                 flow_state,
                 flow_step_ids,
             )
-        return
+        return flow_state
 
     flow_steps = LEGACY_PRODUCT_PAGE_FLOWS[listing_selection.product_type]
     log_event(
@@ -4511,6 +4576,7 @@ def run_listing_page_flow(
             flow_state,
             set(flow_steps),
         )
+    return flow_state
 
 
 def print_runtime_context(config: BotConfig) -> None:
@@ -4620,8 +4686,12 @@ def run_single_listing_session(
             click_optional_continue(driver)
             checkpoint_pause(pause_controller, "Optional continue handling complete", driver, config)
 
-        run_listing_page_flow(driver, pause_controller, config, listing_selection)
-        click_save_and_go_back_button(driver)
+        flow_state = run_listing_page_flow(driver, pause_controller, config, listing_selection)
+        if flow_definition_saves_and_exits(json_flow_definition):
+            log_event("DONE", "JSON flow already clicked Save & Go Back; skipping legacy final save click.")
+        else:
+            click_save_and_go_back_button(driver)
+            commit_pending_image_folder_exhaustion(flow_state)
         log_event("DONE", f"{listing_selection.product_type.title()} flow completed for run {run_index}/{total_runs}.")
         log_event("BOOT", f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds before closing browser.")
         sleep(SUCCESS_CLOSE_DELAY_SECONDS)

@@ -197,4 +197,4 @@ The ideas should be clearly distinct from:
 
 [USED_PHRASES_CSV]
 
-Generate 15 diverse ideas.
+Generate 15 diverse ideas. GIVE COMPLETE JSON
