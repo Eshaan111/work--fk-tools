@@ -68,6 +68,7 @@ COMMON_DATA_INPUTS_ROOT = DATA_INPUTS_ROOT / "common"
 JEANS_DATA_INPUTS_ROOT = DATA_INPUTS_ROOT / "jeans"
 SHORTS_DATA_INPUTS_ROOT = DATA_INPUTS_ROOT / "shorts"
 TROUSER_DATA_INPUTS_ROOT = DATA_INPUTS_ROOT / "trouser"
+
 DEFAULT_PRICE_STOCK_SHIPPING_EXCEL_ASUS = (
     COMMON_DATA_INPUTS_ROOT / "Price-Stock-Shipping-inputs.xlsx"
 )
@@ -412,6 +413,8 @@ class FlowTargetOption:
 def get_product_description_excel_path(product_type: str , surface_type: str) -> Path:
     if product_type == "jeans" and surface_type == "flipkart":
         return active_path("product_description_excel", "Jeans Product Description Excel")
+    if product_type == "jeans" and surface_type == "shopsy":
+        return JEANS_DATA_INPUTS_ROOT / "Product-Description-inputs-Shopsy.xlsx"
     if product_type == "trouser" and surface_type == "flipkart":
         return TROUSER_DATA_INPUTS_ROOT / "Product-Description-inputs.xlsx"
     if product_type == "trouser" and surface_type == "shopsy":
@@ -422,6 +425,8 @@ def get_product_description_excel_path(product_type: str , surface_type: str) ->
 def get_product_description_json_path(product_type: str, surface_type: str) -> Path:
     if product_type == "jeans" and surface_type == "flipkart":
         return active_path("product_description_json", "Jeans Product Description JSON")
+    if product_type == "jeans" and surface_type == "shopsy":
+        return PROJECT_ROOT / "json_LC_creation" / "jeans_shopsy" / "02_product_description.json"
     if product_type == "trouser" and surface_type == "flipkart":
         return PROJECT_ROOT / "json_LC_creation" / "trouser_flipkart" / "02_product_description.json"
     if product_type == "trouser" and surface_type == "shopsy":
@@ -432,6 +437,8 @@ def get_product_description_json_path(product_type: str, surface_type: str) -> P
 def get_product_description_sheet_name(product_type: str, surface_type: str) -> str:
     if product_type == "jeans" and surface_type == "flipkart":
         return "Jeans Product Inputs"
+    if product_type == "jeans" and surface_type == "shopsy":
+        return "Jeans Product Inputs"
     if product_type == "trouser" and surface_type == "flipkart":
         return "Trouser Product Inputs"
     return "Shorts Product Inputs"
@@ -440,6 +447,8 @@ def get_product_description_sheet_name(product_type: str, surface_type: str) -> 
 def get_additional_description_excel_path(product_type: str, surface_type: str) -> Path:
     if product_type == "jeans" and surface_type == "flipkart":
         return active_path("additional_description_excel", "Jeans Additional Description Excel")
+    if product_type == "jeans" and surface_type == "shopsy":
+        return JEANS_DATA_INPUTS_ROOT / "Additional-Description-inputs-Shopsy.xlsx"
     if product_type == "trouser" and surface_type == "flipkart":
         return TROUSER_DATA_INPUTS_ROOT / "Additional-Description-inputs.xlsx"
     if product_type == "trouser" and surface_type == "shopsy":
@@ -450,6 +459,8 @@ def get_additional_description_excel_path(product_type: str, surface_type: str) 
 def get_additional_description_json_path(product_type: str, surface_type: str) -> Path:
     if product_type == "jeans" and surface_type == "flipkart":
         return active_path("additional_description_json", "Jeans Additional Description JSON")
+    if product_type == "jeans" and surface_type == "shopsy":
+        return PROJECT_ROOT / "json_LC_creation" / "jeans_shopsy" / "01_additional_description.json"
     if product_type == "trouser" and surface_type == "flipkart":
         return (
             PROJECT_ROOT
@@ -469,6 +480,8 @@ def get_additional_description_json_path(product_type: str, surface_type: str) -
 
 def get_additional_description_sheet_name(product_type: str, surface_type: str) -> str:
     if product_type == "jeans" and surface_type == "flipkart":
+        return "Jeans Addl Desc Inputs"
+    if product_type == "jeans" and surface_type == "shopsy":
         return "Jeans Addl Desc Inputs"
     if product_type == "trouser" and surface_type == "flipkart":
         return "Trouser Addl Desc Inputs"
@@ -2761,7 +2774,7 @@ def get_variant_creation_controls(
 
 def get_variant_sizes_to_create(product_input_row: ProductInputRow) -> list[str]:
     variant_sizes: list[str] = []
-    for column_name in ("size_variant_1", "size_variant_2", "size_variant_3"):
+    for column_name in ("size_variant_1", "size_variant_2", "size_variant_3", "size_variant_4"):
         raw_value = product_input_row.values.get(column_name, "").strip()
         if raw_value and raw_value not in variant_sizes:
             variant_sizes.append(raw_value)

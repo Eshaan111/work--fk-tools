@@ -1,0 +1,223 @@
+{
+  "order": 4,
+  "step_name": "price_stock_shipping",
+  "handler": "field_fill_page",
+  "field_fill_mode": "price_stock_shipping",
+  "page_name": "Price, Stock and Shipping Information",
+  "tab": {
+    "label": "Price, Stock and Shipping Information",
+    "locator_candidates": [
+      {
+        "type": "xpath",
+        "value": "//button[@role='tab' and .//span[contains(normalize-space(), 'Price, Stock and Shipping Information')]]"
+      }
+    ]
+  },
+  "checkpoint_label": "Selling info tab opened",
+  "data_source": {
+    "type": "excel_row",
+    "workbook_attr": "price_stock_shipping_excel",
+    "match_by": {
+      "kind": "$listing.kind",
+      "size": "$listing.size"
+    }
+  },
+  "field_json_config_attr": "price_stock_shipping_json",
+  "excel_config_attr": "price_stock_shipping_excel",
+  "snapshot_name": "PHASE 1.html",
+  "source_snapshot": "Full-LC-AUTO/snapshots/PHASE 1.html",
+  "locator_strategy": "Prefer locating the field label text first, then target the nearest input/combobox within the same attribute wrapper.",
+  "filled_checkpoint_label": "Price/Stock/Shipping fields filled",
+  "save_to_context": {
+    "price_stock_shipping.generated.Seller SKU ID": "Seller SKU ID"
+  },
+  "verification": {
+    "enabled": true,
+    "mode": "tab_cycle",
+    "cycle_label": "SKU page",
+    "tab_sequence": [
+      "Price, Stock and Shipping Information",
+      "Image addition"
+    ],
+    "success_conditions": [
+      {
+        "type": "toast",
+        "value": "Changes saved!"
+      },
+      {
+        "type": "tab_progress_nonzero"
+      }
+    ],
+    "checkpoint_label": "Changes saved detected after SKU-page click cycle"
+  },
+  "fields": [
+    {
+      "order": 1,
+      "label": "Seller SKU ID",
+      "required": true,
+      "input_type": "text",
+      "locator_hint": "label text 'Seller SKU ID' -> nearest input[type='text']"
+    },
+    {
+      "order": 2,
+      "label": "Listing Status",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Listing Status' -> nearest combobox / Select input"
+    },
+    {
+      "order": 3,
+      "label": "MRP",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'MRP' -> nearest input[type='number']"
+    },
+    {
+      "order": 4,
+      "label": "Your selling price",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Your selling price' -> nearest input[type='number']"
+    },
+    {
+      "order": 5,
+      "label": "Minimum Order Quantity (MinOQ)",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Minimum Order Quantity (MinOQ)' -> nearest combobox / Select input"
+    },
+    {
+      "order": 6,
+      "label": "Fullfilment by",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Fullfilment by' -> nearest combobox / Select input"
+    },
+    {
+      "order": 7,
+      "label": "Procurement type",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Procurement type' -> nearest combobox / Select input"
+    },
+    {
+      "order": 8,
+      "label": "Procurement SLA",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Procurement SLA' -> nearest input[type='number']"
+    },
+    {
+      "order": 9,
+      "label": "Stock",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Stock' -> nearest input[type='number']"
+    },
+    {
+      "order": 10,
+      "label": "Shipping provider",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Shipping provider' -> nearest combobox / Select input"
+    },
+    {
+      "order": 11,
+      "label": "Local handling fee",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Local handling fee' -> nearest input[type='number']"
+    },
+    {
+      "order": 12,
+      "label": "Zonal handling fee",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Zonal handling fee' -> nearest input[type='number']"
+    },
+    {
+      "order": 13,
+      "label": "National handling fee",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'National handling fee' -> nearest input[type='number']"
+    },
+    {
+      "order": 14,
+      "label": "Length",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Length' -> nearest input[type='number']"
+    },
+    {
+      "order": 15,
+      "label": "Breadth",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Breadth' -> nearest input[type='number']"
+    },
+    {
+      "order": 16,
+      "label": "Height",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Height' -> nearest input[type='number']"
+    },
+    {
+      "order": 17,
+      "label": "Weight",
+      "required": true,
+      "input_type": "number",
+      "locator_hint": "label text 'Weight' -> nearest input[type='number']"
+    },
+    {
+      "order": 18,
+      "label": "HSN",
+      "required": true,
+      "input_type": "text",
+      "locator_hint": "label text 'HSN' -> nearest input[type='text']"
+    },
+    {
+      "order": 19,
+      "label": "Luxury Cess",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Luxury Cess' -> nearest input[type='number']"
+    },
+    {
+      "order": 20,
+      "label": "Tax Code",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Tax Code' -> nearest combobox / Select input"
+    },
+    {
+      "order": 21,
+      "label": "Country Of Origin",
+      "required": true,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Country Of Origin' -> nearest combobox / Select input"
+    },
+    {
+      "order": 22,
+      "label": "Manufacturer Details",
+      "required": true,
+      "input_type": "text",
+      "locator_hint": "label text 'Manufacturer Details' -> nearest input[type='text']"
+    },
+    {
+      "order": 23,
+      "label": "Packer Details",
+      "required": true,
+      "input_type": "text",
+      "locator_hint": "label text 'Packer Details' -> nearest input[type='text']"
+    },
+    {
+      "order": 24,
+      "label": "Importer Details",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Importer Details' -> nearest input[type='text']"
+    }
+  ]
+}
