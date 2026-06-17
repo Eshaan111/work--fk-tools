@@ -38,6 +38,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 RUN_HELPERS_DIRECTORY = PROJECT_ROOT / "run_helpers"
 ERROR_LATEST_PATH = RUN_HELPERS_DIRECTORY / "error_latest.txt"
 SUCCESS_RUN_RECORD_PATH = PROJECT_ROOT / "successful-run-record.xlsx"
+SUCCESS_RUN_ACCOUNTS = ("prabhu", "seema")
+SUCCESS_RUN_DATA_START_ROW = 3
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
 # LAPTOP_NAME = "ASUS"
 LAPTOP_NAME = "VAIO"
@@ -254,7 +256,84 @@ def write_latest_error(error_message: str) -> None:
     ERROR_LATEST_PATH.write_text(f"{str(error_message).strip()}\n", encoding="utf-8")
 
 
-def record_successful_run(listing_selection: ListingSelection) -> Path:
+def parse_brand_count_cell(cell_value: object) -> dict[str, int]:
+    parsed_counts: dict[str, int] = {}
+    if cell_value in (None, ""):
+        return parsed_counts
+
+    for token in str(cell_value).split():
+        match = re.fullmatch(r"(\d+)-([A-Z0-9]+)", token.strip().upper())
+        if match is None:
+            continue
+        parsed_counts[match.group(2)] = int(match.group(1))
+    return parsed_counts
+
+
+def format_brand_count_cell(brand_counts: dict[str, int]) -> str:
+    return " ".join(
+        f"{count}-{brand_code}"
+        for brand_code, count in brand_counts.items()
+        if count > 0
+    )
+
+
+def ensure_success_run_record_headers(worksheet) -> None:
+    worksheet.title = "Successful Runs"
+    worksheet.cell(row=1, column=1, value="Kind")
+    worksheet.cell(row=1, column=2, value="Surface")
+    worksheet.cell(row=2, column=1, value="")
+    worksheet.cell(row=2, column=2, value="")
+
+
+def ensure_date_account_columns(worksheet, run_date: str) -> dict[str, int]:
+    account_columns: dict[str, int] = {}
+    max_column = max(worksheet.max_column, 2)
+
+    for column_index in range(3, max_column + 1):
+        header_date = str(worksheet.cell(row=1, column=column_index).value or "").strip()
+        header_account = str(worksheet.cell(row=2, column=column_index).value or "").strip().lower()
+        if header_date == run_date and header_account in SUCCESS_RUN_ACCOUNTS:
+            account_columns[header_account] = column_index
+
+    if len(account_columns) == len(SUCCESS_RUN_ACCOUNTS):
+        return account_columns
+
+    next_column = max_column + 1
+    for account_name in SUCCESS_RUN_ACCOUNTS:
+        if account_name in account_columns:
+            continue
+        worksheet.cell(row=1, column=next_column, value=run_date)
+        worksheet.cell(row=2, column=next_column, value=account_name.title())
+        account_columns[account_name] = next_column
+        next_column += 1
+
+    return account_columns
+
+
+def get_or_create_success_run_row(worksheet, listing_selection: ListingSelection) -> int:
+    normalized_kind = listing_selection.kind.strip().lower()
+    normalized_surface = listing_selection.surface.strip().lower()
+
+    for row_index in range(SUCCESS_RUN_DATA_START_ROW, worksheet.max_row + 1):
+        row_kind = str(worksheet.cell(row=row_index, column=1).value or "").strip().lower()
+        row_surface = str(worksheet.cell(row=row_index, column=2).value or "").strip().lower()
+        if row_kind == normalized_kind and row_surface == normalized_surface:
+            return row_index
+
+    target_row_index = max(worksheet.max_row + 1, SUCCESS_RUN_DATA_START_ROW)
+    worksheet.cell(row=target_row_index, column=1, value=listing_selection.kind.strip())
+    worksheet.cell(row=target_row_index, column=2, value=listing_selection.surface.strip())
+    return target_row_index
+
+
+def get_brand_code_for_record(brand_name: str) -> str:
+    normalized_brand = normalize_brand_name(brand_name)
+    if normalized_brand not in BRAND_NAME_TO_CODE:
+        raise ValueError(f"Unknown brand for successful run record: {brand_name}")
+    return BRAND_NAME_TO_CODE[normalized_brand]
+
+
+def record_successful_run(listing_selection: ListingSelection, profile_name: str) -> Path:
     run_date = datetime.now().strftime("%Y-%m-%d")
     if SUCCESS_RUN_RECORD_PATH.exists():
         workbook = load_workbook(SUCCESS_RUN_RECORD_PATH)
@@ -262,38 +341,23 @@ def record_successful_run(listing_selection: ListingSelection) -> Path:
     else:
         workbook = Workbook()
         worksheet = workbook.active
-        worksheet.title = "Successful Runs"
-        worksheet.cell(row=1, column=1, value="Kind")
-        worksheet.cell(row=1, column=2, value="Surface")
+    ensure_success_run_record_headers(worksheet)
 
-    date_column_index: int | None = None
-    max_column = max(worksheet.max_column, 2)
-    for column_index in range(3, max_column + 1):
-        header_value = worksheet.cell(row=1, column=column_index).value
-        if str(header_value or "").strip() == run_date:
-            date_column_index = column_index
-            break
-    if date_column_index is None:
-        date_column_index = max_column + 1
-        worksheet.cell(row=1, column=date_column_index, value=run_date)
+    normalized_profile = resolve_profile_name(profile_name)
+    account_columns = ensure_date_account_columns(worksheet, run_date)
+    target_row_index = get_or_create_success_run_row(worksheet, listing_selection)
+    target_column_index = account_columns[normalized_profile]
+    brand_code = get_brand_code_for_record(listing_selection.brand_name)
 
-    target_row_index: int | None = None
-    normalized_kind = listing_selection.kind.strip().lower()
-    normalized_surface = listing_selection.surface.strip().lower()
-    for row_index in range(2, worksheet.max_row + 1):
-        row_kind = str(worksheet.cell(row=row_index, column=1).value or "").strip().lower()
-        row_surface = str(worksheet.cell(row=row_index, column=2).value or "").strip().lower()
-        if row_kind == normalized_kind and row_surface == normalized_surface:
-            target_row_index = row_index
-            break
-    if target_row_index is None:
-        target_row_index = worksheet.max_row + 1
-        worksheet.cell(row=target_row_index, column=1, value=listing_selection.kind.strip())
-        worksheet.cell(row=target_row_index, column=2, value=listing_selection.surface.strip())
-
-    existing_value = worksheet.cell(row=target_row_index, column=date_column_index).value
-    current_count = int(existing_value) if existing_value not in (None, "") else 0
-    worksheet.cell(row=target_row_index, column=date_column_index, value=current_count + 1)
+    existing_counts = parse_brand_count_cell(
+        worksheet.cell(row=target_row_index, column=target_column_index).value
+    )
+    existing_counts[brand_code] = existing_counts.get(brand_code, 0) + 1
+    worksheet.cell(
+        row=target_row_index,
+        column=target_column_index,
+        value=format_brand_count_cell(existing_counts),
+    )
     workbook.save(SUCCESS_RUN_RECORD_PATH)
     return SUCCESS_RUN_RECORD_PATH
 
@@ -4820,7 +4884,7 @@ def main() -> None:
         if run_succeeded:
             completed_runs += 1
             try:
-                record_path = record_successful_run(listing_selection)
+                record_path = record_successful_run(listing_selection, selected_profile)
                 log_event(
                     "DONE",
                     f"Recorded successful run in Excel: {record_path.name}",
