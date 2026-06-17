@@ -46,7 +46,7 @@ DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
 )
 DEFAULT_IMAGE_DIRECTORY_VAIO: Path | None = Path(r"C:\LISTING IMAGES AUTOMATED\Shorts")
 DEFAULT_TROUSER_IMAGE_DIRECTORY_ASUS = Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Trouser")
-DEFAULT_TROUSER_IMAGE_DIRECTORY_VAIO = Path(r"C:\LISTING IMAGES AUTOMATED\Trouser")
+DEFAULT_TROUSER_IMAGE_DIRECTORY_VAIO = Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Trouser")
 JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "1": ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
     "2": ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
@@ -55,11 +55,11 @@ JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "5": ("White-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\WHITE-PLAIN\NEW IMAGES")),
 }
 JEANS_KIND_OPTIONS_VAIO: dict[str, tuple[str, Path | None]] = {
-    "1": ("Beige", Path(r"C:\LISTING IMAGES AUTOMATED\BEIGE")),
-    "2": ("Ice", Path(r"C:\LISTING IMAGES AUTOMATED\ICE")),
-    "3": ("Black-baggy", Path(r"C:\LISTING IMAGES AUTOMATED\Black-baggy")),
-    "4": ("Black-Plain", Path(r"C:\LISTING IMAGES AUTOMATED\Balck-Plain")),
-    "5": ("White-Plain", Path(r"C:\LISTING IMAGES AUTOMATED\White")),
+    "1": ("Beige", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\BEIGE")),
+    "2": ("Ice", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\ICE")),
+    "3": ("Black-baggy", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Black-baggy")),
+    "4": ("Black-Plain", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Black-Plain")),
+    "5": ("White-Plain", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\White")),
 }
 DEFAULT_SNAPSHOT_DIRECTORY_ASUS = PROJECT_ROOT / "snapshots"
 DEFAULT_SNAPSHOT_DIRECTORY_VAIO = PROJECT_ROOT / "snapshots"
@@ -137,7 +137,7 @@ FIREFOX_PROFILES_ASUS: dict[str, Path | None] = {
     "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"),
 }
 FIREFOX_PROFILES_VAIO: dict[str, Path | None] = {
-    "seema": None,
+    "seema": Path(r"C:\Users\SONY\AppData\Roaming\Mozilla\Firefox\Profiles\S2AIZkXx.Profile 1"),
     "prabhu": Path(r"C:\Users\SONY\AppData\Roaming\Mozilla\Firefox\Profiles\gm1pmawk.default-release"),
 }
 LAPTOP_CONFIGS = {
