@@ -5,6 +5,8 @@ import os
 import random
 import re
 import string
+import subprocess
+import sys
 import threading
 import tkinter as tk
 from datetime import datetime
@@ -4050,6 +4052,76 @@ def run_open_listing_bootstrap_step(
     return True
 
 
+def resolve_preflight_listing_url(
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    flow_definition: FlowDefinition | None,
+) -> str:
+    if flow_definition is None:
+        return config.listing_url
+
+    open_step = next(
+        (
+            step
+            for step in flow_definition.steps
+            if step.handler == "navigation_step" and step.step_id == "open_listing"
+        ),
+        None,
+    )
+    if open_step is None:
+        return config.listing_url
+
+    actions = open_step.spec_payload.get("actions")
+    if not isinstance(actions, list):
+        return config.listing_url
+
+    flow_state = FlowState()
+    flow_state.context.update(flow_definition.manifest_context)
+    flow_state.context["brand_name"] = listing_selection.brand_name
+
+    for action in actions:
+        if not isinstance(action, dict):
+            continue
+        if str(action.get("type", "")).strip() != "open_listing_page":
+            continue
+        resolved_url = resolve_runtime_reference(
+            action.get("url", "$config.listing_url"),
+            config,
+            listing_selection,
+            flow_state,
+        )
+        if isinstance(resolved_url, str) and resolved_url.strip():
+            return resolved_url.strip()
+
+    return config.listing_url
+
+
+def run_login_precheck(
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    flow_definition: FlowDefinition | None,
+) -> None:
+    target_url = resolve_preflight_listing_url(config, listing_selection, flow_definition)
+    check_script_path = PROJECT_ROOT / "check_logged_in.py"
+    command = [
+        sys.executable,
+        str(check_script_path),
+        "--profile",
+        config.profile_name,
+        "--url",
+        target_url,
+    ]
+    completed_process = subprocess.run(
+        command,
+        cwd=str(PROJECT_ROOT),
+        check=False,
+    )
+    if completed_process.returncode != 0:
+        raise RuntimeError(
+            f"Login precheck failed before listing flow started (exit code {completed_process.returncode})."
+        )
+
+
 def open_flow_tab(
     driver: webdriver.Firefox,
     pause_controller: PauseController,
@@ -4885,6 +4957,7 @@ def main() -> None:
             additional_description_excel=get_additional_description_excel_path(listing_selection.product_type,listing_selection.surface),
             additional_description_json=get_additional_description_json_path(listing_selection.product_type,listing_selection.surface),
         )
+        run_login_precheck(config, listing_selection, json_flow_definition)
         print_runtime_context(config)
         log_event("BOOT", f"Configured run count: {run_count}")
         log_event(
@@ -4897,7 +4970,7 @@ def main() -> None:
             "JSON flow mode: "
             f"{'enabled' if json_flow_definition is not None else 'disabled'}",
         )
-    except ValueError as exc:
+    except (ValueError, RuntimeError) as exc:
         raise SystemExit(str(exc)) from exc
 
     completed_runs = 0

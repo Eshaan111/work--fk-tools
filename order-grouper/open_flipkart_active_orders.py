@@ -922,8 +922,22 @@ def main() -> None:
         log_event("DONE", "Firefox profile selection was cancelled. Exiting.")
         return
 
-    log_event("START", f"Opening Firefox profile '{profile_name}' and navigating to the target Flipkart URL...")
-    driver = build_firefox_driver(profile_name)
+    from check_logged_in import run_login_check_for_profile
+
+    log_event("START", f"Opening Firefox profile '{profile_name}' and running the login check first...")
+    login_result, driver = run_login_check_for_profile(
+        args.url,
+        profile_name,
+        prompt_after_gmail=True,
+    )
+    log_event(
+        "LOGIN",
+        (
+            f"Login check finished with status '{login_result.status}'. "
+            f"Final URL: {login_result.final_url or '<unknown>'}. Reason: {login_result.reason}"
+        ),
+    )
+
     try:
         prepare_orders_view(driver, args.url)
         selection_cycle_index = 0
