@@ -13,7 +13,7 @@ from pathlib import Path
 from time import sleep
 
 import msvcrt
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 import pyautogui
 from pynput.mouse import Button as PynputButton
 from pynput.mouse import Controller as MouseController
@@ -37,6 +37,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 PROJECT_ROOT = Path(__file__).resolve().parent
 RUN_HELPERS_DIRECTORY = PROJECT_ROOT / "run_helpers"
 ERROR_LATEST_PATH = RUN_HELPERS_DIRECTORY / "error_latest.txt"
+SUCCESS_RUN_RECORD_PATH = PROJECT_ROOT / "successful-run-record.xlsx"
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
 # LAPTOP_NAME = "ASUS"
 LAPTOP_NAME = "VAIO"
@@ -251,6 +252,50 @@ def log_event(stage: str, message: str) -> None:
 def write_latest_error(error_message: str) -> None:
     RUN_HELPERS_DIRECTORY.mkdir(parents=True, exist_ok=True)
     ERROR_LATEST_PATH.write_text(f"{str(error_message).strip()}\n", encoding="utf-8")
+
+
+def record_successful_run(listing_selection: ListingSelection) -> Path:
+    run_date = datetime.now().strftime("%Y-%m-%d")
+    if SUCCESS_RUN_RECORD_PATH.exists():
+        workbook = load_workbook(SUCCESS_RUN_RECORD_PATH)
+        worksheet = workbook.active
+    else:
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Successful Runs"
+        worksheet.cell(row=1, column=1, value="Kind")
+        worksheet.cell(row=1, column=2, value="Surface")
+
+    date_column_index: int | None = None
+    max_column = max(worksheet.max_column, 2)
+    for column_index in range(3, max_column + 1):
+        header_value = worksheet.cell(row=1, column=column_index).value
+        if str(header_value or "").strip() == run_date:
+            date_column_index = column_index
+            break
+    if date_column_index is None:
+        date_column_index = max_column + 1
+        worksheet.cell(row=1, column=date_column_index, value=run_date)
+
+    target_row_index: int | None = None
+    normalized_kind = listing_selection.kind.strip().lower()
+    normalized_surface = listing_selection.surface.strip().lower()
+    for row_index in range(2, worksheet.max_row + 1):
+        row_kind = str(worksheet.cell(row=row_index, column=1).value or "").strip().lower()
+        row_surface = str(worksheet.cell(row=row_index, column=2).value or "").strip().lower()
+        if row_kind == normalized_kind and row_surface == normalized_surface:
+            target_row_index = row_index
+            break
+    if target_row_index is None:
+        target_row_index = worksheet.max_row + 1
+        worksheet.cell(row=target_row_index, column=1, value=listing_selection.kind.strip())
+        worksheet.cell(row=target_row_index, column=2, value=listing_selection.surface.strip())
+
+    existing_value = worksheet.cell(row=target_row_index, column=date_column_index).value
+    current_count = int(existing_value) if existing_value not in (None, "") else 0
+    worksheet.cell(row=target_row_index, column=date_column_index, value=current_count + 1)
+    workbook.save(SUCCESS_RUN_RECORD_PATH)
+    return SUCCESS_RUN_RECORD_PATH
 
 
 def require_configured_path(path_value: Path | None, path_label: str) -> Path:
@@ -4774,6 +4819,14 @@ def main() -> None:
         )
         if run_succeeded:
             completed_runs += 1
+            try:
+                record_path = record_successful_run(listing_selection)
+                log_event(
+                    "DONE",
+                    f"Recorded successful run in Excel: {record_path.name}",
+                )
+            except Exception as exc:
+                log_event("ERROR", f"Could not update successful run record Excel: {exc}")
         else:
             failed_runs += 1
 
