@@ -1040,11 +1040,36 @@ def save_named_html_snapshot(
     return snapshot_path
 
 
+def apply_surface_specific_field_aliases(
+    row_values: dict[str, object],
+    surface: str | None = None,
+) -> dict[str, object]:
+    resolved_values = dict(row_values)
+    normalized_surface = (surface or "").strip().lower()
+    if not normalized_surface:
+        return resolved_values
+
+    normalized_key_lookup = {
+        key.strip().lower(): key
+        for key in row_values
+        if key is not None and str(key).strip()
+    }
+
+    surface_price_header = f"your selling price - {normalized_surface}"
+    canonical_price_header = "Your selling price"
+    surface_price_key = normalized_key_lookup.get(surface_price_header)
+    if surface_price_key:
+        resolved_values[canonical_price_header] = row_values.get(surface_price_key)
+
+    return resolved_values
+
+
 def load_product_input_row(
     workbook_path: Path,
     target_kind: str,
     target_size: str,
     worksheet_name: str | None = None,
+    surface: str | None = None,
 ) -> ProductInputRow:
     if not workbook_path.exists():
         raise ValueError(f"Excel file was not found: {workbook_path}")
@@ -1073,6 +1098,7 @@ def load_product_input_row(
             for column_index in range(1, worksheet.max_column + 1)
             if normalized_headers[column_index - 1]
         }
+        row_values = apply_surface_specific_field_aliases(row_values, surface)
         row_kind = str(row_values.get("kind", "")).strip()
         row_size = str(row_values.get("size", "")).strip()
 
@@ -1145,6 +1171,7 @@ def resolve_variant_shared_sku_suffix(
             config.price_stock_shipping_excel,
             listing_selection.kind,
             listing_selection.size,
+            surface=listing_selection.surface,
         )
     except ValueError as exc:
         log_event(
@@ -3350,6 +3377,7 @@ def update_pasted_variant_row_skus(
                 config.price_stock_shipping_excel,
                 listing_selection.kind,
                 target_size,
+                surface=listing_selection.surface,
             )
         except ValueError as exc:
             log_event(
@@ -4117,6 +4145,7 @@ def load_page_input_row(
         listing_selection.kind,
         listing_selection.size,
         worksheet_name=page_definition.worksheet_name,
+        surface=listing_selection.surface,
     )
 
 
