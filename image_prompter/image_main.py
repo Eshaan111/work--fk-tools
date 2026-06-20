@@ -126,9 +126,10 @@ CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection = {
     "rgb": (230, 255, 255),
 }
 IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
-IMAGE_GENERATION_TIMEOUT_SECONDS = 600
+IMAGE_GENERATION_TIMEOUT_SECONDS = 240
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 12
 IMAGE_GENERATION_VERIFICATION_LIMIT = -1
+IDEA_RESPONSE_TIMEOUT_SECONDS = 30
 POST_SAVE_EXTRACTION_WAIT_SECONDS = 2.0
 IMAGE_GENERATION_IN_PROGRESS_PHRASES = (
     "creating image",
@@ -515,7 +516,10 @@ def copy_full_chat_text_once() -> str:
     return get_clipboard_text()
 
 
-def wait_for_stable_full_chat_text(prompt_text: str = "") -> str:
+def wait_for_stable_full_chat_text(
+    prompt_text: str = "",
+    timeout_started_at: float | None = None,
+) -> str | None:
     print(
         "Starting full-chat copy cycle every 0.5 seconds until two consecutive copies match and idea output is present..."
     )
@@ -560,6 +564,15 @@ def wait_for_stable_full_chat_text(prompt_text: str = "") -> str:
             print(
                 "Copied chat text is stable, but no parseable JSON or fallback idea blocks were found yet. Continuing to wait..."
             )
+
+        if (
+            timeout_started_at is not None
+            and time.time() - timeout_started_at >= IDEA_RESPONSE_TIMEOUT_SECONDS
+        ):
+            print(
+                f"Timed out after {IDEA_RESPONSE_TIMEOUT_SECONDS} seconds without detecting parseable idea JSON. Aborting this run."
+            )
+            return None
 
         previous_copy = current_copy
         time.sleep(0.5)
@@ -823,10 +836,19 @@ def extract_latest_output(full_chat_text: str, prompt_text: str) -> str:
     return strip_duplicated_prompt_prefix(latest_output, prompt_text)
 
 
-def capture_and_store_latest_output(prompt_text: str) -> str:
+def capture_and_store_latest_output(
+    prompt_text: str,
+    timeout_started_at: float | None = None,
+) -> str | None:
     click_chat_copy_target()
     # stable_full_chat_text = wait_for_stable_full_chat_text()
-    stable_full_chat_text = wait_for_stable_full_chat_text(prompt_text)
+    stable_full_chat_text = wait_for_stable_full_chat_text(
+        prompt_text,
+        timeout_started_at,
+    )
+    if stable_full_chat_text is None:
+        return None
+
     latest_output = extract_latest_output(stable_full_chat_text, prompt_text)
 
     LAST_FULL_CHAT_PATH.write_text(stable_full_chat_text + "\n", encoding="utf-8")
@@ -1021,14 +1043,14 @@ def has_generated_image_confirmation(
     return "generated image:" in trailing_text.casefold()
 
 
-def wait_for_image_generation_completion(generation_prompt_text: str) -> str:
+def wait_for_image_generation_completion(generation_prompt_text: str) -> str | None:
     print(
         "Waiting for image-generation mode to end by polling copied chat text for generating-state phrases..."
     )
+    start_time = time.time()
     time.sleep(IMAGE_GENERATION_MIN_WAIT_SECONDS)
 
     previous_copy: str | None = None
-    start_time = time.time()
     attempt = 0
     stuck_counter = 0
 
@@ -1082,9 +1104,16 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str:
             )
 
         if time.time() - start_time >= IMAGE_GENERATION_TIMEOUT_SECONDS:
-            raise TimeoutError(
-                "Timed out while waiting for image-generation mode to finish."
+            print(
+                "Timed out after "
+                f"{IMAGE_GENERATION_TIMEOUT_SECONDS} seconds without verifying a generated image. "
+                "Aborting this image run and continuing."
             )
+            IMAGE_GENERATION_FINAL_CHAT_PATH.write_text(
+                current_copy + "\n",
+                encoding="utf-8",
+            )
+            return None
 
         previous_copy = current_copy
         time.sleep(IMAGE_GENERATION_POLL_INTERVAL_SECONDS)
@@ -1093,7 +1122,7 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str:
 def run_generation_prompt_for_image(
     image_path: Path,
     generation_prompt_text: str,
-) -> str:
+) -> str | None:
     print("Starting follow-up image generation prompt and image paste flow...")
     pyautogui.press("w")
     time.sleep(0.8)
@@ -1146,7 +1175,13 @@ def run_generation_prompt_for_remaining_images(
         print(
             f"Running image generation for image {image_index} of {target_verification_count}: {image_path}"
         )
-        run_generation_prompt_for_image(image_path, generation_prompt_text)
+        final_chat_text = run_generation_prompt_for_image(image_path, generation_prompt_text)
+        if final_chat_text is None:
+            print(
+                f"Could not verify generated image for image {image_index} of "
+                f"{target_verification_count}. Continuing with the next image."
+            )
+            continue
         print(
             f"Confirmed generated image for image {image_index} of {target_verification_count}."
         )
@@ -1184,10 +1219,14 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
     print("Waiting 10 seconds before submitting the ChatGPT prompt...")
     time.sleep(10)
     pyautogui.press("enter")
+    prompt_submitted_at = time.time()
     print("Pressed Enter to submit the prompt")
     print("Waiting 5 seconds before starting output-completion detection...")
     time.sleep(5)
-    latest_output = capture_and_store_latest_output(context.prompt_text)
+    latest_output = capture_and_store_latest_output(
+        context.prompt_text,
+        prompt_submitted_at,
+    )
     if latest_output:
         ideas = save_parsed_idea_results(latest_output, context.existing_phrases)
         print("Captured latest output successfully.")

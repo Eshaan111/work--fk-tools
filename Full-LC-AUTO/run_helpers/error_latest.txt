@@ -1,6 +1,1 @@
-Run 6/10 failed: Message: 
-Stacktrace:
-RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
-WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:169:5
-NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:538:5
-dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:136:16
+Run 1/5 failed: No images found in folder: G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\ICE\0

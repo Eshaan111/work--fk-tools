@@ -886,8 +886,8 @@ def prompt_for_profile() -> str:
 
 
 def prompt_for_run_count() -> int:
-    selected_value = input("How many runs should the bot execute? [1]: ").strip()
-    run_count = int(selected_value or "1")
+    selected_value = input("How many runs should the bot execute? [5]: ").strip()
+    run_count = int(selected_value or "5")
     if run_count < 1:
         raise ValueError("Run count must be at least 1.")
     return run_count
@@ -953,6 +953,7 @@ def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
     surface_type = selected_flow.surface
 
     if product_type == "jeans":
+        DEFAULT_LISTING_SIZE = "28"
         print("Choose jeans kind:")
         print("1. Beige")
         print("2. Ice")
@@ -969,12 +970,14 @@ def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
             f"{selected_kind} jeans image directory",
         )
     elif product_type == "trouser" and surface_type == "flipkart":
+        DEFAULT_LISTING_SIZE = "28"
         selected_kind = "Trouser"
         image_directory = require_configured_path(
             ACTIVE_LAPTOP_CONFIG.get("trouser_image_directory"),
             "default trouser image directory",
         )
     elif product_type == "trouser" and surface_type == "shopsy":
+        DEFAULT_LISTING_SIZE = "M"
         selected_kind = "Trouser"
         image_directory = require_configured_path(
             ACTIVE_LAPTOP_CONFIG.get("trouser_image_directory"),
@@ -2622,19 +2625,24 @@ def upload_image_folder(
     surface_name: str,
     pause_controller: PauseController,
     config: BotConfig,
+    slot_ids: list[str] | None = None,
 ) -> None:
     if not image_folder.image_paths:
         raise ValueError(f"No images found in folder: {image_folder.folder_path}")
 
-    upload_count = min(len(image_folder.image_paths), len(IMAGE_SLOT_IDS))
-    slot_image_paths = list(zip(IMAGE_SLOT_IDS[:upload_count], image_folder.image_paths))
+    target_slot_ids = slot_ids or IMAGE_SLOT_IDS
+    if not target_slot_ids:
+        raise ValueError("No image upload slot ids are configured.")
+
+    upload_count = min(len(image_folder.image_paths), len(target_slot_ids))
+    slot_image_paths = list(zip(target_slot_ids[:upload_count], image_folder.image_paths))
     for index, (slot_id, image_path) in enumerate(slot_image_paths, start=1):
         checkpoint_pause(pause_controller, f"Before upload slot {index}", driver, config)
         click_image_slot(driver, slot_id)
         upload_image_to_selected_slot(driver, image_path)
         checkpoint_pause(pause_controller, f"After upload slot {index}", driver, config)
 
-    uploaded_slot_ids = IMAGE_SLOT_IDS[:upload_count]
+    uploaded_slot_ids = target_slot_ids[:upload_count]
     slot_image_path_by_id = dict(slot_image_paths)
     for retry_pass in range(IMAGE_UPLOAD_RETRY_PASSES + 1):
         try:
@@ -2655,11 +2663,11 @@ def upload_image_folder(
                 upload_image_to_selected_slot(driver, image_path)
     checkpoint_pause(pause_controller, "After verifying uploaded image slots", driver, config)
 
-    if len(image_folder.image_paths) > len(IMAGE_SLOT_IDS):
+    if len(image_folder.image_paths) > len(target_slot_ids):
         log_event(
             "IMAGES",
-            f"Only uploaded the first {len(IMAGE_SLOT_IDS)} image(s); "
-            f"{len(image_folder.image_paths) - len(IMAGE_SLOT_IDS)} extra image(s) were skipped.",
+            f"Only uploaded the first {len(target_slot_ids)} image(s); "
+            f"{len(image_folder.image_paths) - len(target_slot_ids)} extra image(s) were skipped.",
         )
 
 
@@ -3700,6 +3708,7 @@ class FlowPageDefinition:
     brand_name: str | None = None
     locator_strategy: str | None = None
     source_snapshot: str | None = None
+    upload_slot_ids: list[str] = field(default_factory=list)
     fields: list[FieldDefinition] = field(default_factory=list)
 
 
@@ -3822,6 +3831,11 @@ def build_page_definition_from_spec(
         if isinstance(spec_payload.get("verification"), dict)
         else None
     )
+    upload_targets = (
+        spec_payload.get("upload_targets")
+        if isinstance(spec_payload.get("upload_targets"), dict)
+        else {}
+    )
     tab_locator_candidates = (
         tab_payload.get("locator_candidates")
         if isinstance(tab_payload, dict)
@@ -3890,6 +3904,11 @@ def build_page_definition_from_spec(
             if spec_payload.get("source_snapshot")
             else None
         ),
+        upload_slot_ids=[
+            str(slot_id)
+            for slot_id in upload_targets.get("slot_ids", [])
+            if str(slot_id).strip()
+        ],
         fields=[
             build_field_definition(field_payload)
             for field_payload in fields_payload
@@ -4482,28 +4501,34 @@ def run_images_flow_step(
         brand_name,
         listing_selection.surface,
     )
-    if selected_image_folder is not None:
-        checkpoint_pause(pause_controller, "Image folder selected", driver, config)
-        upload_image_folder(
-            driver,
-            selected_image_folder,
-            brand_name,
-            listing_selection.surface,
-            pause_controller,
-            config,
+    if selected_image_folder is None:
+        raise ValueError(
+            f"Images step could not find an available image folder for "
+            f"{brand_name}/{listing_selection.surface} in {config.image_directory}."
         )
-        queue_image_folder_exhaustion(
-            flow_state,
-            selected_image_folder,
-            brand_name,
-            listing_selection.surface,
-        )
-        checkpoint_pause(
-            pause_controller,
-            page_definition.filled_checkpoint_label or "Images uploaded",
-            driver,
-            config,
-        )
+
+    checkpoint_pause(pause_controller, "Image folder selected", driver, config)
+    upload_image_folder(
+        driver,
+        selected_image_folder,
+        brand_name,
+        listing_selection.surface,
+        pause_controller,
+        config,
+        slot_ids=page_definition.upload_slot_ids or IMAGE_SLOT_IDS,
+    )
+    queue_image_folder_exhaustion(
+        flow_state,
+        selected_image_folder,
+        brand_name,
+        listing_selection.surface,
+    )
+    checkpoint_pause(
+        pause_controller,
+        page_definition.filled_checkpoint_label or "Images uploaded",
+        driver,
+        config,
+    )
 
     if verify_before_variants:
         log_event(
