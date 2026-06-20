@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import html
@@ -922,21 +922,25 @@ def main() -> None:
         log_event("DONE", "Firefox profile selection was cancelled. Exiting.")
         return
 
-    from check_logged_in import run_login_check_for_profile
-
-    log_event("START", f"Opening Firefox profile '{profile_name}' and running the login check first...")
-    login_result, driver = run_login_check_for_profile(
-        args.url,
-        profile_name,
-        prompt_after_gmail=True,
-    )
-    log_event(
-        "LOGIN",
-        (
-            f"Login check finished with status '{login_result.status}'. "
-            f"Final URL: {login_result.final_url or '<unknown>'}. Reason: {login_result.reason}"
-        ),
-    )
+    # Login precheck temporarily disabled. Launch Firefox directly and continue
+    # with the existing orders flow so the rest of the script behaves the same.
+    # from check_logged_in import run_login_check_for_profile
+    #
+    # log_event("START", f"Opening Firefox profile '{profile_name}' and running the login check first...")
+    # login_result, driver = run_login_check_for_profile(
+    #     args.url,
+    #     profile_name,
+    #     prompt_after_gmail=True,
+    # )
+    # log_event(
+    #     "LOGIN",
+    #     (
+    #         f"Login check finished with status '{login_result.status}'. "
+    #         f"Final URL: {login_result.final_url or '<unknown>'}. Reason: {login_result.reason}"
+    #     ),
+    # )
+    log_event("START", f"Opening Firefox profile '{profile_name}' without the login precheck...")
+    driver = build_firefox_driver(profile_name)
 
     try:
         prepare_orders_view(driver, args.url)
@@ -980,3 +984,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

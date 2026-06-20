@@ -43,8 +43,8 @@ SUCCESS_RUN_RECORD_PATH = PROJECT_ROOT / "successful-run-record.xlsx"
 SUCCESS_RUN_ACCOUNTS = ("prabhu", "seema")
 SUCCESS_RUN_DATA_START_ROW = 3
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-# LAPTOP_NAME = "ASUS"
-LAPTOP_NAME = "VAIO"
+LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "VAIO"
 
 DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
     r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
@@ -4101,25 +4101,27 @@ def run_login_precheck(
     listing_selection: ListingSelection,
     flow_definition: FlowDefinition | None,
 ) -> None:
-    target_url = resolve_preflight_listing_url(config, listing_selection, flow_definition)
-    check_script_path = PROJECT_ROOT / "check_logged_in.py"
-    command = [
-        sys.executable,
-        str(check_script_path),
-        "--profile",
-        config.profile_name,
-        "--url",
-        target_url,
-    ]
-    completed_process = subprocess.run(
-        command,
-        cwd=str(PROJECT_ROOT),
-        check=False,
-    )
-    if completed_process.returncode != 0:
-        raise RuntimeError(
-            f"Login precheck failed before listing flow started (exit code {completed_process.returncode})."
-        )
+    # Login precheck temporarily disabled.
+    # target_url = resolve_preflight_listing_url(config, listing_selection, flow_definition)
+    # check_script_path = PROJECT_ROOT / "check_logged_in.py"
+    # command = [
+    #     sys.executable,
+    #     str(check_script_path),
+    #     "--profile",
+    #     config.profile_name,
+    #     "--url",
+    #     target_url,
+    # ]
+    # completed_process = subprocess.run(
+    #     command,
+    #     cwd=str(PROJECT_ROOT),
+    #     check=False,
+    # )
+    # if completed_process.returncode != 0:
+    #     raise RuntimeError(
+    #         f"Login precheck failed before listing flow started (exit code {completed_process.returncode})."
+    #     )
+    return None
 
 
 def open_flow_tab(
