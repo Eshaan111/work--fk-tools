@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import os
@@ -46,9 +46,7 @@ SUCCESS_RUN_DATA_START_ROW = 3
 LAPTOP_NAME = "ASUS"
 # LAPTOP_NAME = "VAIO"
 
-DEFAULT_IMAGE_DIRECTORY_ASUS = Path(
-    r"C:\work-mom\HOSERY\SHORTS\CHATGPT\Lead_Permutations_Output"
-)
+DEFAULT_IMAGE_DIRECTORY_ASUS = Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Shorts")
 DEFAULT_IMAGE_DIRECTORY_VAIO: Path | None = Path(r"C:\LISTING IMAGES AUTOMATED\Shorts")
 DEFAULT_TROUSER_IMAGE_DIRECTORY_ASUS = Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Trouser")
 DEFAULT_TROUSER_IMAGE_DIRECTORY_VAIO = Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Trouser")
@@ -137,9 +135,9 @@ DEFAULT_ADDITIONAL_DESCRIPTION_SHORTS_JSON_VAIO = (
 DEFAULT_VARIANTS_EXCEL_ASUS = COMMON_DATA_INPUTS_ROOT / "Variants-excel.xlsx"
 DEFAULT_VARIANTS_EXCEL_VAIO = COMMON_DATA_INPUTS_ROOT / "Variants-excel.xlsx"
 FIREFOX_PROFILES_ASUS: dict[str, Path | None] = {
-    "seema": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\ekyb3fej.Seema"),
+    "seema": Path(r"C:\Users\ESHAAN\AppData\Roaming\Mozilla\Firefox\Profiles\shW5ycIM.Profile 2"),
     # "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\7kkhlz7p.prabhu-bt"),
-    "prabhu": Path(r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"),
+    "prabhu": Path(r"C:\Users\ESHAAN\AppData\Roaming\Mozilla\Firefox\Profiles\kw3a25lf.default-release"),
 }
 FIREFOX_PROFILES_VAIO: dict[str, Path | None] = {
     "seema": Path(r"C:\Users\SONY\AppData\Roaming\Mozilla\Firefox\Profiles\S2AIZkXx.Profile 1"),
@@ -5032,3 +5030,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
