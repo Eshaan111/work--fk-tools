@@ -1,16 +1,1 @@
-Run 1/5 failed: Message: Browsing context has been discarded
-Stacktrace:
-RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
-WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:169:5
-NoSuchWindowError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:765:5
-assert.that/<@chrome://remote/content/shared/webdriver/Assert.sys.mjs:581:13
-assert.open@chrome://remote/content/shared/webdriver/Assert.sys.mjs:169:4
-#execute@chrome://remote/content/marionette/driver.sys.mjs:4077:17
-executeScript@chrome://remote/content/marionette/driver.sys.mjs:992:25
-dispatch@chrome://remote/content/marionette/server.sys.mjs:317:49
-execute@chrome://remote/content/marionette/server.sys.mjs:289:16
-onPacket/<@chrome://remote/content/marionette/server.sys.mjs:262:20
-onPacket@chrome://remote/content/marionette/server.sys.mjs:263:9
-_onJSONObjectReady/<@chrome://remote/content/marionette/transport.sys.mjs:494:20
-ssi_onQuitApplicationGranted@resource:///modules/sessionstore/SessionStore.sys.mjs:2910:19
-ssi_observe@resource:///modules/sessionstore/SessionStore.sys.mjs:1607:14
+Run 2/5 failed: Message: Timed out while cycling Product Description page page switches waiting for verification progress.

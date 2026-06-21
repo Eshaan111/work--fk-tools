@@ -10,6 +10,9 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 OUTPUT_PATH = PROJECT_ROOT / "image_folder_insight.xlsx"
+# LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
+# LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "VAIO"
 
 BRAND_CODE_MAP = OrderedDict(
     [
@@ -35,7 +38,7 @@ SURFACE_FOLDER_SUFFIX = OrderedDict(
 FOLDER_SUFFIX_SURFACE = {
     suffix.upper(): surface for surface, suffix in SURFACE_FOLDER_SUFFIX.items()
 }
-KIND_DIRECTORIES = OrderedDict(
+KIND_DIRECTORIES_ASUS = OrderedDict(
     [
         ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
         ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
@@ -46,6 +49,29 @@ KIND_DIRECTORIES = OrderedDict(
         ("Shorts", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Shorts")),
     ]
 )
+KIND_DIRECTORIES_VAIO = OrderedDict(
+    [
+        ("Beige", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\BEIGE")),
+        ("Ice", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\ICE")),
+        ("Black-baggy", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Black-baggy")),
+        ("Black-Plain", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Black-Plain")),
+        ("White-Plain", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\White")),
+        ("Trouser", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Trouser")),
+        ("Shorts", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED")),
+    ]
+)
+LAPTOP_CONFIGS = {
+    "ASUS": {
+        "kind_directories": KIND_DIRECTORIES_ASUS,
+    },
+    "VAIO": {
+        "kind_directories": KIND_DIRECTORIES_VAIO,
+    },
+}
+if LAPTOP_NAME not in LAPTOP_CONFIGS:
+    raise ValueError(f"Unknown LAPTOP_NAME '{LAPTOP_NAME}'. Choose ASUS or VAIO.")
+ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME]
+KIND_DIRECTORIES = ACTIVE_LAPTOP_CONFIG["kind_directories"]
 TOKEN_PATTERN = re.compile(r"([A-Z]+)('?[SF])?$")
 
 THIN_BORDER = Border(
