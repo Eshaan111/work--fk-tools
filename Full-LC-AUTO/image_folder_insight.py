@@ -11,8 +11,8 @@ from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 PROJECT_ROOT = Path(__file__).resolve().parent
 OUTPUT_PATH = PROJECT_ROOT / "image_folder_insight.xlsx"
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-# LAPTOP_NAME = "ASUS"
-LAPTOP_NAME = "VAIO"
+LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "VAIO"
 
 BRAND_CODE_MAP = OrderedDict(
     [
@@ -40,11 +40,11 @@ FOLDER_SUFFIX_SURFACE = {
 }
 KIND_DIRECTORIES_ASUS = OrderedDict(
     [
-        ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
-        ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
-        ("Black-baggy", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BLACK-BAGGY\NEW IMAGES")),
-        ("Black-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BLACK-PLAIN\NEW IMAGES")),
-        ("White-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\WHITE-PLAIN\NEW IMAGES")),
+        ("Beige", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\BEIGE")),
+        ("Ice", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\ICE")),
+        ("Black-baggy", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Black-baggy")),
+        ("Black-Plain", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Black-Plain")),
+        ("White-Plain", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\White")),
         ("Trouser", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Trouser")),
         ("Shorts", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Shorts")),
     ]
@@ -145,28 +145,40 @@ def parse_exhausted_brand_surfaces(folder_name: str) -> list[tuple[str, str]]:
     return exhausted_pairs
 
 
-def scan_kind_directory(kind_name: str, folder_root: Path) -> tuple[dict[tuple[str, str, str], int], list[str]]:
+def scan_kind_directory(
+    kind_name: str,
+    folder_root: Path,
+) -> tuple[dict[tuple[str, str, str], int], list[str], int]:
     counts = {
         (account_name, brand_name, surface_name): 0
         for account_name, brand_name, surface_name in ACCOUNT_BRAND_COLUMNS
     }
     warnings: list[str] = []
+    total_numbered_folders = 0
 
     if not folder_root.exists():
         warnings.append(f"{kind_name}: missing directory -> {folder_root}")
-        return counts, warnings
+        return counts, warnings, total_numbered_folders
     if not folder_root.is_dir():
         warnings.append(f"{kind_name}: not a directory -> {folder_root}")
-        return counts, warnings
+        return counts, warnings, total_numbered_folders
 
     for child in sorted(folder_root.iterdir(), key=lambda path: path.name.lower()):
         if not child.is_dir():
             continue
 
         try:
-            exhausted_pairs = parse_exhausted_brand_surfaces(child.name)
+            parse_folder_number(child.name)
         except ValueError as exc:
             warnings.append(f"{kind_name}: skipped folder '{child.name}' ({exc})")
+            continue
+
+        total_numbered_folders += 1
+
+        try:
+            exhausted_pairs = parse_exhausted_brand_surfaces(child.name)
+        except ValueError as exc:
+            warnings.append(f"{kind_name}: skipped folder tokens in '{child.name}' ({exc})")
             continue
 
         for brand_name, surface_name in exhausted_pairs:
@@ -178,7 +190,7 @@ def scan_kind_directory(kind_name: str, folder_root: Path) -> tuple[dict[tuple[s
                 continue
             counts[(account_name, brand_name, surface_name)] += 1
 
-    return counts, warnings
+    return counts, warnings, total_numbered_folders
 
 
 def autosize_columns(worksheet) -> None:
@@ -229,22 +241,48 @@ def build_workbook() -> Workbook:
         cell = worksheet.cell(row=1, column=column_index, value=header)
         style_header_cell(cell)
 
+    available_sheet = workbook.create_sheet("Available Options")
+    available_kind_header = available_sheet.cell(row=1, column=1, value="Kind")
+    style_header_cell(available_kind_header)
+    total_folders_header = available_sheet.cell(row=1, column=2, value="Total Numbered Folders")
+    style_header_cell(total_folders_header)
+    for column_index, (account_name, brand_name, surface_name) in enumerate(ACCOUNT_BRAND_COLUMNS, start=3):
+        header = f"{account_name.title()} - {brand_name} - {surface_name.title()}"
+        cell = available_sheet.cell(row=1, column=column_index, value=header)
+        style_header_cell(cell)
+
     warning_messages: list[str] = []
     for row_index, (kind_name, folder_root) in enumerate(KIND_DIRECTORIES.items(), start=2):
         kind_cell = worksheet.cell(row=row_index, column=1, value=kind_name)
         style_kind_cell(kind_cell)
-        counts, warnings = scan_kind_directory(kind_name, folder_root)
+        available_kind_cell = available_sheet.cell(row=row_index, column=1, value=kind_name)
+        style_kind_cell(available_kind_cell)
+
+        counts, warnings, total_numbered_folders = scan_kind_directory(kind_name, folder_root)
         warning_messages.extend(warnings)
+
+        total_cell = available_sheet.cell(row=row_index, column=2, value=total_numbered_folders)
+        style_count_cell(total_cell, total_numbered_folders)
 
         for column_index, key in enumerate(ACCOUNT_BRAND_COLUMNS, start=2):
             value = counts[key]
             cell = worksheet.cell(row=row_index, column=column_index, value=value)
             style_count_cell(cell, value)
 
+        for column_index, key in enumerate(ACCOUNT_BRAND_COLUMNS, start=3):
+            available_value = max(total_numbered_folders - counts[key], 0)
+            cell = available_sheet.cell(row=row_index, column=column_index, value=available_value)
+            style_count_cell(cell, available_value)
+
     worksheet.freeze_panes = "B2"
     worksheet.sheet_view.showGridLines = False
     worksheet.row_dimensions[1].height = 28
     autosize_columns(worksheet)
+
+    available_sheet.freeze_panes = "C2"
+    available_sheet.sheet_view.showGridLines = False
+    available_sheet.row_dimensions[1].height = 28
+    autosize_columns(available_sheet)
 
     notes = workbook.create_sheet("Notes")
     notes_rows = [
@@ -254,6 +292,7 @@ def build_workbook() -> Workbook:
         ("Suffix 's", "Shopsy"),
         ("No suffix", "Counts for both Flipkart and Shopsy"),
         ("Accounts", "Brand ownership is inferred from PROFILE_BRAND_CODES in main.py"),
+        ("Available Options", "Each value is total numbered folders minus exhausted count for that account/brand/surface"),
     ]
     for row_index, (label, value) in enumerate(notes_rows, start=1):
         label_cell = notes.cell(row=row_index, column=1, value=label)
