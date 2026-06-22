@@ -46,6 +46,14 @@ class Dashboard(QMainWindow):
         self.flag_title_keywords = list(self.default_title_flag_keywords)
         self.flag_sku_keywords = list(self.default_sku_flag_keywords)
         self.flag_inactive_sizes = list(self.default_inactive_sizes)
+        self.default_thresholds = {
+            "ICE": 469,
+            "BEIGE": 459,
+            "WHITE": 389,
+            "BLACK-BAGGY": 429,
+            "BLACK-PLAIN": 399,
+            "MIX": 469,
+        }
         self.undo_state = None
         self.undo_label = ""
         self.change_log_entries = []
@@ -138,6 +146,7 @@ class Dashboard(QMainWindow):
         for j in ["ICE","BEIGE","WHITE","BLACK-BAGGY","BLACK-PLAIN","MIX"]:
             inp = QLineEdit()
             inp.setPlaceholderText(j)
+            inp.setText(str(self.default_thresholds[j]))
             self.thresholds[j] = inp
             threshold_layout.addWidget(inp)
 
@@ -1893,5 +1902,6 @@ if __name__ == "__main__":
     w = Dashboard()
     w.show()
     sys.exit(app.exec_())
+
 
 
