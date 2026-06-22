@@ -28,6 +28,7 @@ class Dashboard(QMainWindow):
         self.setGeometry(100, 100, 1300, 750)
 
         self.df = pd.DataFrame()
+        self.current_table_df = pd.DataFrame()
         self.selected_range = None
         self.offer_mode = False
         self.col_sku = ""
@@ -86,6 +87,9 @@ class Dashboard(QMainWindow):
         self.export_btn = QPushButton("Export File")
         self.export_btn.clicked.connect(self.export_file)
 
+        self.export_view_btn = QPushButton("Export Visible Table")
+        self.export_view_btn.clicked.connect(self.export_visible_table)
+
         self.undo_btn = QPushButton("Undo Last Move")
         self.undo_btn.clicked.connect(self.undo_last_move)
         self.undo_btn.setEnabled(False)
@@ -99,6 +103,7 @@ class Dashboard(QMainWindow):
 
         top.addWidget(self.load_btn)
         top.addWidget(self.export_btn)
+        top.addWidget(self.export_view_btn)
         top.addWidget(self.undo_btn)
         top.addWidget(self.mode_btn)
         top.addWidget(self.search_box)
@@ -110,10 +115,10 @@ class Dashboard(QMainWindow):
         offer_layout.setSpacing(10)
 
         self.y_input = QLineEdit()
-        self.y_input.setPlaceholderText("y%")
+        self.y_input.setPlaceholderText("Discount percentage")
 
         self.x_input = QLineEdit()
-        self.x_input.setPlaceholderText("x%")
+        self.x_input.setPlaceholderText("Share in discount percentage")
 
         self.cap_input = QLineEdit()
         self.cap_input.setPlaceholderText("Cap ₹")
@@ -1086,7 +1091,11 @@ class Dashboard(QMainWindow):
         try:
             y = float(self.y_input.text()) / 100
             x = float(self.x_input.text()) / 100
-            cap = float(self.cap_input.text())
+        except:
+            return df
+
+        try:
+            cap = float(self.cap_input.text()) if self.cap_input.text().strip() else None
         except:
             return df
 
@@ -1094,7 +1103,9 @@ class Dashboard(QMainWindow):
             val = row[self.col_settlement]
 
             base = y * val
-            discount = min(x * base, cap)
+            discount = x * base
+            if cap is not None:
+                discount = min(discount, cap)
             final_price = val - discount
 
             j = row["Jeans Type"]
@@ -1106,7 +1117,7 @@ class Dashboard(QMainWindow):
 
             decision = "ACCEPT" if final_price >= threshold else "REJECT"
 
-            return pd.Series([discount, final_price, decision])
+            return pd.Series({"Discount": discount, "Final Price": final_price, "Decision": decision})
 
         df[["Discount", "Final Price", "Decision"]] = df.apply(compute, axis=1)
         return df
@@ -1115,19 +1126,26 @@ class Dashboard(QMainWindow):
         try:
             y = float(self.y_input.text()) / 100
             x = float(self.x_input.text()) / 100
-            cap = float(self.cap_input.text())
         except:
-            QMessageBox.warning(self, "Error", "Invalid inputs")
+            QMessageBox.warning(self, "Error", "Invalid discount/share inputs")
+            return
+
+        try:
+            cap = float(self.cap_input.text()) if self.cap_input.text().strip() else None
+        except:
+            QMessageBox.warning(self, "Error", "Invalid cap value")
             return
 
         def compute(row):
             val = row[self.col_settlement]
 
             base = y * val
-            discount = min(x * base, cap)  # ✅ FIXED
+            discount = x * base
+            if cap is not None:
+                discount = min(discount, cap)
             final_price = val - discount
 
-            return pd.Series([discount, final_price])
+            return pd.Series({"Discount": discount, "Final Price": final_price})
 
         mask = self.get_filtered_mask(include_selection=True)
         if mask.empty or not mask.any():
@@ -1169,7 +1187,6 @@ class Dashboard(QMainWindow):
         self.log_change("Apply Decision", before_values, after_values, int(mask.sum()), context_df=self.df.loc[mask])
 
         self.update_dashboard()
-
     def save_size_override(self):
         if self.df.empty:
             QMessageBox.warning(self, "Error", "Load a file first")
@@ -1533,6 +1550,7 @@ class Dashboard(QMainWindow):
     # ---------------- UPDATE ----------------
     def update_dashboard(self):
         if self.df.empty:
+            self.current_table_df = pd.DataFrame()
             self.update_row_counts(0)
             self.update_status_matrix(None)
             return
@@ -1547,10 +1565,40 @@ class Dashboard(QMainWindow):
                 (df[self.col_settlement] <= high)
             ]
 
+        self.current_table_df = df.copy()
         self.update_row_counts(len(df))
         self.update_status_matrix(status_matrix_df)
         self.update_table(df)
         self.update_chart(chart_df)
+
+    # ---------------- TABLE ----------------
+    def format_table_value(self, value):
+        if pd.isna(value):
+            return ""
+
+        if isinstance(value, (np.integer, int)):
+            return str(int(value))
+
+        if isinstance(value, (np.floating, float)):
+            if float(value).is_integer():
+                return str(int(value))
+            return str(value)
+
+        return str(value)
+
+    def normalize_export_value(self, value):
+        text = str(value).strip()
+        if not text or text.lower() in {"nan", "none", "nat"}:
+            return ""
+
+        try:
+            number = float(text)
+        except ValueError:
+            return text
+
+        if number.is_integer():
+            return int(number)
+        return number
 
     # ---------------- TABLE ----------------
     def update_table(self, df):
@@ -1561,9 +1609,11 @@ class Dashboard(QMainWindow):
 
         for i in range(len(df)):
             for j in range(len(df.columns)):
-                self.table.setItem(i, j, QTableWidgetItem(str(df.iat[i, j])))
+                display_value = self.format_table_value(df.iat[i, j])
+                self.table.setItem(i, j, QTableWidgetItem(display_value))
         self.table.blockSignals(False)
 
+    # ---------------- EDIT ----------------
     # ---------------- EDIT ----------------
     def handle_edit(self, item):
         row = item.row()
@@ -1776,17 +1826,11 @@ class Dashboard(QMainWindow):
         self.update_dashboard()
 
     # ---------------- EXPORT ----------------
-    def export_file(self):
-        if self.df.empty:
-            QMessageBox.warning(self, "Error", "No data loaded")
-            return
-
-        df = self.df.sort_values("__orig_index")
-        df = df.drop(columns=["__orig_index", "__locked", "__flag_exemptions"], errors="ignore")
+    def export_dataframe(self, df, default_name, success_message):
         path, _ = QFileDialog.getSaveFileName(
             self,
             "Save File",
-            f"PROGRAM OUTPUTTED.{self.file_type}",
+            default_name,
             "All Files (*.*)"
         )
 
@@ -1805,13 +1849,49 @@ class Dashboard(QMainWindow):
             else:
                 df.to_excel(path + ".xlsx", index=False)
 
-            QMessageBox.information(self, "Success", "File exported successfully!")
+            QMessageBox.information(self, "Success", success_message)
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
 
+    def export_file(self):
+        if self.df.empty:
+            QMessageBox.warning(self, "Error", "No data loaded")
+            return
+
+        df = self.df.sort_values("__orig_index")
+        df = df.drop(columns=["__orig_index", "__locked", "__flag_exemptions"], errors="ignore")
+        self.export_dataframe(df, f"PROGRAM OUTPUTTED.{self.file_type}", "File exported successfully!")
+
+    def get_visible_table_dataframe(self):
+        headers = []
+        for col in range(self.table.columnCount()):
+            header_item = self.table.horizontalHeaderItem(col)
+            headers.append(header_item.text() if header_item else f"Column {col + 1}")
+
+        rows = []
+        for row in range(self.table.rowCount()):
+            row_values = []
+            for col in range(self.table.columnCount()):
+                item = self.table.item(row, col)
+                cell_text = item.text() if item else ""
+                row_values.append(self.normalize_export_value(cell_text))
+            rows.append(row_values)
+
+        return pd.DataFrame(rows, columns=headers)
+
+    def export_visible_table(self):
+        if self.table.rowCount() == 0 or self.table.columnCount() == 0:
+            QMessageBox.warning(self, "Error", "No visible table rows to export")
+            return
+
+        df = self.get_visible_table_dataframe()
+        df = df.drop(columns=["__orig_index", "__locked", "__flag_exemptions"], errors="ignore")
+        self.export_dataframe(df, f"VISIBLE_TABLE.{self.file_type}", "Visible table exported successfully!")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = Dashboard()
     w.show()
     sys.exit(app.exec_())
+
+
