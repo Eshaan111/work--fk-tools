@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rate Insight - Settlement Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#8590a6",
+                        "inverse-surface": "#2d3133",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#191c1e",
+                        "outline-variant": "#c5c6cd",
+                        "surface-tint": "#545f73",
+                        "primary": "#091426",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#111c2d",
+                        "on-secondary-container": "#57657b",
+                        "surface-container": "#eceef0",
+                        "inverse-primary": "#bcc7de",
+                        "tertiary": "#001624",
+                        "surface-container-highest": "#e0e3e5",
+                        "secondary-fixed": "#d5e3fd",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "surface-bright": "#f7f9fb",
+                        "tertiary-fixed-dim": "#89ceff",
+                        "error-rose": "#F43F5E",
+                        "on-surface": "#191c1e",
+                        "tertiary-fixed": "#c9e6ff",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#002c42",
+                        "primary-container": "#1e293b",
+                        "secondary-container": "#d5e3fd",
+                        "on-surface-variant": "#45474c",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "locked-gray": "#94A3B8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#0099d9",
+                        "chart-line": "#6366F1",
+                        "warning-amber": "#F59E0B",
+                        "surface-dim": "#d8dadc",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#001e2f",
+                        "primary-fixed": "#d8e3fb",
+                        "background": "#f7f9fb",
+                        "outline": "#75777d",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#004c6e",
+                        "primary-fixed-dim": "#bcc7de",
+                        "on-error": "#ffffff",
+                        "success-emerald": "#10B981",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "secondary": "#515f74",
+                        "secondary-fixed-dim": "#b9c7e0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "row-height-standard": "44px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "row-height-dense": "32px",
+                        "unit": "4px",
+                        "sidebar-width": "280px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter", "sans-serif"],
+                        "label-md": ["JetBrains Mono", "monospace"],
+                        "kpi-value": ["Hanken Grotesk", "sans-serif"],
+                        "headline-lg": ["Hanken Grotesk", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "data-table": ["Inter", "sans-serif"],
+                        "label-sm": ["JetBrains Mono", "monospace"],
+                        "headline-md": ["Hanken Grotesk", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "label-md": ["13px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "kpi-value": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "data-table": ["13px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .filled-icon { font-variation-settings: 'FILL' 1; }
+        .table-row-hover:hover { background-color: #F1F5F9; }
+        /* Custom Scrollbar for dense data areas */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+    </style>
+</head>
+<body class="bg-background text-on-surface h-screen flex flex-col overflow-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface border-b border-outline-variant flat no shadows flex items-center justify-between px-gutter h-row-height-standard transition-colors">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:bg-surface-container-low p-2 rounded-full transition-colors active:opacity-80">menu</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Rate Insight</h1>
+</div>
+<!-- Navigation Links (Desktop) -->
+<nav class="hidden md:flex items-center gap-6 h-full">
+<a class="h-full flex items-center px-2 text-primary border-b-2 border-primary font-label-md text-label-md" href="#">Dashboard</a>
+<a class="h-full flex items-center px-2 text-on-surface-variant hover:bg-surface-container-low transition-colors font-label-md text-label-md" href="#">Listings</a>
+<a class="h-full flex items-center px-2 text-on-surface-variant hover:bg-surface-container-low transition-colors font-label-md text-label-md" href="#">Insights</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 rounded-full hover:bg-surface-container-low flex items-center justify-center transition-colors active:opacity-80 text-on-surface-variant">
+<span class="material-symbols-outlined">search</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container border border-outline-variant overflow-hidden cursor-pointer hover:ring-2 ring-primary transition-all">
+<img alt="User Account Selector" class="w-full h-full object-cover" data-alt="A small, professional avatar image of a user in a clean, modern corporate setting, light mode aesthetic, neutral colors, minimalist." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGNznN_XUFd4OmbQ-SGloVDlX30bjOf4c7nYJZ2ZFywzyXnl0LmAMEkF5qP2ysax7NQIVX-IM6LuW9eyIzPUaz5mMZsTH1lNNwR2bsSdr83Uidh6B1KuBZRqxHaptGhhpb1SHchpRJ8zN5H8XzA-9T404g9H6YJfuBd6TCoMa4H412v5GAN2PsByeZQ3OM5BAgoNsxJz9BH9j1z0-ROwh2-VjZA0hEq_4ZvCXdtbJKn0EPxRFWAEo4oaUFkRQKB0M4U2R0ADC03lE2"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 mt-[44px] flex w-full overflow-hidden">
+<!-- Center Canvas: Data Table & Filters -->
+<div class="flex-1 flex flex-col h-full bg-background relative z-0 min-w-0">
+<!-- Summary Header / Filter Strip -->
+<div class="bg-surface-container-lowest border-b border-outline-variant px-container-padding py-4 flex flex-col gap-4 flex-shrink-0 z-10">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Settlement Data</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Manage and audit SKU-level settlement values.</p>
+</div>
+<!-- KPI Summary -->
+<div class="flex items-center gap-6">
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Active</span>
+<span class="font-kpi-value text-kpi-value text-primary">12,450</span>
+</div>
+<div class="h-8 w-px bg-outline-variant"></div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Inactive</span>
+<span class="font-kpi-value text-kpi-value text-error-rose">892</span>
+</div>
+</div>
+</div>
+<!-- Table Controls / Filters -->
+<div class="flex items-center gap-3 mt-2">
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full bg-surface border border-outline-variant rounded-lg py-2 pl-9 pr-4 font-body-md text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-tertiary-container focus:border-tertiary-container transition-all" placeholder="Search SKU or Description..." type="text"/>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-surface rounded-lg font-label-md text-label-md text-primary hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filters
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-surface rounded-lg font-label-md text-label-md text-primary hover:bg-surface-container-low transition-colors ml-auto">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export
+                    </button>
+</div>
+</div>
+<!-- Scrollable Data Table Container -->
+<div class="flex-1 overflow-auto bg-surface-container-lowest">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-[#F1F5F9] z-10 shadow-sm">
+<tr>
+<th class="w-12 px-4 py-3 border-b border-outline-variant">
+<input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/>
+</th>
+<th class="px-4 py-3 border-b border-outline-variant font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider whitespace-nowrap">SKU ID</th>
+<th class="px-4 py-3 border-b border-outline-variant font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Description</th>
+<th class="px-4 py-3 border-b border-outline-variant font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider text-right">Settlement Value</th>
+<th class="px-4 py-3 border-b border-outline-variant font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider text-center">Status</th>
+<th class="px-4 py-3 border-b border-outline-variant font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Last Updated</th>
+<th class="w-12 px-4 py-3 border-b border-outline-variant"></th>
+</tr>
+</thead>
+<tbody class="font-data-table text-data-table text-on-surface divide-y divide-outline-variant">
+<!-- Row 1: Active -->
+<tr class="table-row-hover h-row-height-dense group transition-colors">
+<td class="px-4 py-1.5"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/></td>
+<td class="px-4 py-1.5 font-label-md text-label-md">SKU-8924-A</td>
+<td class="px-4 py-1.5 text-on-surface-variant truncate max-w-[200px]">Logistics Module Base Unit</td>
+<td class="px-4 py-1.5 text-right font-label-md text-label-md">$1,245.00</td>
+<td class="px-4 py-1.5">
+<div class="flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-success-emerald/10 text-success-emerald">Active</span>
+</div>
+</td>
+<td class="px-4 py-1.5 text-on-surface-variant text-[12px]">Oct 24, 10:42 AM</td>
+<td class="px-4 py-1.5 text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2: Inactive/Error -->
+<tr class="table-row-hover h-row-height-dense group transition-colors">
+<td class="px-4 py-1.5"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/></td>
+<td class="px-4 py-1.5 font-label-md text-label-md">SKU-119X-F</td>
+<td class="px-4 py-1.5 text-on-surface-variant truncate max-w-[200px]">Sensor Array V2 (Deprecated)</td>
+<td class="px-4 py-1.5 text-right font-label-md text-label-md text-on-surface-variant">$85.50</td>
+<td class="px-4 py-1.5">
+<div class="flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-error-rose/10 text-error-rose">Inactive</span>
+</div>
+</td>
+<td class="px-4 py-1.5 text-on-surface-variant text-[12px]">Oct 23, 04:15 PM</td>
+<td class="px-4 py-1.5 text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3: Flagged -->
+<tr class="table-row-hover h-row-height-dense group transition-colors">
+<td class="px-4 py-1.5"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/></td>
+<td class="px-4 py-1.5 font-label-md text-label-md text-warning-amber flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                                SKU-7742-R
+                            </td>
+<td class="px-4 py-1.5 text-on-surface-variant truncate max-w-[200px]">Transmission Hub Controller</td>
+<td class="px-4 py-1.5 text-right font-label-md text-label-md">$4,120.00</td>
+<td class="px-4 py-1.5">
+<div class="flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-warning-amber/10 text-warning-amber">Review</span>
+</div>
+</td>
+<td class="px-4 py-1.5 text-on-surface-variant text-[12px]">Oct 24, 09:12 AM</td>
+<td class="px-4 py-1.5 text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 4: Locked -->
+<tr class="table-row-hover h-row-height-dense group transition-colors bg-surface-container-low/50">
+<td class="px-4 py-1.5"><span class="material-symbols-outlined text-[16px] text-locked-gray">lock</span></td>
+<td class="px-4 py-1.5 font-label-md text-label-md text-locked-gray">SKU-9910-Z</td>
+<td class="px-4 py-1.5 text-locked-gray truncate max-w-[200px]">Core Processor Unit Alpha</td>
+<td class="px-4 py-1.5 text-right font-label-md text-label-md text-locked-gray">$12,050.00</td>
+<td class="px-4 py-1.5">
+<div class="flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-locked-gray/10 text-locked-gray">Locked</span>
+</div>
+</td>
+<td class="px-4 py-1.5 text-locked-gray text-[12px]">Oct 20, 11:00 AM</td>
+<td class="px-4 py-1.5 text-right">
+<button class="text-locked-gray hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 5: Active -->
+<tr class="table-row-hover h-row-height-dense group transition-colors">
+<td class="px-4 py-1.5"><input class="rounded border-outline-variant text-primary focus:ring-primary w-4 h-4 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" type="checkbox"/></td>
+<td class="px-4 py-1.5 font-label-md text-label-md">SKU-2234-B</td>
+<td class="px-4 py-1.5 text-on-surface-variant truncate max-w-[200px]">Secondary Power Supply</td>
+<td class="px-4 py-1.5 text-right font-label-md text-label-md">$340.25</td>
+<td class="px-4 py-1.5">
+<div class="flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-success-emerald/10 text-success-emerald">Active</span>
+</div>
+</td>
+<td class="px-4 py-1.5 text-on-surface-variant text-[12px]">Oct 24, 08:30 AM</td>
+<td class="px-4 py-1.5 text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[18px]">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Bottom Pagination/Status Bar -->
+<div class="h-10 bg-surface border-t border-outline-variant flex items-center justify-between px-4 flex-shrink-0">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Showing 1-5 of 13,342 entries</span>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors disabled:opacity-50"><span class="material-symbols-outlined text-[20px]">chevron_left</span></button>
+<span class="font-label-sm text-label-sm">Page 1 of 2669</span>
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Right Sidebar: Tools & Actions -->
+<aside class="hidden xl:flex w-sidebar-width border-l border-outline-variant bg-surface flex-col h-full flex-shrink-0 shadow-[-4px_0_12px_rgba(0,0,0,0.02)] z-20 overflow-y-auto pb-8">
+<div class="p-container-padding flex-1 flex flex-col gap-8">
+<!-- Size Tools Section -->
+<section>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">straighten</span>
+                        Size Tools
+                    </h3>
+<div class="space-y-3">
+<button class="w-full flex items-center justify-start gap-3 px-4 py-2.5 bg-surface-container border border-outline-variant rounded-lg hover:bg-surface-container-high hover:border-primary transition-all text-left group">
+<div class="w-8 h-8 rounded bg-surface border border-outline-variant flex items-center justify-center group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">cloud_download</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">Download Undetected</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Export missing dim data</div>
+</div>
+</button>
+<button class="w-full flex items-center justify-start gap-3 px-4 py-2.5 bg-surface-container border border-outline-variant rounded-lg hover:bg-surface-container-high hover:border-primary transition-all text-left group">
+<div class="w-8 h-8 rounded bg-surface border border-outline-variant flex items-center justify-center group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+</div>
+<div>
+<div class="font-label-md text-label-md text-primary">Upload Sizes</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Import CSV bulk dims</div>
+</div>
+</button>
+</div>
+</section>
+<hr class="border-outline-variant"/>
+<!-- Bulk Actions Section -->
+<section>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">edit_square</span>
+                        Bulk Actions
+                    </h3>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<span class="font-body-md text-body-md text-on-surface-variant">Selected Rows:</span>
+<span class="font-label-md text-label-md text-primary bg-primary-fixed px-2 py-0.5 rounded">0</span>
+</div>
+<div class="space-y-2 mt-4">
+<button class="w-full py-2 bg-primary-container text-on-primary-container font-label-md text-label-md rounded-lg hover:bg-opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+                                Edit Selected
+                            </button>
+<button class="w-full py-2 border border-outline-variant bg-surface text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" disabled="">
+<span class="material-symbols-outlined text-[16px]">ac_unit</span>
+                                Freeze Selected
+                            </button>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="mt-auto pt-8">
+<button class="w-full py-2 bg-error-rose text-on-error font-label-md text-label-md rounded-lg hover:bg-opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">lock_open</span>
+                        Unfreeze All
+                    </button>
+</section>
+</div>
+</aside>
+</main>
+</body></html>

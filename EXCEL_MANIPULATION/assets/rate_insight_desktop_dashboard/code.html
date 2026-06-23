@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rate Insight Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Hanken+Grotesk:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-container": "#8590a6",
+                      "inverse-surface": "#2d3133",
+                      "inverse-on-surface": "#eff1f3",
+                      "on-tertiary": "#ffffff",
+                      "on-background": "#191c1e",
+                      "outline-variant": "#c5c6cd",
+                      "surface-tint": "#545f73",
+                      "primary": "#091426",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed": "#111c2d",
+                      "on-secondary-container": "#57657b",
+                      "surface-container": "#eceef0",
+                      "inverse-primary": "#bcc7de",
+                      "tertiary": "#001624",
+                      "surface-container-highest": "#e0e3e5",
+                      "secondary-fixed": "#d5e3fd",
+                      "on-secondary-fixed": "#0d1c2f",
+                      "surface-bright": "#f7f9fb",
+                      "tertiary-fixed-dim": "#89ceff",
+                      "error-rose": "#F43F5E",
+                      "on-surface": "#191c1e",
+                      "tertiary-fixed": "#c9e6ff",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "tertiary-container": "#002c42",
+                      "primary-container": "#1e293b",
+                      "secondary-container": "#d5e3fd",
+                      "on-surface-variant": "#45474c",
+                      "on-secondary-fixed-variant": "#3a485c",
+                      "locked-gray": "#94A3B8",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#0099d9",
+                      "chart-line": "#6366F1",
+                      "warning-amber": "#F59E0B",
+                      "surface-dim": "#d8dadc",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed": "#001e2f",
+                      "primary-fixed": "#d8e3fb",
+                      "background": "#f7f9fb",
+                      "outline": "#75777d",
+                      "surface": "#f7f9fb",
+                      "on-tertiary-fixed-variant": "#004c6e",
+                      "primary-fixed-dim": "#bcc7de",
+                      "on-error": "#ffffff",
+                      "success-emerald": "#10B981",
+                      "on-secondary": "#ffffff",
+                      "surface-container-high": "#e6e8ea",
+                      "surface-variant": "#e0e3e5",
+                      "surface-container-low": "#f2f4f6",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "secondary": "#515f74",
+                      "secondary-fixed-dim": "#b9c7e0"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "row-height-standard": "44px",
+                      "gutter": "16px",
+                      "container-padding": "24px",
+                      "row-height-dense": "32px",
+                      "unit": "4px",
+                      "sidebar-width": "280px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "JetBrains Mono"
+                      ],
+                      "kpi-value": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "data-table": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-md": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "kpi-value": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-table": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "11px",
+                              {
+                                      "lineHeight": "14px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24;
+        }
+      </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen flex overflow-hidden">
+<!-- Persistent Left Navigation Sidebar -->
+<aside class="hidden xl:flex w-sidebar-width bg-surface-container-lowest border-r border-outline-variant flex-col z-40 h-full fixed left-0 top-0">
+<div class="h-row-height-standard flex items-center px-gutter border-b border-outline-variant">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Rate Insight</h1>
+</div>
+<nav class="flex-1 overflow-y-auto py-container-padding flex flex-col gap-unit">
+<!-- Active State Navigation -->
+<a class="flex items-center px-gutter py-2 mx-unit rounded bg-secondary-container text-on-secondary-container font-label-md text-label-md transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                Dashboard
+            </a>
+<!-- Inactive State Navigation -->
+<a class="flex items-center px-gutter py-2 mx-unit rounded text-on-surface-variant hover:bg-surface-container-low transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">list_alt</span>
+                Listings
+            </a>
+<a class="flex items-center px-gutter py-2 mx-unit rounded text-on-surface-variant hover:bg-surface-container-low transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined mr-3 text-[20px]">insights</span>
+                Insights
+            </a>
+</nav>
+<div class="p-gutter border-t border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm">JS</div>
+<div>
+<p class="font-label-md text-label-md text-primary">Jane Smith</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Logistics Manager</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full xl:ml-sidebar-width overflow-hidden bg-background">
+<!-- TopAppBar Shared Component -->
+<header class="bg-surface dark:bg-surface-dim h-row-height-standard flex items-center justify-between px-gutter border-b border-outline-variant dark:border-outline shrink-0 xl:hidden">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-sm text-label-sm">JS</div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Rate Insight</h1>
+</div>
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors p-1 rounded-full active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">search</span>
+</button>
+</header>
+<!-- Desktop Action Bar -->
+<div class="hidden xl:flex h-row-height-standard items-center justify-between px-container-padding bg-surface-container-lowest border-b border-outline-variant shrink-0">
+<div class="flex-1 max-w-md">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-1.5 bg-surface rounded border border-outline-variant focus:border-tertiary-container focus:ring-2 focus:ring-tertiary-fixed-dim focus:outline-none font-body-sm text-body-sm text-on-surface transition-all" placeholder="Search shipments, SKUs, or locations..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-1.5 border border-primary-container text-primary-container rounded font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+                     Load Excel
+                 </button>
+<button class="flex items-center gap-2 px-4 py-1.5 bg-primary-container text-on-primary rounded font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                     Export
+                 </button>
+</div>
+</div>
+<!-- Scrollable Dashboard Content -->
+<div class="flex-1 overflow-y-auto p-container-padding">
+<div class="max-w-7xl mx-auto space-y-container-padding pb-24 md:pb-0">
+<!-- KPI Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- KPI Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex flex-col justify-between h-32 hover:bg-surface-bright transition-colors relative overflow-hidden group">
+<div class="flex justify-between items-start z-10">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Loaded</span>
+<span class="material-symbols-outlined text-primary-container text-[20px]">database</span>
+</div>
+<div class="z-10">
+<h2 class="font-kpi-value text-kpi-value text-primary">1,245,890</h2>
+<p class="font-body-sm text-body-sm text-success-emerald flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +12.5% this month
+                            </p>
+</div>
+<!-- Subtle background decoration -->
+<div class="absolute -bottom-6 -right-6 text-surface-variant opacity-20 group-hover:opacity-30 transition-opacity duration-500">
+<span class="material-symbols-outlined text-[120px]">database</span>
+</div>
+</div>
+<!-- KPI Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex flex-col justify-between h-32 hover:bg-surface-bright transition-colors relative overflow-hidden group">
+<div class="flex justify-between items-start z-10">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Visible Listings</span>
+<span class="material-symbols-outlined text-chart-line text-[20px]">visibility</span>
+</div>
+<div class="z-10">
+<h2 class="font-kpi-value text-kpi-value text-primary">892,104</h2>
+<p class="font-body-sm text-body-sm text-success-emerald flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +4.2% this month
+                            </p>
+</div>
+</div>
+<!-- KPI Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex flex-col justify-between h-32 hover:bg-surface-bright transition-colors relative overflow-hidden group">
+<div class="flex justify-between items-start z-10">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Active Routes</span>
+<span class="material-symbols-outlined text-success-emerald text-[20px]">route</span>
+</div>
+<div class="z-10">
+<h2 class="font-kpi-value text-kpi-value text-primary">342</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">horizontal_rule</span>
+                                No change
+                            </p>
+</div>
+</div>
+<!-- KPI Card 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex flex-col justify-between h-32 hover:bg-surface-bright transition-colors relative overflow-hidden group">
+<div class="flex justify-between items-start z-10">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Inactive / Errors</span>
+<span class="material-symbols-outlined text-error-rose text-[20px]">error</span>
+</div>
+<div class="z-10">
+<h2 class="font-kpi-value text-kpi-value text-primary">1,402</h2>
+<p class="font-body-sm text-body-sm text-error-rose flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                +2.1% spike today
+                            </p>
+</div>
+</div>
+</section>
+<!-- Chart and Filter Section (Bento Grid Style) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Settlement Distribution Chart -->
+<div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md font-semibold text-primary">Settlement Volume</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">30-day historical trend across top regions.</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-surface border border-outline-variant rounded font-label-sm text-label-sm text-on-surface hover:bg-surface-container-low">7D</button>
+<button class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded font-label-sm text-label-sm">30D</button>
+<button class="px-3 py-1 bg-surface border border-outline-variant rounded font-label-sm text-label-sm text-on-surface hover:bg-surface-container-low">YTD</button>
+</div>
+</div>
+<!-- Chart Area Placeholder with structural lines -->
+<div class="flex-1 relative min-h-[300px] border-l border-b border-outline-variant flex items-end">
+<!-- Y-axis labels -->
+<div class="absolute -left-8 top-0 bottom-0 flex flex-col justify-between font-label-sm text-label-sm text-on-surface-variant py-2">
+<span>100k</span>
+<span>75k</span>
+<span>50k</span>
+<span>25k</span>
+<span>0</span>
+</div>
+<!-- X-axis labels -->
+<div class="absolute -bottom-6 left-0 right-0 flex justify-between font-label-sm text-label-sm text-on-surface-variant px-2">
+<span>Oct 1</span>
+<span>Oct 8</span>
+<span>Oct 15</span>
+<span>Oct 22</span>
+<span>Oct 30</span>
+</div>
+<!-- Mock Data Visualization (Area/Line) -->
+<div class="w-full h-full relative overflow-hidden flex items-end px-2 gap-2">
+<!-- Bars/Area representation -->
+<div class="w-1/12 h-[30%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[45%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[35%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[60%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[55%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[80%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40 relative group">
+<!-- Tooltip -->
+<div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-label-sm px-2 py-1 rounded hidden group-hover:block whitespace-nowrap z-20">
+                                         Peak: 85,200
+                                     </div>
+</div>
+<div class="w-1/12 h-[75%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[90%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[65%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[70%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[50%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+<div class="w-1/12 h-[85%] bg-chart-line/20 rounded-t border-t-2 border-chart-line transition-all hover:bg-chart-line/40"></div>
+</div>
+</div>
+</div>
+<!-- Refine Data Section -->
+<div class="lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-lg p-6 flex flex-col h-full">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md font-semibold text-primary">Refine Data</h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">filter_alt_off</span> Clear
+                            </button>
+</div>
+<div class="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+<!-- Filter Group: Listing Type -->
+<div>
+<label class="font-label-md text-label-md text-on-surface block mb-3">Listing Type</label>
+<div class="space-y-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="rounded border-outline-variant text-primary-container focus:ring-tertiary-fixed-dim bg-surface w-4 h-4" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Standard Freight (FCL)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="rounded border-outline-variant text-primary-container focus:ring-tertiary-fixed-dim bg-surface w-4 h-4" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Less than Container (LCL)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-outline-variant text-primary-container focus:ring-tertiary-fixed-dim bg-surface w-4 h-4" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary transition-colors">Air Freight Expedited</span>
+</label>
+</div>
+</div>
+<hr class="border-outline-variant"/>
+<!-- Filter Group: Status -->
+<div>
+<label class="font-label-md text-label-md text-on-surface block mb-3">Settlement Status</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-3 py-1.5 bg-success-emerald/10 text-success-emerald border border-success-emerald/20 rounded font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Settled
+                                    </button>
+<button class="px-3 py-1.5 bg-surface border border-outline-variant text-on-surface-variant rounded font-label-sm text-label-sm hover:bg-surface-container-low flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">pending</span> Pending
+                                    </button>
+<button class="px-3 py-1.5 bg-error-rose/10 text-error-rose border border-error-rose/20 rounded font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span> Disputed
+                                    </button>
+<button class="px-3 py-1.5 bg-warning-amber/10 text-warning-amber border border-warning-amber/20 rounded font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">flag</span> Flagged
+                                    </button>
+</div>
+</div>
+<hr class="border-outline-variant"/>
+<!-- Filter Group: Regions -->
+<div>
+<label class="font-label-md text-label-md text-on-surface block mb-3">Origin Regions</label>
+<select class="w-full bg-surface border border-outline-variant rounded px-3 py-2 font-body-sm text-body-sm text-on-surface focus:border-tertiary-container focus:ring-1 focus:ring-tertiary-fixed-dim outline-none">
+<option>All Regions</option>
+<option>North America (NA)</option>
+<option>Europe, Middle East, Africa (EMEA)</option>
+<option>Asia Pacific (APAC)</option>
+</select>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-outline-variant">
+<button class="w-full bg-primary-container text-on-primary py-2 rounded font-label-md text-label-md hover:opacity-90 transition-opacity">Apply Filters</button>
+</div>
+</div>
+</section>
+<!-- Data Table Preview -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+<div class="px-6 py-4 border-b border-outline-variant bg-surface-bright flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md font-semibold text-primary">Recent Settlements</h3>
+<a class="font-label-sm text-label-sm text-on-tertiary-container hover:underline flex items-center gap-1" href="#">
+                            View Full Ledger <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant border-b border-outline-variant">
+<th class="px-6 py-3 font-medium">SKU / ID</th>
+<th class="px-6 py-3 font-medium">Date</th>
+<th class="px-6 py-3 font-medium">Type</th>
+<th class="px-6 py-3 font-medium">Amount</th>
+<th class="px-6 py-3 font-medium">Status</th>
+</tr>
+</thead>
+<tbody class="font-data-table text-data-table text-on-surface">
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest/50 transition-colors h-row-height-dense">
+<td class="px-6 py-2 font-label-md text-primary">LDG-8921-A</td>
+<td class="px-6 py-2">Oct 30, 2023</td>
+<td class="px-6 py-2">FCL Import</td>
+<td class="px-6 py-2 font-label-md">$12,450.00</td>
+<td class="px-6 py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-success-emerald/10 text-success-emerald font-label-sm">
+<span class="material-symbols-outlined text-[12px]">check_circle</span> Settled
+                                        </span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest/50 transition-colors h-row-height-dense">
+<td class="px-6 py-2 font-label-md text-primary">LDG-8922-B</td>
+<td class="px-6 py-2">Oct 30, 2023</td>
+<td class="px-6 py-2">LCL Export</td>
+<td class="px-6 py-2 font-label-md">$3,120.50</td>
+<td class="px-6 py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-warning-amber/10 text-warning-amber font-label-sm">
+<span class="material-symbols-outlined text-[12px]">flag</span> Flagged
+                                        </span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest/50 transition-colors h-row-height-dense bg-surface-container-low/30 text-on-surface-variant">
+<td class="px-6 py-2 font-label-md flex items-center gap-2 opacity-60">
+<span class="material-symbols-outlined text-[14px]">lock</span> LDG-8919-X
+                                    </td>
+<td class="px-6 py-2 opacity-60">Oct 29, 2023</td>
+<td class="px-6 py-2 opacity-60">Air Expedited</td>
+<td class="px-6 py-2 font-label-md opacity-60">$8,900.00</td>
+<td class="px-6 py-2 opacity-60">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm border border-outline-variant text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[12px]">lock</span> Locked
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- BottomNavBar Shared Component (Mobile Only) -->
+<nav class="md:hidden bg-surface dark:bg-surface-container-lowest fixed bottom-0 w-full z-50 rounded-t-xl border-t border-outline-variant dark:border-outline shadow-md flex justify-around items-center h-16 pb-safe px-4">
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-tertiary-container text-on-secondary-container dark:text-on-tertiary rounded-full px-4 py-1 scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container dark:hover:bg-surface-variant scale-95 transition-transform duration-150 rounded px-2 py-1" href="#">
+<span class="material-symbols-outlined mb-1">list_alt</span>
+<span class="font-label-md text-label-md">Listings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim hover:bg-surface-container dark:hover:bg-surface-variant scale-95 transition-transform duration-150 rounded px-2 py-1" href="#">
+<span class="material-symbols-outlined mb-1">insights</span>
+<span class="font-label-md text-label-md">Insights</span>
+</a>
+</nav>
+<style>
+        /* Custom Scrollbar for inner elements to keep it clean */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e0e3e5; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #c5c6cd; 
+        }
+    </style>
+</body></html>

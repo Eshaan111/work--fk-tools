@@ -12,9 +12,11 @@ from xml.etree import ElementTree as ET
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QComboBox, QTableWidget, QTableWidgetItem, QPushButton,
-    QFileDialog, QLineEdit, QSlider, QMessageBox, QTextEdit
+    QFileDialog, QLineEdit, QSlider, QMessageBox, QTextEdit,
+    QFrame, QGroupBox, QHeaderView, QAbstractItemView, QScrollArea
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor, QFont
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -63,15 +65,42 @@ class Dashboard(QMainWindow):
         self.release_cid = None
 
         # -------- UI --------
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setObjectName("mainScrollArea")
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QFrame.NoFrame)
+
         main_widget = QWidget()
         main_widget.setObjectName("mainPanel")
-        self.setCentralWidget(main_widget)
+        main_widget.setMinimumWidth(1480)
+        main_widget.setMinimumHeight(1180)
+        self.scroll_area.setWidget(main_widget)
+        self.setCentralWidget(self.scroll_area)
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(18, 18, 18, 18)
-        self.layout.setSpacing(12)
+        self.layout.setSpacing(14)
         main_widget.setLayout(self.layout)
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(10)
+
+        header = QFrame()
+        header.setObjectName("heroPanel")
+        header.setMinimumWidth(1440)
+        header_layout = QHBoxLayout()
+        header_layout.setContentsMargins(22, 18, 22, 18)
+        header_layout.setSpacing(16)
+        header.setLayout(header_layout)
+
+        title_wrap = QVBoxLayout()
+        title_wrap.setSpacing(4)
+        self.title_label = QLabel("PRO Settlement Dashboard")
+        self.title_label.setObjectName("titleLabel")
+        self.subtitle_label = QLabel("Load a settlement file, review listing health, and apply decisions.")
+        self.subtitle_label.setObjectName("subtitleLabel")
+        title_wrap.addWidget(self.title_label)
+        title_wrap.addWidget(self.subtitle_label)
+        header_layout.addLayout(title_wrap, 1)
+
+        header_actions = QHBoxLayout()
+        header_actions.setSpacing(10)
 
         self.compute_btn = QPushButton("Compute Discount")
         self.compute_btn.clicked.connect(self.compute_discount_only)
@@ -79,15 +108,8 @@ class Dashboard(QMainWindow):
         self.decision_btn = QPushButton("Apply Decision")
         self.decision_btn.clicked.connect(self.apply_decision_only)
 
-        btn_layout.addWidget(self.compute_btn)
-        btn_layout.addWidget(self.decision_btn)
-
-        self.layout.addLayout(btn_layout)
-        self.offer_controls = [self.compute_btn, self.decision_btn]
-
-        # -------- TOP --------
-        top = QHBoxLayout()
-        top.setSpacing(10)
+        self.mode_btn = QPushButton("Offer Mode: OFF")
+        self.mode_btn.clicked.connect(self.toggle_mode)
 
         self.load_btn = QPushButton("Load Excel")
         self.load_btn.clicked.connect(self.load_file)
@@ -102,60 +124,22 @@ class Dashboard(QMainWindow):
         self.undo_btn.clicked.connect(self.undo_last_move)
         self.undo_btn.setEnabled(False)
 
-        self.mode_btn = QPushButton("Offer Mode: OFF")
-        self.mode_btn.clicked.connect(self.toggle_mode)
+        for button in [self.compute_btn, self.decision_btn, self.mode_btn, self.load_btn, self.export_btn, self.export_view_btn, self.undo_btn]:
+            header_actions.addWidget(button)
+
+        header_layout.addLayout(header_actions, 0)
+        self.layout.addWidget(header)
+        self.offer_controls = [self.compute_btn, self.decision_btn]
+
+        filter_panel = self.create_section_frame("filterPanel")
+        filter_panel.setMinimumWidth(1440)
+        filter_layout = QHBoxLayout()
+        filter_layout.setContentsMargins(16, 14, 16, 14)
+        filter_layout.setSpacing(10)
 
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("Search SKU or Title...")
         self.search_box.textChanged.connect(self.update_dashboard)
-
-        top.addWidget(self.load_btn)
-        top.addWidget(self.export_btn)
-        top.addWidget(self.export_view_btn)
-        top.addWidget(self.undo_btn)
-        top.addWidget(self.mode_btn)
-        top.addWidget(self.search_box)
-
-        self.layout.addLayout(top)
-
-        # -------- OFFER INPUTS --------
-        offer_layout = QHBoxLayout()
-        offer_layout.setSpacing(10)
-
-        self.y_input = QLineEdit()
-        self.y_input.setPlaceholderText("Discount percentage")
-
-        self.x_input = QLineEdit()
-        self.x_input.setPlaceholderText("Share in discount percentage")
-
-        self.cap_input = QLineEdit()
-        self.cap_input.setPlaceholderText("Cap ₹")
-
-        offer_layout.addWidget(self.y_input)
-        offer_layout.addWidget(self.x_input)
-        offer_layout.addWidget(self.cap_input)
-
-        self.layout.addLayout(offer_layout)
-        self.offer_controls.extend([self.y_input, self.x_input, self.cap_input])
-
-        # -------- THRESHOLDS --------
-        self.thresholds = {}
-        threshold_layout = QHBoxLayout()
-        threshold_layout.setSpacing(10)
-
-        for j in ["ICE","BEIGE","WHITE","BLACK-BAGGY","BLACK-PLAIN","MIX"]:
-            inp = QLineEdit()
-            inp.setPlaceholderText(j)
-            inp.setText(str(self.default_thresholds[j]))
-            self.thresholds[j] = inp
-            threshold_layout.addWidget(inp)
-
-        self.layout.addLayout(threshold_layout)
-        self.offer_controls.extend(self.thresholds.values())
-
-        # -------- FILTER --------
-        filters = QHBoxLayout()
-        filters.setSpacing(10)
 
         self.listing_filter = QComboBox()
         self.jeans_filter = QComboBox()
@@ -168,41 +152,77 @@ class Dashboard(QMainWindow):
         self.status_filter.currentIndexChanged.connect(self.update_dashboard)
         self.slider.valueChanged.connect(self.update_dashboard)
 
-        filters.addWidget(QLabel("Listing"))
-        filters.addWidget(self.listing_filter)
-        filters.addWidget(QLabel("Jeans"))
-        filters.addWidget(self.jeans_filter)
-        filters.addWidget(QLabel("Size"))
-        filters.addWidget(self.size_filter)
-        filters.addWidget(QLabel("Status"))
-        filters.addWidget(self.status_filter)
-        filters.addWidget(QLabel("Settlement Max"))
-        filters.addWidget(self.slider)
+        for label_text, widget in [
+            ("Listing", self.listing_filter),
+            ("Jeans", self.jeans_filter),
+            ("Size", self.size_filter),
+            ("Status", self.status_filter),
+        ]:
+            filter_layout.addWidget(self.create_filter_block(label_text, widget))
 
-        self.layout.addLayout(filters)
+        filter_layout.addWidget(self.create_filter_block("Search", self.search_box), 1)
+        filter_layout.addWidget(self.create_filter_block("Settlement Max", self.slider), 1)
+        filter_panel.setLayout(filter_layout)
+        self.layout.addWidget(filter_panel)
 
-        # -------- DASHBOARD META --------
-        meta_row = QHBoxLayout()
-        meta_row.setSpacing(10)
-        self.row_count_label = QLabel("Loaded: 0 | Visible: 0 | Export: 0")
-        self.row_count_label.setObjectName("metaLabel")
-        self.account_label = QLabel("Account: Unknown")
-        self.account_label.setObjectName("metaLabel")
-        meta_row.addWidget(self.row_count_label, 1)
-        meta_row.addWidget(self.account_label, 0)
-        self.layout.addLayout(meta_row)
+        metrics_row = QHBoxLayout()
+        metrics_row.setSpacing(10)
+        self.metric_cards = {}
+        for key, title in [
+            ("loaded", "Total Loaded"),
+            ("visible", "Visible Listings"),
+            ("export", "Exported Rows"),
+            ("active", "Active Listings"),
+            ("inactive", "Inactive Listings"),
+        ]:
+            card, value_label, delta_label = self.create_metric_card(title)
+            self.metric_cards[key] = {"value": value_label, "delta": delta_label}
+            metrics_row.addWidget(card)
+        self.layout.addLayout(metrics_row)
 
-        status_matrix_row = QHBoxLayout()
-        status_matrix_row.setSpacing(10)
-        self.status_matrix_label = QLabel("Size Status Matrix\nACTIVE: -\nINACTIVE: -")
-        self.status_matrix_label.setObjectName("metaLabel")
-        self.status_matrix_label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        self.status_matrix_label.setMinimumHeight(72)
-        status_matrix_row.addWidget(self.status_matrix_label)
-        self.layout.addLayout(status_matrix_row)
+        offer_group = QGroupBox("Offer Inputs")
+        offer_group.setObjectName("dashboardGroup")
+        offer_layout = QHBoxLayout()
+        offer_layout.setContentsMargins(14, 20, 14, 14)
+        offer_layout.setSpacing(10)
 
-        # -------- SIZE OVERRIDES --------
+        self.y_input = QLineEdit()
+        self.y_input.setPlaceholderText("Discount percentage")
+
+        self.x_input = QLineEdit()
+        self.x_input.setPlaceholderText("Share in discount percentage")
+
+        self.cap_input = QLineEdit()
+        self.cap_input.setPlaceholderText("Cap Rs")
+
+        offer_layout.addWidget(self.y_input)
+        offer_layout.addWidget(self.x_input)
+        offer_layout.addWidget(self.cap_input)
+        offer_group.setLayout(offer_layout)
+        self.layout.addWidget(offer_group)
+        self.offer_controls.extend([offer_group, self.y_input, self.x_input, self.cap_input])
+
+        self.thresholds = {}
+        threshold_group = QGroupBox("Thresholds")
+        threshold_group.setObjectName("dashboardGroup")
+        threshold_layout = QHBoxLayout()
+        threshold_layout.setContentsMargins(14, 20, 14, 14)
+        threshold_layout.setSpacing(10)
+
+        for j in ["ICE","BEIGE","WHITE","BLACK-BAGGY","BLACK-PLAIN","MIX"]:
+            inp = QLineEdit()
+            inp.setPlaceholderText(j)
+            self.thresholds[j] = inp
+            threshold_layout.addWidget(inp)
+
+        threshold_group.setLayout(threshold_layout)
+        self.layout.addWidget(threshold_group)
+        self.offer_controls.extend([threshold_group, *self.thresholds.values()])
+
+        size_group = QGroupBox("Size Tools")
+        size_group.setObjectName("dashboardGroup")
         size_row = QHBoxLayout()
+        size_row.setContentsMargins(14, 20, 14, 14)
         size_row.setSpacing(10)
 
         self.size_sku_input = QLineEdit()
@@ -221,11 +241,16 @@ class Dashboard(QMainWindow):
         size_row.addWidget(self.save_size_btn)
         size_row.addWidget(self.download_undetected_btn)
         size_row.addWidget(self.upload_sizes_btn)
+        size_group.setLayout(size_row)
+        self.layout.addWidget(size_group)
 
-        self.layout.addLayout(size_row)
+        operations_wrap = QHBoxLayout()
+        operations_wrap.setSpacing(10)
 
-        # -------- FREEZE --------
+        freeze_group = QGroupBox("Freeze Filters")
+        freeze_group.setObjectName("dashboardGroup")
         freeze = QHBoxLayout()
+        freeze.setContentsMargins(14, 20, 14, 14)
         freeze.setSpacing(10)
 
         self.freeze_col = QComboBox()
@@ -239,14 +264,17 @@ class Dashboard(QMainWindow):
         freeze.addWidget(self.freeze_val)
         freeze.addWidget(freeze_btn)
         freeze.addWidget(unfreeze_btn)
+        freeze_group.setLayout(freeze)
 
-        self.layout.addLayout(freeze)
-
-        # -------- STATS + BULK EDIT --------
+        bulk_group = QGroupBox("Bulk Edit")
+        bulk_group.setObjectName("dashboardGroup")
         stats = QHBoxLayout()
+        stats.setContentsMargins(14, 20, 14, 14)
         stats.setSpacing(10)
 
-        self.stats_label = QLabel("No Selection")
+        self.bulk_stats_label = QLabel("No Selection")
+        self.bulk_stats_label.setObjectName("summaryValueLabel")
+        self.bulk_stats_label.setWordWrap(True)
         self.edit_mode = QComboBox()
         self.edit_mode.addItems(["Add", "Multiply", "Replace"])
         self.edit_value = QLineEdit()
@@ -262,7 +290,7 @@ class Dashboard(QMainWindow):
         self.status_apply_btn = QPushButton("Set Status")
         self.status_apply_btn.clicked.connect(self.apply_status_change)
 
-        stats.addWidget(self.stats_label)
+        stats.addWidget(self.bulk_stats_label, 1)
         stats.addWidget(self.edit_mode)
         stats.addWidget(self.edit_value)
         stats.addWidget(self.edit_cap_mode)
@@ -270,34 +298,210 @@ class Dashboard(QMainWindow):
         stats.addWidget(apply_btn)
         stats.addWidget(self.status_change_combo)
         stats.addWidget(self.status_apply_btn)
+        bulk_group.setLayout(stats)
 
-        self.layout.addLayout(stats)
+        operations_wrap.addWidget(freeze_group, 1)
+        operations_wrap.addWidget(bulk_group, 2)
+        self.layout.addLayout(operations_wrap)
 
-        # -------- CHANGE LOG --------
+        content_row = QHBoxLayout()
+        content_row.setSpacing(10)
+
+        chart_panel = self.create_dashboard_panel("SETTLEMENT DISTRIBUTION", "Distribution of settlements")
+        chart_panel.setMinimumHeight(420)
+        chart_body = chart_panel.layout()
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setMinimumHeight(300)
+        chart_body.addWidget(self.canvas, 1)
+        content_row.addWidget(chart_panel, 3)
+
+        side_panel = self.create_dashboard_panel("SETTLEMENT SUMMARY", "Current working snapshot")
+        side_panel.setMinimumHeight(420)
+        side_body = side_panel.layout()
+        self.row_count_label = QLabel("Loaded: 0 | Visible: 0 | Export: 0")
+        self.row_count_label.setObjectName("summaryValueLabel")
+        self.account_label = QLabel("Account: Unknown")
+        self.account_label.setObjectName("summaryValueLabel")
+        self.selection_summary_label = QLabel("Selection range: None")
+        self.selection_summary_label.setObjectName("summaryValueLabel")
+        self.selection_summary_label.setWordWrap(True)
+        self.status_matrix_table = QTableWidget(2, 2)
+        self.status_matrix_table.setObjectName("statusMatrixTable")
+        self.status_matrix_table.setHorizontalHeaderLabels(["Count", "Sizes"])
+        self.status_matrix_table.setVerticalHeaderLabels(["ACTIVE", "INACTIVE"])
+        self.status_matrix_table.horizontalHeader().setStretchLastSection(True)
+        self.status_matrix_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.status_matrix_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.status_matrix_table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.status_matrix_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.status_matrix_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.status_matrix_table.setFocusPolicy(Qt.NoFocus)
+        self.status_matrix_table.setMaximumHeight(118)
+        self.status_matrix_table.setMinimumHeight(118)
+        reset_btn = QPushButton("Reset Selection")
+        reset_btn.clicked.connect(self.reset_selection)
+
+        self.stats_label = QLabel("No Selection")
+        self.stats_label.setObjectName("summaryValueLabel")
+        self.stats_label.setWordWrap(True)
+
+        for widget in [self.row_count_label, self.account_label, self.selection_summary_label, self.stats_label, self.status_matrix_table, reset_btn]:
+            side_body.addWidget(widget)
+        side_body.addStretch(1)
+        content_row.addWidget(side_panel, 2)
+        self.layout.addLayout(content_row)
+
+        table_panel = self.create_dashboard_panel("LISTING OVERVIEW", "Editable filtered rows")
+        table_panel.setMinimumHeight(360)
+        table_body = table_panel.layout()
+        self.table = QTableWidget()
+        self.table.itemChanged.connect(self.handle_edit)
+        self.table.setAlternatingRowColors(True)
+        self.table.setMinimumHeight(260)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.table.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.table.setWordWrap(False)
+        self.table.setSortingEnabled(False)
+        self.table.setEditTriggers(
+            QAbstractItemView.DoubleClicked |
+            QAbstractItemView.EditKeyPressed |
+            QAbstractItemView.SelectedClicked
+        )
+        table_body.addWidget(self.table)
+        self.layout.addWidget(table_panel, 1)
+
+        log_panel = self.create_dashboard_panel("RECENT CHANGES", "Latest edits and selections")
+        log_panel.setMinimumHeight(220)
+        log_body = log_panel.layout()
         self.change_log = QTextEdit()
         self.change_log.setObjectName("changeLog")
         self.change_log.setReadOnly(True)
         self.change_log.setPlaceholderText("Changes made will appear here...")
         self.change_log.setMaximumHeight(180)
-        self.layout.addWidget(self.change_log)
+        log_body.addWidget(self.change_log)
+        self.layout.addWidget(log_panel)
 
-        # -------- RESET --------
-        reset_btn = QPushButton("Reset Selection")
-        reset_btn.clicked.connect(self.reset_selection)
-        self.layout.addWidget(reset_btn)
-
-        # -------- TABLE --------
-        self.table = QTableWidget()
-        self.table.itemChanged.connect(self.handle_edit)
-        self.layout.addWidget(self.table)
-
-        # -------- GRAPH --------
-        self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
-        self.layout.addWidget(self.canvas)
         self.apply_dashboard_style()
         self.refresh_mode_ui()
         self.load_flag_config()
+
+    def create_section_frame(self, object_name):
+        frame = QFrame()
+        frame.setObjectName(object_name)
+        return frame
+
+    def create_filter_block(self, label_text, widget):
+        frame = self.create_section_frame("filterBlock")
+        layout = QVBoxLayout()
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(6)
+        label = QLabel(label_text)
+        label.setObjectName("filterLabel")
+        layout.addWidget(label)
+        layout.addWidget(widget)
+        frame.setLayout(layout)
+        return frame
+
+    def create_metric_card(self, title):
+        frame = self.create_section_frame("metricCard")
+        layout = QVBoxLayout()
+        layout.setContentsMargins(14, 12, 14, 12)
+        layout.setSpacing(4)
+        title_label = QLabel(title)
+        title_label.setObjectName("metricTitle")
+        value_label = QLabel("0")
+        value_label.setObjectName("metricValue")
+        delta_label = QLabel("Ready")
+        delta_label.setObjectName("metricDelta")
+        layout.addWidget(title_label)
+        layout.addWidget(value_label)
+        layout.addWidget(delta_label)
+        layout.addStretch(1)
+        frame.setLayout(layout)
+        return frame, value_label, delta_label
+
+    def create_dashboard_panel(self, title, subtitle):
+        frame = self.create_section_frame("dashboardPanel")
+        layout = QVBoxLayout()
+        layout.setContentsMargins(16, 14, 16, 16)
+        layout.setSpacing(10)
+        title_label = QLabel(title)
+        title_label.setObjectName("panelTitle")
+        subtitle_label = QLabel(subtitle)
+        subtitle_label.setObjectName("panelSubtitle")
+        layout.addWidget(title_label)
+        layout.addWidget(subtitle_label)
+        frame.setLayout(layout)
+        return frame
+
+    def set_selection_stats_text(self, text):
+        self.stats_label.setText(text)
+        self.bulk_stats_label.setText(text)
+
+    def style_table_item(self, item, column_name, row_data):
+        status_value = str(row_data.get("Listing Status", "")).strip().upper()
+        auto_flag = str(row_data.get("Auto Flag", "")).strip()
+        locked = bool(row_data.get("__locked", False))
+
+        item.setForeground(QColor("#243447"))
+        if locked:
+            item.setBackground(QColor("#f1f5f9"))
+            item.setForeground(QColor("#94a3b8"))
+        elif status_value == "ACTIVE":
+            item.setBackground(QColor("#f0fdf4"))
+        elif status_value == "INACTIVE":
+            item.setBackground(QColor("#fff7ed"))
+        else:
+            item.setBackground(QColor("#ffffff"))
+
+        if column_name == "Listing Status":
+            font = QFont()
+            font.setBold(True)
+            item.setFont(font)
+            if status_value == "ACTIVE":
+                item.setForeground(QColor("#15803d"))
+            elif status_value == "INACTIVE":
+                item.setForeground(QColor("#c2410c"))
+            item.setTextAlignment(Qt.AlignCenter)
+
+        if column_name in {"Decision", "Listing Type", "Jeans Type", "Size"}:
+            item.setTextAlignment(Qt.AlignCenter)
+
+        if column_name == "Auto Flag" and auto_flag:
+            item.setBackground(QColor("#fef3c7"))
+            item.setForeground(QColor("#92400e"))
+
+    def apply_table_column_sizing(self):
+        width_map = {
+            self.col_sku: 190,
+            self.col_title: 320,
+            self.col_settlement: 130,
+            "Listing Type": 110,
+            "Jeans Type": 130,
+            "Size": 80,
+            "Listing Status": 110,
+            "Your Stock Count": 110,
+            "Discount": 110,
+            "Final Price": 120,
+            "Decision": 110,
+            "Auto Flag": 260,
+            "__orig_index": 90,
+        }
+        hidden_columns = {"__locked", "__flag_exemptions"}
+
+        for col_index in range(self.table.columnCount()):
+            header_item = self.table.horizontalHeaderItem(col_index)
+            if header_item is None:
+                continue
+            column_name = header_item.text()
+            self.table.setColumnHidden(col_index, column_name in hidden_columns)
+            self.table.setColumnWidth(col_index, width_map.get(column_name, 140))
+
+    def set_metric_card(self, key, value, delta):
+        self.metric_cards[key]["value"].setText(str(value))
+        self.metric_cards[key]["delta"].setText(delta)
 
     # ---------------- MODE TOGGLE ----------------
     def toggle_mode(self):
@@ -327,35 +531,87 @@ class Dashboard(QMainWindow):
     def apply_dashboard_style(self):
         self.setStyleSheet("""
             QWidget#mainPanel {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #f7f1e8, stop:0.45 #f4efe8, stop:1 #ede3d3);
+                background: #f4f7fb;
+            }
+            QFrame#heroPanel {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #ffffff, stop:1 #f6f8fc);
+                border: 1px solid #dde5f0;
+                border-radius: 16px;
+            }
+            QFrame#filterPanel, QFrame#metricCard, QFrame#dashboardPanel, QFrame#filterBlock {
+                background: #ffffff;
+                border: 1px solid #e3e9f3;
+                border-radius: 14px;
+            }
+            QGroupBox#dashboardGroup {
+                background: #ffffff;
+                border: 1px solid #e3e9f3;
+                border-radius: 14px;
+                margin-top: 10px;
+                padding-top: 8px;
+                color: #1f2937;
+                font-weight: 600;
+            }
+            QGroupBox#dashboardGroup::title {
+                subcontrol-origin: margin;
+                left: 14px;
+                padding: 0 4px;
             }
             QLabel {
-                color: #33261c;
+                color: #425466;
                 font-size: 12px;
             }
-            QLabel#metaLabel {
-                background: rgba(255, 252, 247, 0.92);
-                border: 1px solid #dccbb7;
-                border-radius: 10px;
-                padding: 8px 12px;
+            QLabel#titleLabel {
+                color: #19212b;
+                font-size: 22px;
+                font-weight: 700;
+            }
+            QLabel#subtitleLabel {
+                color: #6b7a90;
                 font-size: 12px;
+            }
+            QLabel#filterLabel, QLabel#metricTitle, QLabel#panelSubtitle {
+                color: #7a8799;
+                font-size: 11px;
                 font-weight: 600;
-                color: #5c3d2e;
+            }
+            QLabel#panelTitle {
+                color: #2a3340;
+                font-size: 12px;
+                font-weight: 700;
+            }
+            QLabel#metricValue {
+                color: #1d4ed8;
+                font-size: 26px;
+                font-weight: 700;
+            }
+            QLabel#metricDelta {
+                color: #73839a;
+                font-size: 11px;
+            }
+            QLabel#summaryValueLabel {
+                background: #f8faff;
+                border: 1px solid #e3e9f3;
+                border-radius: 12px;
+                padding: 10px 12px;
+                color: #314154;
+                font-size: 11px;
+                font-weight: 600;
             }
             QLineEdit, QComboBox, QTextEdit {
-                background: #fffdf9;
-                border: 1px solid #d8c8b5;
+                background: #ffffff;
+                border: 1px solid #d7dfeb;
                 border-radius: 10px;
                 padding: 7px 10px;
-                color: #2f241b;
-                selection-background-color: #c96f3b;
+                color: #213041;
+                selection-background-color: #4f46e5;
             }
             QLineEdit:focus, QComboBox:focus, QTextEdit:focus {
-                border: 1px solid #c96f3b;
+                border: 1px solid #4f46e5;
             }
             QPushButton {
-                background: #5f7c6c;
+                background: #4f46e5;
                 color: white;
                 border: none;
                 border-radius: 10px;
@@ -363,51 +619,75 @@ class Dashboard(QMainWindow):
                 font-weight: 600;
             }
             QPushButton:hover {
-                background: #4f6a5b;
+                background: #4338ca;
             }
             QPushButton:pressed {
-                background: #405649;
+                background: #3730a3;
             }
             QPushButton:disabled {
-                background: #b7b0a8;
-                color: #f6f2ec;
+                background: #c7cfdb;
+                color: #f8fafc;
             }
             QTableWidget {
-                background: rgba(255, 253, 249, 0.97);
-                alternate-background-color: #f5ede2;
-                border: 1px solid #d8c8b5;
+                background: #ffffff;
+                alternate-background-color: #f8fbff;
+                border: 1px solid #e3e9f3;
                 border-radius: 12px;
-                gridline-color: #e5d8c8;
-                color: #2f241b;
+                gridline-color: #edf2f7;
+                color: #243447;
+                selection-background-color: #e0e7ff;
+                selection-color: #1f2a37;
+            }
+            QTableWidget::item {
+                padding: 8px 10px;
+                border-bottom: 1px solid #eef3f8;
+            }
+            QTableWidget::item:hover {
+                background: #eef4ff;
             }
             QHeaderView::section {
-                background: #e7d6c4;
-                color: #4f3425;
+                background: #f4f7fb;
+                color: #415369;
                 border: none;
-                border-right: 1px solid #d4c1ab;
+                border-right: 1px solid #e3e9f3;
+                border-bottom: 1px solid #e3e9f3;
                 padding: 8px;
                 font-weight: 700;
             }
+            QTableWidget#statusMatrixTable {
+                background: #f8faff;
+                border: 1px solid #e3e9f3;
+                border-radius: 12px;
+                color: #314154;
+                gridline-color: #e3e9f3;
+            }
             QTextEdit#changeLog {
-                background: #fffaf3;
-                border: 1px solid #d8c8b5;
+                background: #ffffff;
+                border: 1px solid #e3e9f3;
                 border-radius: 12px;
                 padding: 6px;
             }
             QSlider::groove:horizontal {
                 border: 0;
                 height: 8px;
-                background: #dbcab7;
+                background: #d9e2f2;
                 border-radius: 4px;
             }
             QSlider::handle:horizontal {
-                background: #c96f3b;
+                background: #4f46e5;
                 width: 18px;
                 margin: -6px 0;
                 border-radius: 9px;
             }
         """)
         self.table.setAlternatingRowColors(True)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        self.table.horizontalHeader().setDefaultSectionSize(140)
+        self.table.horizontalHeader().setMinimumSectionSize(88)
+        self.table.horizontalHeader().setStretchLastSection(False)
+        self.table.verticalHeader().setDefaultSectionSize(34)
+        self.table.verticalHeader().setVisible(False)
+        self.status_matrix_table.verticalHeader().setVisible(True)
 
     def apply_mode_config(self):
         if self.offer_mode:
@@ -1439,29 +1719,66 @@ class Dashboard(QMainWindow):
 
         return mask
 
-    def update_row_counts(self, visible_rows):
+    def update_row_counts(self, visible_rows, export_rows):
         loaded_rows = len(self.df)
-        export_rows = len(self.df)
         self.row_count_label.setText(
             f"Loaded: {loaded_rows} | Visible: {visible_rows} | Export: {export_rows}"
         )
 
+    def update_metric_cards(self, visible_df, export_df):
+        loaded_rows = len(self.df)
+        visible_rows = len(visible_df)
+        export_rows = len(export_df)
+
+        if "Listing Status" in visible_df.columns:
+            status_series = visible_df["Listing Status"].astype(str).str.strip().str.upper()
+            active_rows = int((status_series == "ACTIVE").sum())
+            inactive_rows = int((status_series == "INACTIVE").sum())
+            active_pct = (active_rows / visible_rows * 100) if visible_rows else 0
+            inactive_pct = (inactive_rows / visible_rows * 100) if visible_rows else 0
+            active_delta = f"{active_pct:.1f}% of visible"
+            inactive_delta = f"{inactive_pct:.1f}% of visible"
+        else:
+            active_rows = "-"
+            inactive_rows = "-"
+            active_delta = "Status column missing"
+            inactive_delta = "Status column missing"
+
+        self.set_metric_card("loaded", loaded_rows, "Rows in file")
+        self.set_metric_card("visible", visible_rows, "Rows after filters")
+        self.set_metric_card("export", export_rows, "Rows in current selection")
+        self.set_metric_card("active", active_rows, active_delta)
+        self.set_metric_card("inactive", inactive_rows, inactive_delta)
+
     def update_status_matrix(self, df):
+        self.status_matrix_table.blockSignals(True)
+        for row_index in range(2):
+            for col_index in range(2):
+                item = self.status_matrix_table.item(row_index, col_index)
+                if item is None:
+                    item = QTableWidgetItem("")
+                    item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+                    self.status_matrix_table.setItem(row_index, col_index, item)
+
         if df is None or df.empty or "Listing Status" not in df.columns or "Size" not in df.columns:
-            self.status_matrix_label.setText("Size Status Matrix\nACTIVE: -\nINACTIVE: -")
+            for row_index in range(2):
+                self.status_matrix_table.item(row_index, 0).setText("-")
+                self.status_matrix_table.item(row_index, 1).setText("-")
+            self.status_matrix_table.blockSignals(False)
             return
 
         status_series = df["Listing Status"].astype(str).str.strip().str.upper()
         size_series = df["Size"].astype(str).str.strip()
 
-        active_sizes = sorted(size_series[status_series == "ACTIVE"].dropna().unique().tolist(), key=str)
-        inactive_sizes = sorted(size_series[status_series == "INACTIVE"].dropna().unique().tolist(), key=str)
+        for row_index, row_name in enumerate(["ACTIVE", "INACTIVE"]):
+            row_count = int((status_series == row_name).sum())
+            row_sizes = sorted(size_series[status_series == row_name].dropna().unique().tolist(), key=str)
+            row_sizes_text = ", ".join(row_sizes) if row_sizes else "-"
+            self.status_matrix_table.item(row_index, 0).setText(str(row_count))
+            self.status_matrix_table.item(row_index, 1).setText(row_sizes_text)
 
-        active_text = ", ".join(active_sizes) if active_sizes else "-"
-        inactive_text = ", ".join(inactive_sizes) if inactive_sizes else "-"
-        self.status_matrix_label.setText(
-            f"Size Status Matrix\nACTIVE: {active_text}\nINACTIVE: {inactive_text}"
-        )
+        self.status_matrix_table.resizeRowsToContents()
+        self.status_matrix_table.blockSignals(False)
 
     def sync_stock_count_with_status(self, mask):
         stock_col = "Your Stock Count"
@@ -1560,8 +1877,11 @@ class Dashboard(QMainWindow):
     def update_dashboard(self):
         if self.df.empty:
             self.current_table_df = pd.DataFrame()
-            self.update_row_counts(0)
+            self.update_metric_cards(pd.DataFrame(), pd.DataFrame())
+            self.update_row_counts(0, 0)
             self.update_status_matrix(None)
+            self.selection_summary_label.setText("Selection range: None")
+            self.set_selection_stats_text("No Selection")
             return
 
         chart_df = self.df[self.get_filtered_mask(include_selection=False)].copy()
@@ -1573,9 +1893,14 @@ class Dashboard(QMainWindow):
                 (df[self.col_settlement] >= low) &
                 (df[self.col_settlement] <= high)
             ]
+            self.selection_summary_label.setText(f"Selection range: {low:.2f} to {high:.2f}")
+        else:
+            self.selection_summary_label.setText("Selection range: None")
+            self.set_selection_stats_text("No Selection")
 
         self.current_table_df = df.copy()
-        self.update_row_counts(len(df))
+        self.update_metric_cards(chart_df, df)
+        self.update_row_counts(len(chart_df), len(df))
         self.update_status_matrix(status_matrix_df)
         self.update_table(df)
         self.update_chart(chart_df)
@@ -1617,12 +1942,18 @@ class Dashboard(QMainWindow):
         self.table.setHorizontalHeaderLabels(df.columns)
 
         for i in range(len(df)):
+            row_data = df.iloc[i]
             for j in range(len(df.columns)):
+                column_name = df.columns[j]
                 display_value = self.format_table_value(df.iat[i, j])
-                self.table.setItem(i, j, QTableWidgetItem(display_value))
+                item = QTableWidgetItem(display_value)
+                self.style_table_item(item, column_name, row_data)
+                self.table.setItem(i, j, item)
+
+        self.apply_table_column_sizing()
+        self.table.resizeRowsToContents()
         self.table.blockSignals(False)
 
-    # ---------------- EDIT ----------------
     # ---------------- EDIT ----------------
     def handle_edit(self, item):
         row = item.row()
@@ -1703,35 +2034,41 @@ class Dashboard(QMainWindow):
             low, high = self.selected_range
             selected_mask = [low <= value <= high for value in x]
 
-        colors = ["#d9480f" if is_selected else "#4c78a8" for is_selected in selected_mask]
-        line = ax.plot(x, y, marker="o", color="#9ecae1", linewidth=2, zorder=2)[0]
-        ax.scatter(x, y, c=colors, s=55, edgecolors="white", linewidths=0.8, zorder=3)
+        colors = ["#ef6a5b" if is_selected else "#4f46e5" for is_selected in selected_mask]
+        line = ax.plot(x, y, marker="o", color="#7c78ff", linewidth=2.4, zorder=2)[0]
+        ax.scatter(x, y, c=colors, s=58, edgecolors="white", linewidths=1.0, zorder=3)
 
-        selection_patch = None
         if self.selected_range:
             low, high = self.selected_range
-            selection_patch = ax.axvspan(low, high, color="#f97316", alpha=0.16, zorder=1)
+            ax.axvspan(low, high, color="#ffb84d", alpha=0.18, zorder=1)
 
             in_range_x = [xv for xv, is_selected in zip(x, selected_mask) if is_selected]
             in_range_y = [yv for yv, is_selected in zip(y, selected_mask) if is_selected]
             if in_range_x:
-                ax.plot(in_range_x, in_range_y, color="#d9480f", linewidth=2.6, zorder=4)
+                ax.plot(in_range_x, in_range_y, color="#ef6a5b", linewidth=2.8, zorder=4)
 
             padding = max((high - low) * 0.08, 1)
             ax.set_xlim(low - padding, high + padding)
 
-        ax.set_facecolor("#fcfcfd")
-        ax.grid(True, axis="y", alpha=0.18)
-        ax.set_xlabel(f"Settlement values from Excel column: {self.col_settlement}")
-        ax.set_ylabel("Frequency")
-        ax.set_title(f"Settlement distribution from column: {self.col_settlement}")
+        self.figure.patch.set_facecolor("#ffffff")
+        ax.set_facecolor("#ffffff")
+        ax.grid(True, axis="y", color="#dbe4f0", alpha=0.8, linewidth=0.8)
+        ax.grid(False, axis="x")
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.spines["left"].set_color("#d0d9e5")
+        ax.spines["bottom"].set_color("#d0d9e5")
+        ax.tick_params(colors="#5f6f86")
+        ax.set_xlabel(f"Bank Settlement ({self.col_settlement})", color="#5f6f86")
+        ax.set_ylabel("Frequency", color="#5f6f86")
+        ax.set_title("Settlement Distribution", loc="left", color="#2a3340", fontsize=11, fontweight="bold")
 
         annot = ax.annotate(
             "",
             xy=(0, 0),
             xytext=(10, 10),
             textcoords="offset points",
-            bbox=dict(boxstyle="round")
+            bbox=dict(boxstyle="round,pad=0.3", fc="#ffffff", ec="#d7dfeb", alpha=0.98)
         )
         annot.set_visible(False)
         drag_patch = None
@@ -1805,9 +2142,9 @@ class Dashboard(QMainWindow):
                 except StatisticsError:
                     mode_value = "NA"
 
-                self.stats_label.setText(
-                    f"Count:{len(subset)} Mean:{np.mean(subset):.2f} "
-                    f"Median:{np.median(subset):.2f} Mode:{mode_value}"
+                self.set_selection_stats_text(
+                    f"Count: {len(subset)}  Mean: {np.mean(subset):.2f}  "
+                    f"Median: {np.median(subset):.2f}  Mode: {mode_value}"
                 )
                 self.log_change(
                     "Range Select",
@@ -1831,7 +2168,8 @@ class Dashboard(QMainWindow):
 
     def reset_selection(self):
         self.selected_range = None
-        self.stats_label.setText("No Selection")
+        self.set_selection_stats_text("No Selection")
+        self.selection_summary_label.setText("Selection range: None")
         self.update_dashboard()
 
     # ---------------- EXPORT ----------------
@@ -1902,6 +2240,4 @@ if __name__ == "__main__":
     w = Dashboard()
     w.show()
     sys.exit(app.exec_())
-
-
 

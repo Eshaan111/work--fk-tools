@@ -125,12 +125,18 @@ CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection = {
     "position": _PIXELS["prompt_box_post_injection"],
     "rgb": (230, 255, 255),
 }
+CHATGPT_BOOT_FOCUS_CLICK_DURATION_SECONDS = 10
+IDEA_RESPONSE_ABORT_TIMEOUT_SECONDS = 80
+IDEA_RESPONSE_STUCK_PROMPT_RETRY_THRESHOLD = 8
+INITIAL_PROMPT_SUBMISSION_WAIT_SECONDS = 10
+INITIAL_PROMPT_COMPLETION_DETECTION_DELAY_SECONDS = 5
 IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
-IMAGE_GENERATION_TIMEOUT_SECONDS = 240
+IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS = 240
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 12
+IMAGE_GENERATION_STUCK_PROMPT_RETRY_THRESHOLD = 8
+IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS = 10
 IMAGE_GENERATION_VERIFICATION_LIMIT = -1
-IDEA_RESPONSE_TIMEOUT_SECONDS = 30
-POST_SAVE_EXTRACTION_WAIT_SECONDS = 2.0
+POST_SAVE_EXTRACTION_WAIT_SECONDS = 5.0 
 IMAGE_GENERATION_IN_PROGRESS_PHRASES = (
     "creating image",
     "generating image",
@@ -495,10 +501,12 @@ def click_chat_copy_target() -> None:
 def hold_click_chatgpt_boot_focus_target() -> None:
     target_x, target_y = CHATGPT_PROMPT_BOX_PIXELS_VAIO["position"]
     print(
-        f"Clicking ChatGPT boot focus target ({target_x}, {target_y}) every 0.5 seconds for 10 seconds..."
+        "Clicking ChatGPT boot focus target "
+        f"({target_x}, {target_y}) every 0.5 seconds for "
+        f"{CHATGPT_BOOT_FOCUS_CLICK_DURATION_SECONDS} seconds..."
     )
     pyautogui.moveTo(target_x, target_y, duration=0.2)
-    end_time = time.time() + 10
+    end_time = time.time() + CHATGPT_BOOT_FOCUS_CLICK_DURATION_SECONDS
     while time.time() < end_time:
         pyautogui.click()
         time.sleep(0.5)
@@ -547,10 +555,14 @@ def wait_for_stable_full_chat_text(
         prompt_tail = prompt_text.split()[-10:]
         copy_tail = current_copy.split()[-10:]
         is_stuck = bool(prompt_tail and copy_tail == prompt_tail)
-        print(f"Stuck check: {is_stuck} (counter: {stuck_counter + 1 if is_stuck else 0}/5)")
+        print(
+            "Stuck check: "
+            f"{is_stuck} (counter: {stuck_counter + 1 if is_stuck else 0}/"
+            f"{IDEA_RESPONSE_STUCK_PROMPT_RETRY_THRESHOLD})"
+        )
         if is_stuck:
             stuck_counter += 1
-            if stuck_counter >= 5:
+            if stuck_counter >= IDEA_RESPONSE_STUCK_PROMPT_RETRY_THRESHOLD:
                 print("Detected prompt still in input box (ENTER might have failed). Repressing ENTER...")
                 pyautogui.click(CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection["position"])
                 time.sleep(0.5)
@@ -567,10 +579,12 @@ def wait_for_stable_full_chat_text(
 
         if (
             timeout_started_at is not None
-            and time.time() - timeout_started_at >= IDEA_RESPONSE_TIMEOUT_SECONDS
+            and time.time() - timeout_started_at >= IDEA_RESPONSE_ABORT_TIMEOUT_SECONDS
         ):
             print(
-                f"Timed out after {IDEA_RESPONSE_TIMEOUT_SECONDS} seconds without detecting parseable idea JSON. Aborting this run."
+                "Timed out after "
+                f"{IDEA_RESPONSE_ABORT_TIMEOUT_SECONDS} seconds without detecting "
+                "parseable idea JSON. Aborting this run."
             )
             return None
 
@@ -1085,10 +1099,14 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
         gen_prompt_tail = generation_prompt_text.split()[-10:]
         copy_tail = current_copy.split()[-10:]
         is_stuck = bool(gen_prompt_tail and copy_tail == gen_prompt_tail)
-        print(f"Stuck check: {is_stuck} (counter: {stuck_counter + 1 if is_stuck else 0}/5)")
+        print(
+            "Stuck check: "
+            f"{is_stuck} (counter: {stuck_counter + 1 if is_stuck else 0}/"
+            f"{IMAGE_GENERATION_STUCK_PROMPT_RETRY_THRESHOLD})"
+        )
         if is_stuck:
             stuck_counter += 1
-            if stuck_counter >= 5:
+            if stuck_counter >= IMAGE_GENERATION_STUCK_PROMPT_RETRY_THRESHOLD:
                 print("Detected generation prompt still in input box. Repressing ENTER...")
                 pyautogui.click(CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection["position"])
                 time.sleep(0.5)
@@ -1103,10 +1121,10 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
                 "Copied chat text is stable, but 'Generated image:' was not found after the injected prompt yet. Continuing to wait..."
             )
 
-        if time.time() - start_time >= IMAGE_GENERATION_TIMEOUT_SECONDS:
+        if time.time() - start_time >= IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS:
             print(
                 "Timed out after "
-                f"{IMAGE_GENERATION_TIMEOUT_SECONDS} seconds without verifying a generated image. "
+                f"{IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS} seconds without verifying a generated image. "
                 "Aborting this image run and continuing."
             )
             IMAGE_GENERATION_FINAL_CHAT_PATH.write_text(
@@ -1129,8 +1147,12 @@ def run_generation_prompt_for_image(
     paste_text_via_clipboard(generation_prompt_text, "focused ChatGPT prompt box")
     time.sleep(1.5)
     paste_image_via_clipboard(image_path, "focused ChatGPT prompt box")
-    print("Waiting 10 seconds before submitting the image generation prompt...")
-    time.sleep(10)
+    print(
+        "Waiting "
+        f"{IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS} seconds before submitting "
+        "the image generation prompt..."
+    )
+    time.sleep(IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS)
     pyautogui.press("enter")
     print("Pressed Enter to submit the image generation prompt.")
     return wait_for_image_generation_completion(generation_prompt_text)
@@ -1216,13 +1238,21 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
     paste_text_via_clipboard(context.prompt_text, "focused ChatGPT prompt box")
     time.sleep(0.9)
     paste_image_via_clipboard(context.image_paths[0], "focused ChatGPT prompt box")
-    print("Waiting 10 seconds before submitting the ChatGPT prompt...")
-    time.sleep(10)
+    print(
+        "Waiting "
+        f"{INITIAL_PROMPT_SUBMISSION_WAIT_SECONDS} seconds before submitting "
+        "the ChatGPT prompt..."
+    )
+    time.sleep(INITIAL_PROMPT_SUBMISSION_WAIT_SECONDS)
     pyautogui.press("enter")
     prompt_submitted_at = time.time()
     print("Pressed Enter to submit the prompt")
-    print("Waiting 5 seconds before starting output-completion detection...")
-    time.sleep(5)
+    print(
+        "Waiting "
+        f"{INITIAL_PROMPT_COMPLETION_DETECTION_DELAY_SECONDS} seconds before "
+        "starting output-completion detection..."
+    )
+    time.sleep(INITIAL_PROMPT_COMPLETION_DETECTION_DELAY_SECONDS)
     latest_output = capture_and_store_latest_output(
         context.prompt_text,
         prompt_submitted_at,
@@ -1308,3 +1338,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+

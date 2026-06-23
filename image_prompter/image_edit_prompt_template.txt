@@ -34,14 +34,14 @@ The backgrounds must:
 
 * Work well for background replacement workflows.
 * Support realistic product compositing.
-* Provide clean areas for shadow placement.
+* Provide clean floor areas for natural shadow placement.
 * Provide sufficient negative space around the product.
-* Avoid complex geometry behind the product.
-* Avoid overlapping foreground elements.
-* Avoid objects that would need to intersect with the product.
-* Avoid visual elements that require precise interaction with the product.
+* Avoid complex geometry directly behind the product.
+* Avoid foreground objects.
+* Avoid elements that would need to physically interact with the product.
+* Avoid visual elements that require precise alignment with the product.
 * Be easy to light-match with a separately photographed product image.
-* Feel like professionally photographed studio environments.
+* Feel like professionally photographed commercial studio environments.
 
 RULES
 
@@ -49,14 +49,14 @@ RULES
 1. Do not repeat or closely paraphrase the already-used ideas or color themes.
 2. Keep ideas commercially strong for ecommerce product compositing.
 3. Ideas must work for a no-background product image that will be placed into the scene later.
-4. The product must remain the visual focus.
-5. Do not suggest scenes with extra products, text, logos, signage, people, vehicles, or distracting props.
+4. The product must remain the clear visual focus.
+5. Do not suggest scenes with text, logos, signage, brand marks, people, vehicles, animals, or distracting props.
 6. Keep the ideas photorealistic, premium, and professionally art-directed.
 7. Match the kind of product being worked on.
 8. Favor backgrounds that could realistically be built inside a commercial photography studio.
 9. Avoid environments that feel cinematic, lifestyle-heavy, decorative, conceptual, or AI-generated.
 10. Prefer clean compositions with strong negative space around the product.
-11. If props are used, limit them to 0–2 subtle supporting elements.
+11. If supporting elements are used, limit them to 0–2 subtle background-only elements.
 12. Avoid cluttered scenes, busy textures, crowded interiors, excessive architecture, or visual storytelling.
 13. Avoid dramatic lighting effects.
 14. Prioritize realism, simplicity, and product focus over visual complexity.
@@ -65,29 +65,26 @@ RULES
 17. Use no more than 2–3 color families per concept.
 18. Avoid dark, moody, high-contrast environments unless specifically appropriate for the product.
 19. Avoid foreground elements that would overlap the product.
-20. Avoid compositions that require the product to sit inside furniture, fixtures, containers, shelves, niches, racks, or architectural openings.
-21. Prefer flat or gently curved surfaces suitable for product placement.
-22. Design backgrounds as standalone photography sets rather than scenes.
+20. Avoid compositions that require the product to sit inside furniture, fixtures, containers, shelves, niches, racks, frames, or architectural openings.
+21. Prefer flat or gently curved surfaces suitable for clean product placement.
+22. Design backgrounds as standalone photography sets rather than complete scenes.
+23. Do not add new product details, labels, packaging, text, graphic marks, brand-like elements, or extra merchandise.
+24. If the source image contains clothing or apparel, treat only the product as the subject. Do not generate a model, body, face, mannequin, skin, or wearable pose.
 
 DO NOT GENERATE
 
-* Atriums
-* Courtyards
-* Hallways
-* Walkways
-* Rooftops
-* Resort environments
-* Outdoor landscapes
-* Hospitality spaces
-* Gyms
-* Offices
-* Large architectural environments
-* Lifestyle scenes
+* Real-world locations
+* Outdoor scenes
 * Detailed interiors
-* Storytelling environments
-* Furniture-centric scenes
+* Lifestyle scenes
+* Large architectural spaces
+* Furniture-focused setups
+* Prop-heavy scenes
+* Scenes with text, logos, signage, or brand-like graphics
+* Scenes with people, body parts, mannequins, animals, or vehicles
 * Product-interaction scenes
-* Environments requiring a human subject
+* Foreground objects that overlap the product
+* Busy patterns or high-contrast textures
 
 PREFER GENERATING
 
@@ -97,14 +94,13 @@ PREFER GENERATING
 * Matte stone panels
 * Soft textured backdrops
 * Seamless studio sets
-* Minimal architectural niches
 * Curved cyclorama walls
 * Light wood accents
 * Premium retail-display inspired sets
 * Soft gradients combined with physical materials
 * Clean geometric forms
 * Subtle wall paneling
-* Minimal pedestals (only if appropriate)
+* Minimal pedestals only when they do not require product interaction
 * Refined material studies
 * Sculpted studio surfaces
 * Composite stone textures
@@ -134,7 +130,7 @@ Most ideas should follow this structure:
 
 * One primary wall/backdrop material.
 * One floor material.
-* Zero to two subtle supporting elements.
+* Zero to two subtle background-only supporting elements.
 * Large open negative space.
 * Soft studio lighting.
 * Clean product-focused composition.
@@ -149,27 +145,23 @@ Professional ecommerce image background ideas for compositing.
 
 OUTPUT FORMAT
 
-Return JSON only.
+Return valid JSON only.
 
-Wrap the entire response inside:
-
-```json
-{
-  "ideas": [...]
-}
-```
+Do not include explanations, markdown commentary, notes, or text outside the JSON object.
 
 Use this exact shape:
 
+```json
 {
-"ideas": [
-{
-"title": "...",
-"visual_concept": "...",
-"background_description": "..."
+  "ideas": [
+    {
+      "title": "...",
+      "visual_concept": "...",
+      "background_description": "..."
+    }
+  ]
 }
-]
-}
+```
 
 GUIDELINES FOR EACH IDEA
 
@@ -186,10 +178,11 @@ GUIDELINES FOR EACH IDEA
 
 * Detailed image-generation-ready description.
 * Focus primarily on materials, surfaces, lighting, negative space, and composition.
-* Avoid describing complete environments.
 * Mention wall treatment, floor treatment, lighting style, depth of field, and subtle supporting elements if used.
 * Emphasize premium ecommerce photography aesthetics.
 * Ensure the background can realistically accept a separately photographed product through compositing.
+* Keep the scene empty in the center with a clean floor zone for realistic contact shadows.
+* Avoid text, logos, signage, people, vehicles, mannequins, body parts, extra products, packaging, or foreground props.
 
 IMPORTANT
 
@@ -197,4 +190,4 @@ The ideas should be clearly distinct from:
 
 [USED_PHRASES_CSV]
 
-Generate 15 diverse ideas. GIVE COMPLETE JSON
+Generate 15 diverse ideas. Return complete valid JSON only.
