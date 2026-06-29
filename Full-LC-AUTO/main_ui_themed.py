@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import os
@@ -335,26 +335,28 @@ def record_successful_run(listing_selection: ListingSelection, profile_name: str
     else:
         workbook = Workbook()
         worksheet = workbook.active
-    ensure_success_run_record_headers(worksheet)
+    try:
+        ensure_success_run_record_headers(worksheet)
 
-    normalized_profile = resolve_profile_name(profile_name)
-    account_columns = ensure_date_account_columns(worksheet, run_date)
-    target_row_index = get_or_create_success_run_row(worksheet, listing_selection)
-    target_column_index = account_columns[normalized_profile]
-    brand_code = get_brand_code_for_record(listing_selection.brand_name)
+        normalized_profile = resolve_profile_name(profile_name)
+        account_columns = ensure_date_account_columns(worksheet, run_date)
+        target_row_index = get_or_create_success_run_row(worksheet, listing_selection)
+        target_column_index = account_columns[normalized_profile]
+        brand_code = get_brand_code_for_record(listing_selection.brand_name)
 
-    existing_counts = parse_brand_count_cell(
-        worksheet.cell(row=target_row_index, column=target_column_index).value
-    )
-    existing_counts[brand_code] = existing_counts.get(brand_code, 0) + 1
-    worksheet.cell(
-        row=target_row_index,
-        column=target_column_index,
-        value=format_brand_count_cell(existing_counts),
-    )
-    workbook.save(SUCCESS_RUN_RECORD_PATH)
-    return SUCCESS_RUN_RECORD_PATH
-
+        existing_counts = parse_brand_count_cell(
+            worksheet.cell(row=target_row_index, column=target_column_index).value
+        )
+        existing_counts[brand_code] = existing_counts.get(brand_code, 0) + 1
+        worksheet.cell(
+            row=target_row_index,
+            column=target_column_index,
+            value=format_brand_count_cell(existing_counts),
+        )
+        workbook.save(SUCCESS_RUN_RECORD_PATH)
+        return SUCCESS_RUN_RECORD_PATH
+    finally:
+        workbook.close()
 
 def require_configured_path(path_value: Path | None, path_label: str) -> Path:
     if path_value is not None:
@@ -1028,44 +1030,46 @@ def build_image_insight_summary(
     selected_kind: str,
 ) -> str:
     workbook = load_workbook(workbook_path, data_only=True)
-    exhausted_sheet = workbook["Image Folder Insight"]
-    available_sheet = workbook["Available Options"]
-    header_value = f"{profile_name.title()} - {brand_name} - {surface_name.title()}"
-    exhausted_column = find_header_column_index(exhausted_sheet, header_value)
-    available_column = find_header_column_index(available_sheet, header_value)
+    try:
+        exhausted_sheet = workbook["Image Folder Insight"]
+        available_sheet = workbook["Available Options"]
+        header_value = f"{profile_name.title()} - {brand_name} - {surface_name.title()}"
+        exhausted_column = find_header_column_index(exhausted_sheet, header_value)
+        available_column = find_header_column_index(available_sheet, header_value)
 
-    lines = [
-        f"Insight workbook: {workbook_path.name}",
-        f"Filter: {profile_name.title()} / {brand_name} / {surface_name.title()}",
-        "",
-    ]
+        lines = [
+            f"Insight workbook: {workbook_path.name}",
+            f"Filter: {profile_name.title()} / {brand_name} / {surface_name.title()}",
+            "",
+        ]
 
-    total_available = 0
-    total_exhausted = 0
-    has_rows = False
-    for row_index in range(2, exhausted_sheet.max_row + 1):
-        kind_name = str(exhausted_sheet.cell(row=row_index, column=1).value or "").strip()
-        if not kind_name:
-            continue
-        has_rows = True
-        exhausted_value = int(exhausted_sheet.cell(row=row_index, column=exhausted_column).value or 0)
-        available_value = int(available_sheet.cell(row=row_index, column=available_column).value or 0)
-        total_available += available_value
-        total_exhausted += exhausted_value
-        selected_suffix = " [selected]" if kind_name == selected_kind else ""
-        lines.append(
-            f"{kind_name}{selected_suffix}: available {available_value}, exhausted {exhausted_value}"
-        )
+        total_available = 0
+        total_exhausted = 0
+        has_rows = False
+        for row_index in range(2, exhausted_sheet.max_row + 1):
+            kind_name = str(exhausted_sheet.cell(row=row_index, column=1).value or "").strip()
+            if not kind_name:
+                continue
+            has_rows = True
+            exhausted_value = int(exhausted_sheet.cell(row=row_index, column=exhausted_column).value or 0)
+            available_value = int(available_sheet.cell(row=row_index, column=available_column).value or 0)
+            total_available += available_value
+            total_exhausted += exhausted_value
+            selected_suffix = " [selected]" if kind_name == selected_kind else ""
+            lines.append(
+                f"{kind_name}{selected_suffix}: available {available_value}, exhausted {exhausted_value}"
+            )
 
-    if not has_rows:
-        raise ValueError("No kind rows were found in the insight workbook.")
+        if not has_rows:
+            raise ValueError("No kind rows were found in the insight workbook.")
 
-    lines.extend([
-        "",
-        f"Totals: available {total_available}, exhausted {total_exhausted}",
-    ])
-    return "\n".join(lines)
-
+        lines.extend([
+            "",
+            f"Totals: available {total_available}, exhausted {total_exhausted}",
+        ])
+        return "\n".join(lines)
+    finally:
+        workbook.close()
 
 def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
     available_flow_targets = discover_flow_target_options()
@@ -1139,9 +1143,124 @@ def prompt_for_startup_selection() -> StartupSelection:
     }
 
     root = tk.Tk()
-    root.title("Full LC Auto Startup")
-    root.resizable(False, False)
-    root.columnconfigure(1, weight=1)
+    root.title("Full LC Auto")
+    root.geometry("1080x760")
+    root.minsize(860, 560)
+    root.configure(bg="#f3efe7")
+
+    style = ttk.Style(root)
+    available_themes = set(style.theme_names())
+    if "clam" in available_themes:
+        style.theme_use("clam")
+    elif "vista" in available_themes:
+        style.theme_use("vista")
+
+    style.configure("App.TFrame", background="#f3efe7")
+    style.configure("Card.TFrame", background="#fffaf2", relief="flat")
+    style.configure("Sidebar.TFrame", background="#17352d")
+    style.configure("App.TLabel", background="#fffaf2", foreground="#17352d", font=("Segoe UI", 10))
+    style.configure("Muted.TLabel", background="#fffaf2", foreground="#5f665f", font=("Segoe UI", 9))
+    style.configure("Hero.TLabel", background="#17352d", foreground="#f7f0e4", font=("Segoe UI Semibold", 26))
+    style.configure("HeroSub.TLabel", background="#17352d", foreground="#d7d2c8", font=("Segoe UI", 10))
+    style.configure("SectionTitle.TLabel", background="#fffaf2", foreground="#17352d", font=("Segoe UI Semibold", 13))
+    style.configure("Field.TLabel", background="#fffaf2", foreground="#2e453d", font=("Segoe UI Semibold", 9))
+    style.configure(
+        "App.TButton",
+        font=("Segoe UI Semibold", 10),
+        padding=(12, 8),
+        background="#d9b36c",
+        foreground="#17352d",
+        borderwidth=0,
+    )
+    style.map(
+        "App.TButton",
+        background=[("active", "#c89c4f"), ("pressed", "#b98937")],
+        foreground=[("disabled", "#847e73")],
+    )
+    style.configure(
+        "Secondary.TButton",
+        font=("Segoe UI Semibold", 10),
+        padding=(12, 8),
+        background="#e7ddcf",
+        foreground="#17352d",
+        borderwidth=0,
+    )
+    style.map(
+        "Secondary.TButton",
+        background=[("active", "#dbcdb9"), ("pressed", "#d1c0a6")],
+        foreground=[("disabled", "#847e73")],
+    )
+    style.configure(
+        "App.TEntry",
+        fieldbackground="#fffdf8",
+        background="#fffdf8",
+        foreground="#17352d",
+        bordercolor="#d7c9b4",
+        lightcolor="#d7c9b4",
+        darkcolor="#d7c9b4",
+        padding=6,
+    )
+    style.configure(
+        "App.TCombobox",
+        fieldbackground="#fffdf8",
+        background="#fffdf8",
+        foreground="#17352d",
+        bordercolor="#d7c9b4",
+        lightcolor="#d7c9b4",
+        darkcolor="#d7c9b4",
+        arrowsize=16,
+        padding=4,
+    )
+
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(0, weight=1)
+
+    canvas_container = ttk.Frame(root, style="App.TFrame")
+    canvas_container.grid(row=0, column=0, sticky="nsew")
+    canvas_container.columnconfigure(0, weight=1)
+    canvas_container.rowconfigure(0, weight=1)
+
+    page_canvas = tk.Canvas(
+        canvas_container,
+        bg="#f3efe7",
+        highlightthickness=0,
+        bd=0,
+        relief="flat",
+    )
+    page_scrollbar = ttk.Scrollbar(canvas_container, orient="vertical", command=page_canvas.yview)
+    page_canvas.configure(yscrollcommand=page_scrollbar.set)
+    page_canvas.grid(row=0, column=0, sticky="nsew")
+    page_scrollbar.grid(row=0, column=1, sticky="ns")
+
+    page_frame = ttk.Frame(page_canvas, style="App.TFrame")
+    page_window = page_canvas.create_window((0, 0), window=page_frame, anchor="nw")
+
+    def refresh_scroll_region(_event: tk.Event | None = None) -> None:
+        page_canvas.configure(scrollregion=page_canvas.bbox("all"))
+
+    def sync_page_width(event: tk.Event) -> None:
+        page_canvas.itemconfigure(page_window, width=event.width)
+
+    def scroll_canvas_units(delta: int) -> None:
+        if page_frame.winfo_reqheight() <= page_canvas.winfo_height():
+            return
+        page_canvas.yview_scroll(delta, "units")
+
+    def handle_mousewheel(event: tk.Event) -> str | None:
+        if getattr(event, "delta", 0):
+            scroll_canvas_units(int(-event.delta / 120))
+            return "break"
+        return None
+
+    page_frame.bind("<Configure>", refresh_scroll_region)
+    page_canvas.bind("<Configure>", sync_page_width)
+    page_canvas.bind_all("<MouseWheel>", handle_mousewheel)
+    page_canvas.bind_all("<Button-4>", lambda _event: scroll_canvas_units(-1))
+    page_canvas.bind_all("<Button-5>", lambda _event: scroll_canvas_units(1))
+
+    page_frame.columnconfigure(0, weight=2)
+    page_frame.columnconfigure(1, weight=3)
+    page_frame.rowconfigure(1, weight=1)
 
     selection: StartupSelection | None = None
     insight_workbook_path: Path | None = None
@@ -1156,14 +1275,79 @@ def prompt_for_startup_selection() -> StartupSelection:
     brand_var = tk.StringVar()
     image_directory_var = tk.StringVar(value="")
 
-    laptop_combo = ttk.Combobox(root, textvariable=laptop_var, state="readonly", values=laptop_names)
-    profile_combo = ttk.Combobox(root, textvariable=profile_var, state="readonly")
-    flow_combo = ttk.Combobox(root, textvariable=flow_var, state="readonly", values=list(flow_labels))
-    kind_combo = ttk.Combobox(root, textvariable=kind_var, state="readonly")
-    brand_combo = ttk.Combobox(root, textvariable=brand_var, state="readonly")
-    insight_text = tk.Text(root, height=10, width=58, wrap="word")
+    sidebar = ttk.Frame(page_frame, style="Sidebar.TFrame", padding=(28, 28, 28, 24))
+    sidebar.grid(row=0, column=0, rowspan=3, sticky="nsew")
+    sidebar.columnconfigure(0, weight=1)
+
+    content = ttk.Frame(page_frame, style="App.TFrame", padding=(24, 20, 24, 20))
+    content.grid(row=0, column=1, rowspan=3, sticky="nsew")
+    content.columnconfigure(0, weight=1)
+    content.rowconfigure(1, weight=1)
+
+    ttk.Label(sidebar, text="Full LC Auto", style="Hero.TLabel").grid(row=0, column=0, sticky="w")
+    ttk.Label(
+        sidebar,
+        text="Configure the run, check folder availability, and launch with cleaner guardrails.",
+        style="HeroSub.TLabel",
+        wraplength=280,
+        justify="left",
+    ).grid(row=1, column=0, pady=(10, 24), sticky="w")
+
+    sidebar_points = [
+        "Laptop-aware paths and Firefox profiles",
+        "Live image-folder availability insight",
+        "Same automation engine underneath",
+    ]
+    for row_index, point in enumerate(sidebar_points, start=2):
+        ttk.Label(
+            sidebar,
+            text=f"? {point}",
+            style="HeroSub.TLabel",
+            wraplength=280,
+            justify="left",
+        ).grid(row=row_index, column=0, pady=(0, 10), sticky="w")
+
+    setup_card = ttk.Frame(content, style="Card.TFrame", padding=(22, 20, 22, 18))
+    setup_card.grid(row=0, column=0, sticky="ew")
+    setup_card.columnconfigure(1, weight=1)
+
+    insight_card = ttk.Frame(content, style="Card.TFrame", padding=(22, 18, 22, 18))
+    insight_card.grid(row=1, column=0, pady=(18, 0), sticky="nsew")
+    insight_card.columnconfigure(0, weight=1)
+    insight_card.rowconfigure(2, weight=1)
+
+    ttk.Label(setup_card, text="Run Setup", style="SectionTitle.TLabel").grid(row=0, column=0, columnspan=2, sticky="w")
+    ttk.Label(
+        setup_card,
+        text="Pick the target account, flow, and image source before starting the batch.",
+        style="Muted.TLabel",
+        wraplength=600,
+        justify="left",
+    ).grid(row=1, column=0, columnspan=2, pady=(4, 16), sticky="w")
+
+    laptop_combo = ttk.Combobox(setup_card, textvariable=laptop_var, state="readonly", values=laptop_names, style="App.TCombobox")
+    profile_combo = ttk.Combobox(setup_card, textvariable=profile_var, state="readonly", style="App.TCombobox")
+    flow_combo = ttk.Combobox(setup_card, textvariable=flow_var, state="readonly", values=list(flow_labels), style="App.TCombobox")
+    kind_combo = ttk.Combobox(setup_card, textvariable=kind_var, state="readonly", style="App.TCombobox")
+    brand_combo = ttk.Combobox(setup_card, textvariable=brand_var, state="readonly", style="App.TCombobox")
+    size_entry = ttk.Entry(setup_card, textvariable=size_var, width=20, style="App.TEntry")
+    run_count_entry = ttk.Entry(setup_card, textvariable=run_count_var, width=20, style="App.TEntry")
+    image_dir_entry = ttk.Entry(setup_card, textvariable=image_directory_var, width=20, style="App.TEntry")
+
+    insight_text = tk.Text(
+        insight_card,
+        height=16,
+        wrap="word",
+        font=("Consolas", 10),
+        bg="#fbf7ef",
+        fg="#17352d",
+        relief="flat",
+        padx=12,
+        pady=12,
+        insertbackground="#17352d",
+    )
     insight_text.configure(state="disabled")
-    open_insight_button = ttk.Button(root, text="Open Insight Excel")
+    open_insight_button = ttk.Button(insight_card, text="Open Insight Excel", style="Secondary.TButton")
     open_insight_button.state(["disabled"])
 
     def set_insight_text(message: str) -> None:
@@ -1192,7 +1376,7 @@ def prompt_for_startup_selection() -> StartupSelection:
             )
         except Exception as exc:
             open_insight_button.state(["!disabled"])
-            set_insight_text(f"Insight workbook generated, but summary could not be read:\n{exc}")
+            set_insight_text("Insight workbook generated, but summary could not be read:\n" + str(exc))
             return
 
         open_insight_button.state(["!disabled"])
@@ -1249,7 +1433,7 @@ def prompt_for_startup_selection() -> StartupSelection:
         insight_workbook_path = generated_path
         insight_laptop_name = laptop_var.get()
         refresh_insight_preview()
-        messagebox.showinfo("Image folder insight", f"Saved insight workbook:\n{generated_path}", parent=root)
+        messagebox.showinfo("Image folder insight", "Saved insight workbook:\n" + str(generated_path), parent=root)
 
     def open_insight_workbook() -> None:
         if insight_workbook_path is None or not insight_workbook_path.exists():
@@ -1290,38 +1474,54 @@ def prompt_for_startup_selection() -> StartupSelection:
         root.destroy()
 
     fields = [
-        ("Laptop", laptop_combo),
-        ("Profile", profile_combo),
-        ("Flow", flow_combo),
-        ("Kind", kind_combo),
-        ("Size", ttk.Entry(root, textvariable=size_var, width=20)),
+        ("Laptop Mode", laptop_combo),
+        ("Seller Profile", profile_combo),
+        ("Flow Target", flow_combo),
+        ("Product Kind", kind_combo),
+        ("Listing Size", size_entry),
         ("Brand", brand_combo),
-        ("Run Count", ttk.Entry(root, textvariable=run_count_var, width=20)),
-        ("Image Dir Override", ttk.Entry(root, textvariable=image_directory_var, width=20)),
+        ("Batch Runs", run_count_entry),
+        ("Image Override", image_dir_entry),
     ]
 
-    for row_index, (label_text, widget) in enumerate(fields):
-        ttk.Label(root, text=label_text).grid(row=row_index, column=0, padx=12, pady=6, sticky="w")
-        widget.grid(row=row_index, column=1, padx=(0, 12), pady=6, sticky="ew")
+    for row_index, (label_text, widget) in enumerate(fields, start=2):
+        ttk.Label(setup_card, text=label_text, style="Field.TLabel").grid(row=row_index, column=0, padx=(0, 18), pady=8, sticky="w")
+        widget.grid(row=row_index, column=1, pady=8, sticky="ew")
 
-    helper_label = ttk.Label(
-        root,
+    ttk.Label(
+        setup_card,
         text="Leave image override blank to keep the built-in laptop path.",
-    )
-    helper_label.grid(row=len(fields), column=0, columnspan=2, padx=12, pady=(0, 6), sticky="w")
+        style="Muted.TLabel",
+        wraplength=540,
+        justify="left",
+    ).grid(row=len(fields) + 2, column=0, columnspan=2, pady=(8, 0), sticky="w")
 
-    insight_button_frame = ttk.Frame(root)
-    insight_button_frame.grid(row=len(fields) + 1, column=0, columnspan=2, padx=12, pady=(2, 6), sticky="w")
-    ttk.Button(insight_button_frame, text="Refresh Insight", command=run_image_folder_insight).grid(row=0, column=0, padx=(0, 8))
+    ttk.Label(insight_card, text="Image Folder Insight", style="SectionTitle.TLabel").grid(row=0, column=0, sticky="w")
+    ttk.Label(
+        insight_card,
+        text="Generate a fresh workbook and preview the availability for the currently selected account, brand, and surface.",
+        style="Muted.TLabel",
+        wraplength=620,
+        justify="left",
+    ).grid(row=1, column=0, pady=(4, 14), sticky="w")
+    insight_text.grid(row=2, column=0, sticky="nsew")
+
+    insight_button_frame = ttk.Frame(insight_card, style="Card.TFrame")
+    insight_button_frame.grid(row=3, column=0, pady=(14, 0), sticky="w")
+    ttk.Button(
+        insight_button_frame,
+        text="Refresh Insight",
+        command=run_image_folder_insight,
+        style="App.TButton",
+    ).grid(row=0, column=0, padx=(0, 10))
     open_insight_button.configure(command=open_insight_workbook)
     open_insight_button.grid(row=0, column=1)
 
-    insight_text.grid(row=len(fields) + 2, column=0, columnspan=2, padx=12, pady=(0, 8), sticky="ew")
-
-    button_frame = ttk.Frame(root)
-    button_frame.grid(row=len(fields) + 3, column=0, columnspan=2, padx=12, pady=(4, 12), sticky="e")
-    ttk.Button(button_frame, text="Start", command=submit).grid(row=0, column=0, padx=(0, 8))
-    ttk.Button(button_frame, text="Cancel", command=cancel).grid(row=0, column=1)
+    action_frame = ttk.Frame(content, style="App.TFrame")
+    action_frame.grid(row=2, column=0, pady=(18, 0), sticky="ew")
+    action_frame.columnconfigure(0, weight=1)
+    ttk.Button(action_frame, text="Cancel", command=cancel, style="Secondary.TButton").grid(row=0, column=1, padx=(0, 10))
+    ttk.Button(action_frame, text="Start Batch", command=submit, style="App.TButton").grid(row=0, column=2)
 
     laptop_var.trace_add("write", refresh_profile_options)
     profile_var.trace_add("write", refresh_brand_options)
@@ -1333,7 +1533,12 @@ def prompt_for_startup_selection() -> StartupSelection:
 
     root.protocol("WM_DELETE_WINDOW", cancel)
     root.bind("<Return>", lambda _event: submit())
-    root.mainloop()
+    try:
+        root.mainloop()
+    except KeyboardInterrupt:
+        if root.winfo_exists():
+            root.destroy()
+        raise
 
     if selection is None:
         raise SystemExit("Startup selection cancelled.")
@@ -1424,44 +1629,46 @@ def load_product_input_row(
         raise ValueError(f"Excel file was not found: {workbook_path}")
 
     workbook = load_workbook(workbook_path, data_only=True)
-    if worksheet_name and worksheet_name in workbook.sheetnames:
-        worksheet = workbook[worksheet_name]
-    else:
-        preferred_sheet = next(
-            (sheet_name for sheet_name in workbook.sheetnames if "product inputs" in sheet_name.lower()),
-            workbook.sheetnames[0],
-        )
-        worksheet = workbook[preferred_sheet]
-    headers = [worksheet.cell(1, column).value for column in range(1, worksheet.max_column + 1)]
-    normalized_headers = [
-        str(header).strip() if header is not None else None
-        for header in headers
-    ]
-
-    normalized_target_kind = target_kind.strip().lower()
-    normalized_target_size = target_size.strip().lower()
-
-    for row_index in range(2, worksheet.max_row + 1):
-        row_values = {
-            normalized_headers[column_index - 1]: worksheet.cell(row_index, column_index).value
-            for column_index in range(1, worksheet.max_column + 1)
-            if normalized_headers[column_index - 1]
-        }
-        row_values = apply_surface_specific_field_aliases(row_values, surface)
-        row_kind = str(row_values.get("kind", "")).strip()
-        row_size = str(row_values.get("size", "")).strip()
-
-        if row_kind.lower() == normalized_target_kind and row_size.lower() == normalized_target_size:
-            return ProductInputRow(
-                kind=row_kind,
-                size=row_size,
-                values={key: "" if value is None else str(value).strip() for key, value in row_values.items()},
+    try:
+        if worksheet_name and worksheet_name in workbook.sheetnames:
+            worksheet = workbook[worksheet_name]
+        else:
+            preferred_sheet = next(
+                (sheet_name for sheet_name in workbook.sheetnames if "product inputs" in sheet_name.lower()),
+                workbook.sheetnames[0],
             )
+            worksheet = workbook[preferred_sheet]
+        headers = [worksheet.cell(1, column).value for column in range(1, worksheet.max_column + 1)]
+        normalized_headers = [
+            str(header).strip() if header is not None else None
+            for header in headers
+        ]
 
-    raise ValueError(
-        f"No Excel row found for kind='{target_kind}' and size='{target_size}' in {workbook_path}"
-    )
+        normalized_target_kind = target_kind.strip().lower()
+        normalized_target_size = target_size.strip().lower()
 
+        for row_index in range(2, worksheet.max_row + 1):
+            row_values = {
+                normalized_headers[column_index - 1]: worksheet.cell(row_index, column_index).value
+                for column_index in range(1, worksheet.max_column + 1)
+                if normalized_headers[column_index - 1]
+            }
+            row_values = apply_surface_specific_field_aliases(row_values, surface)
+            row_kind = str(row_values.get("kind", "")).strip()
+            row_size = str(row_values.get("size", "")).strip()
+
+            if row_kind.lower() == normalized_target_kind and row_size.lower() == normalized_target_size:
+                return ProductInputRow(
+                    kind=row_kind,
+                    size=row_size,
+                    values={key: "" if value is None else str(value).strip() for key, value in row_values.items()},
+                )
+
+        raise ValueError(
+            f"No Excel row found for kind='{target_kind}' and size='{target_size}' in {workbook_path}"
+        )
+    finally:
+        workbook.close()
 
 def load_field_definitions(json_path: Path) -> list[FieldDefinition]:
     if not json_path.exists():
@@ -5349,10 +5556,13 @@ def main() -> None:
     try:
         startup_selection = prompt_for_startup_selection()
         run_job(startup_selection)
+    except KeyboardInterrupt:
+        raise SystemExit("Interrupted by user.") from None
     except (ValueError, RuntimeError) as exc:
         raise SystemExit(str(exc)) from exc
 
-
 if __name__ == "__main__":
     main()
+
+
 

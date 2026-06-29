@@ -1,77 +1,17 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
+import json
 import re
-from datetime import datetime
 from collections import OrderedDict
+from datetime import datetime
 from pathlib import Path
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+CONFIG_PATH = PROJECT_ROOT / "config.json"
 OUTPUT_PATH = PROJECT_ROOT / "image_folder_insight.xlsx"
-# LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-LAPTOP_NAME = "ASUS"
-# LAPTOP_NAME = "VAIO"
-
-BRAND_CODE_MAP = OrderedDict(
-    [
-        ("STAR", "STARVIELLE"),
-        ("GENZ", "GENZ VANE"),
-        ("IND", "INDIVANE"),
-        ("FADE", "FADEVIELLE"),
-        ("FLEE", "FLEECRANE"),
-    ]
-)
-PROFILE_BRAND_CODES = OrderedDict(
-    [
-        ("prabhu", ("STAR", "GENZ")),
-        ("seema", ("FADE", "FLEE", "IND")),
-    ]
-)
-SURFACE_FOLDER_SUFFIX = OrderedDict(
-    [
-        ("flipkart", "'f"),
-        ("shopsy", "'s"),
-    ]
-)
-FOLDER_SUFFIX_SURFACE = {
-    suffix.upper(): surface for surface, suffix in SURFACE_FOLDER_SUFFIX.items()
-}
-KIND_DIRECTORIES_ASUS = OrderedDict(
-    [
-        ("Beige", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\BEIGE")),
-        ("Ice", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\ICE")),
-        ("Black-baggy", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Black-baggy")),
-        ("Black-Plain", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Black-Plain")),
-        ("White-Plain", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\White")),
-        ("Trouser", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Trouser")),
-        ("Shorts", Path(r"C:\work-mom\LISTING IMAGES AUTOMATED\Shorts")),
-    ]
-)
-KIND_DIRECTORIES_VAIO = OrderedDict(
-    [
-        ("Beige", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\BEIGE")),
-        ("Ice", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\ICE")),
-        ("Black-baggy", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Black-baggy")),
-        ("Black-Plain", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Black-Plain")),
-        ("White-Plain", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\White")),
-        ("Trouser", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED\Trouser")),
-        ("Shorts", Path(r"G:\Other computers\My Laptop\work-mom\LISTING IMAGES AUTOMATED")),
-    ]
-)
-LAPTOP_CONFIGS = {
-    "ASUS": {
-        "kind_directories": KIND_DIRECTORIES_ASUS,
-    },
-    "VAIO": {
-        "kind_directories": KIND_DIRECTORIES_VAIO,
-    },
-}
-if LAPTOP_NAME not in LAPTOP_CONFIGS:
-    raise ValueError(f"Unknown LAPTOP_NAME '{LAPTOP_NAME}'. Choose ASUS or VAIO.")
-ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME]
-KIND_DIRECTORIES = ACTIVE_LAPTOP_CONFIG["kind_directories"]
 TOKEN_PATTERN = re.compile(r"([A-Z]+)('?[SF])?$")
 
 THIN_BORDER = Border(
@@ -93,6 +33,35 @@ NONZERO_FONT = Font(bold=True, color="215E21")
 CENTER_ALIGNMENT = Alignment(horizontal="center", vertical="center")
 LEFT_ALIGNMENT = Alignment(horizontal="left", vertical="center")
 
+
+def load_app_config() -> dict[str, object]:
+    if not CONFIG_PATH.exists():
+        raise FileNotFoundError(f"Config file was not found: {CONFIG_PATH}")
+    with CONFIG_PATH.open("r", encoding="utf-8") as config_file:
+        return json.load(config_file)
+
+
+def resolve_config_path(path_value: str | None) -> Path | None:
+    if path_value in (None, ""):
+        return None
+    resolved_path = Path(path_value).expanduser()
+    if resolved_path.is_absolute():
+        return resolved_path
+    return (PROJECT_ROOT / resolved_path).resolve()
+
+
+APP_CONFIG = load_app_config()
+DEFAULT_LAPTOP_NAME = str(APP_CONFIG["default_laptop_name"]).upper()
+SHARED_CONFIG: dict[str, object] = APP_CONFIG["shared"]
+BRAND_CODE_MAP = OrderedDict(SHARED_CONFIG["brands"]["brand_code_map"])
+PROFILE_BRAND_CODES = OrderedDict(
+    (account_name, tuple(brand_codes))
+    for account_name, brand_codes in SHARED_CONFIG["brands"]["profile_brand_codes"].items()
+)
+SURFACE_FOLDER_SUFFIX = OrderedDict(SHARED_CONFIG["surfaces"]["folder_suffix_by_surface"])
+FOLDER_SUFFIX_SURFACE = {
+    suffix.upper(): surface for surface, suffix in SURFACE_FOLDER_SUFFIX.items()
+}
 ACCOUNT_BRAND_COLUMNS: list[tuple[str, str, str]] = []
 for account_name, brand_codes in PROFILE_BRAND_CODES.items():
     for brand_code in brand_codes:
@@ -105,6 +74,27 @@ BRAND_TO_ACCOUNT = {
     for account_name, brand_codes in PROFILE_BRAND_CODES.items()
     for brand_code in brand_codes
 }
+
+
+def get_kind_directories(laptop_name: str) -> OrderedDict[str, Path]:
+    normalized_laptop_name = laptop_name.strip().upper()
+    laptop_payload = APP_CONFIG["laptops"].get(normalized_laptop_name)
+    if laptop_payload is None:
+        raise ValueError(f"Unknown LAPTOP_NAME '{laptop_name}'. Choose ASUS or VAIO.")
+
+    kind_directories: OrderedDict[str, Path] = OrderedDict()
+    jeans_kinds = laptop_payload.get("jeans_kinds", {})
+    for option_key in sorted(jeans_kinds, key=int):
+        option_payload = jeans_kinds[option_key]
+        kind_directories[str(option_payload["kind"])] = resolve_config_path(option_payload["image_directory"])
+
+    trouser_directory = resolve_config_path(laptop_payload["paths"].get("trouser_image_directory"))
+    default_image_directory = resolve_config_path(laptop_payload["paths"].get("default_image_directory"))
+    if trouser_directory is not None:
+        kind_directories["Trouser"] = trouser_directory
+    if default_image_directory is not None:
+        kind_directories["Shorts"] = default_image_directory
+    return kind_directories
 
 
 def parse_folder_number(folder_name: str) -> int:
@@ -229,10 +219,12 @@ def style_count_cell(cell, value: int) -> None:
         cell.font = ZERO_FONT
 
 
-def build_workbook() -> Workbook:
+def build_workbook(laptop_name: str | None = None) -> Workbook:
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = "Image Folder Insight"
+    normalized_laptop_name = (laptop_name or DEFAULT_LAPTOP_NAME).strip().upper()
+    kind_directories = get_kind_directories(normalized_laptop_name)
 
     header_cell = worksheet.cell(row=1, column=1, value="Kind")
     style_header_cell(header_cell)
@@ -252,7 +244,7 @@ def build_workbook() -> Workbook:
         style_header_cell(cell)
 
     warning_messages: list[str] = []
-    for row_index, (kind_name, folder_root) in enumerate(KIND_DIRECTORIES.items(), start=2):
+    for row_index, (kind_name, folder_root) in enumerate(kind_directories.items(), start=2):
         kind_cell = worksheet.cell(row=row_index, column=1, value=kind_name)
         style_kind_cell(kind_cell)
         available_kind_cell = available_sheet.cell(row=row_index, column=1, value=kind_name)
@@ -286,12 +278,12 @@ def build_workbook() -> Workbook:
 
     notes = workbook.create_sheet("Notes")
     notes_rows = [
-        ("Generated From", "Folder names under the configured image roots"),
+        ("Generated From", f"Folder names under the configured image roots for {normalized_laptop_name}"),
         ("Rule", "Each exhausted brand/surface token in a numbered folder counts as one successful listing"),
         ("Suffix 'f", "Flipkart"),
         ("Suffix 's", "Shopsy"),
         ("No suffix", "Counts for both Flipkart and Shopsy"),
-        ("Accounts", "Brand ownership is inferred from PROFILE_BRAND_CODES in main.py"),
+        ("Accounts", "Brand ownership is inferred from config.json profile_brand_codes"),
         ("Available Options", "Each value is total numbered folders minus exhausted count for that account/brand/surface"),
     ]
     for row_index, (label, value) in enumerate(notes_rows, start=1):
@@ -321,20 +313,27 @@ def build_workbook() -> Workbook:
     return workbook
 
 
-def main() -> None:
-    workbook = build_workbook()
+def generate_workbook(laptop_name: str | None = None) -> Path:
+    workbook = build_workbook(laptop_name=laptop_name)
     try:
-        workbook.save(OUTPUT_PATH)
-        print(f"Saved insight workbook: {OUTPUT_PATH}")
-    except PermissionError:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        fallback_path = PROJECT_ROOT / f"image_folder_insight_{timestamp}.xlsx"
-        workbook.save(fallback_path)
-        print(
-            "Primary workbook is locked. "
-            f"Saved insight workbook to fallback path: {fallback_path}"
-        )
+        try:
+            workbook.save(OUTPUT_PATH)
+            return OUTPUT_PATH
+        except PermissionError:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            fallback_path = PROJECT_ROOT / f"image_folder_insight_{timestamp}.xlsx"
+            workbook.save(fallback_path)
+            return fallback_path
+    finally:
+        workbook.close()
 
+def main(laptop_name: str | None = None) -> Path:
+    try:
+        output_path = generate_workbook(laptop_name=laptop_name)
+        print(f"Saved insight workbook: {output_path}")
+        return output_path
+    except KeyboardInterrupt:
+        raise SystemExit("Interrupted by user.") from None
 
 if __name__ == "__main__":
     main()
