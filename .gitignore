@@ -2,3 +2,11 @@ IMAGES-FINAL/
 FULL GENERATED IMAGES/
 run-helpers/
 node_modules/
+
+# License signing secrets
+license_private_key.pem
+*_private_key.pem
+Full-LC-AUTO/license_private_key.pem
+Full-LC-AUTO/private_key.pem
+Full-LC-AUTO-License-Keys/
+

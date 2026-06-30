@@ -35,6 +35,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from license_verifier import LicenseValidationError, validate_license
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 CONFIG_PATH = PROJECT_ROOT / "config.json"
@@ -125,6 +127,10 @@ if LAPTOP_NAME not in LAPTOP_CONFIGS:
     available_laptops = ", ".join(sorted(LAPTOP_CONFIGS))
     raise ValueError(f"Unknown FK_LAPTOP_NAME '{LAPTOP_NAME}'. Choose one of: {available_laptops}.")
 ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME]
+
+
+def enforce_runtime_license() -> None:
+    validate_license(PROJECT_ROOT, APP_CONFIG)
 
 
 def set_active_laptop(laptop_name: str) -> None:
@@ -5631,11 +5637,12 @@ def run_job(startup_selection: StartupSelection) -> JobRunResult:
 
 def main() -> None:
     try:
+        enforce_runtime_license()
         startup_selection = prompt_for_startup_selection()
         run_job(startup_selection)
     except KeyboardInterrupt:
         raise SystemExit("Interrupted by user.") from None
-    except (ValueError, RuntimeError) as exc:
+    except (LicenseValidationError, ValueError, RuntimeError) as exc:
         raise SystemExit(str(exc)) from exc
 
 if __name__ == "__main__":
