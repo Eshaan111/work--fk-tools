@@ -470,6 +470,7 @@ class ImageFolder:
     folder_path: Path
     folder_number: int
     exhausted_brand_surfaces: dict[str, set[str]]
+    unknown_folder_tokens: list[str]
     image_paths: list[Path]
 
 
@@ -677,15 +678,15 @@ def parse_folder_number(folder_name: str) -> int:
     return int(first_token)
 
 
-def parse_brand_folder_token(token: str, folder_name: str) -> tuple[str, set[str]]:
+def parse_brand_folder_token(token: str, folder_name: str) -> tuple[str, set[str]] | None:
     normalized_token = token.strip().upper()
     token_match = re.fullmatch(r"([A-Z]+)('?[SF])?", normalized_token)
     if token_match is None:
-        raise ValueError(f"Unknown brand code '{token}' in folder '{folder_name}'")
+        return None
 
     brand_code, suffix = token_match.groups()
     if brand_code not in BRAND_CODE_MAP:
-        raise ValueError(f"Unknown brand code '{token}' in folder '{folder_name}'")
+        return None
 
     if not suffix:
         # Backward compatibility: old folder names without a suffix mean the brand
@@ -695,19 +696,30 @@ def parse_brand_folder_token(token: str, folder_name: str) -> tuple[str, set[str
     normalized_suffix = suffix if suffix.startswith("'") else f"'{suffix}"
     surface_name = FOLDER_SUFFIX_SURFACE.get(normalized_suffix.upper())
     if surface_name is None:
-        raise ValueError(f"Unknown brand surface suffix '{token}' in folder '{folder_name}'")
+        return None
 
     return BRAND_CODE_MAP[brand_code], {surface_name}
 
 
-def parse_exhausted_brands(folder_name: str) -> dict[str, set[str]]:
-    tokens = [part.strip().upper() for part in folder_name.split("-")[1:] if part.strip()]
+def parse_image_folder_tokens(folder_name: str) -> tuple[dict[str, set[str]], list[str]]:
+    tokens = [part.strip() for part in folder_name.split("-")[1:] if part.strip()]
     exhausted_brands: dict[str, set[str]] = {}
+    unknown_tokens: list[str] = []
 
     for token in tokens:
-        brand_name, surfaces = parse_brand_folder_token(token, folder_name)
+        parsed_token = parse_brand_folder_token(token, folder_name)
+        if parsed_token is None:
+            unknown_tokens.append(token)
+            continue
+
+        brand_name, surfaces = parsed_token
         exhausted_brands.setdefault(brand_name, set()).update(surfaces)
 
+    return exhausted_brands, unknown_tokens
+
+
+def parse_exhausted_brands(folder_name: str) -> dict[str, set[str]]:
+    exhausted_brands, _ = parse_image_folder_tokens(folder_name)
     return exhausted_brands
 
 
@@ -734,11 +746,13 @@ def load_image_folders(image_root: Path) -> list[ImageFolder]:
         if not folder_path.is_dir():
             continue
 
+        exhausted_brand_surfaces, unknown_folder_tokens = parse_image_folder_tokens(folder_path.name)
         image_folders.append(
             ImageFolder(
                 folder_path=folder_path,
                 folder_number=parse_folder_number(folder_path.name),
-                exhausted_brand_surfaces=parse_exhausted_brands(folder_path.name),
+                exhausted_brand_surfaces=exhausted_brand_surfaces,
+                unknown_folder_tokens=unknown_folder_tokens,
                 image_paths=collect_ordered_images(folder_path),
             )
         )
@@ -785,7 +799,7 @@ def build_exhausted_folder_name(
         for exhausted_surface in sorted(exhausted_brand_surfaces[exhausted_brand]):
             folder_tokens.append(f"{brand_code}{SURFACE_FOLDER_SUFFIX[exhausted_surface]}")
 
-    return "-".join([str(image_folder.folder_number), *folder_tokens])
+    return "-".join([str(image_folder.folder_number), *folder_tokens, *image_folder.unknown_folder_tokens])
 
 
 def mark_image_folder_exhausted(

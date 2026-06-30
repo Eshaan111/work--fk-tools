@@ -1,4 +1,7 @@
 IMAGES-FINAL/
 FULL GENERATED IMAGES/
 run-helpers/
+run_helpers/
+snapshots/
+successful-run-record.xlsx
 node_modules/

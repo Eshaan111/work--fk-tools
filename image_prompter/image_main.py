@@ -40,7 +40,7 @@ IMAGES_FINAL_DIR = image_prompter_path("IMAGES-FINAL")
 NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
 PIXELS_FILE_ASUS = image_prompter_path("pixels-ASUS.json")
 PIXELS_FILE_VAIO = image_prompter_path("pixels-VAIO.json")
-NO_BG_IMAGES_ROOT_VAIO = Path(r"C:\NO-BG-IMAGES")
+NO_BG_IMAGES_ROOT_VAIO = Path(r"G:\Other computers\My Laptop\work-mom\NO-BG-IMAGES")
 LAPTOP_CONFIGS = {
     "ASUS": {
         "firefox_profile": PRABHU_FIREFOX_PROFILE_ASUS,
@@ -74,6 +74,7 @@ NEW_IDEAS_PATH = RUN_HELPERS_DIR / "new_ideas_not_in_excel.txt"
 CURRENT_RUN_IDEA_PATH = RUN_HELPERS_DIR / "current_run_idea.json"
 CURRENT_GENERATION_PROMPT_PATH = RUN_HELPERS_DIR / "current_generation_prompt.txt"
 IMAGE_GENERATION_FINAL_CHAT_PATH = RUN_HELPERS_DIR / "image_generation_final_chat.txt"
+IDEA_RESPONSE_TIMEOUT_CHAT_PATH = RUN_HELPERS_DIR / "idea_response_timeout_chat.txt"
 RUN_HELPER_PATHS = (
     PROMPT_PREVIEW_PATH,
     LAST_FULL_CHAT_PATH,
@@ -84,6 +85,7 @@ RUN_HELPER_PATHS = (
     CURRENT_RUN_IDEA_PATH,
     CURRENT_GENERATION_PROMPT_PATH,
     IMAGE_GENERATION_FINAL_CHAT_PATH,
+    IDEA_RESPONSE_TIMEOUT_CHAT_PATH,
 )
 LEGACY_RUN_HELPER_PATHS = (
     image_prompter_path("generated_prompt_preview.txt"),
@@ -125,6 +127,19 @@ CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection = {
     "position": _PIXELS["prompt_box_post_injection"],
     "rgb": (230, 255, 255),
 }
+
+
+def read_int_env(name: str, default_value: int) -> int:
+    raw_value = os.environ.get(name)
+    if raw_value is None:
+        return default_value
+    try:
+        return int(raw_value)
+    except ValueError:
+        print(f"Ignoring invalid {name}={raw_value!r}; using {default_value}.")
+        return default_value
+
+
 CHATGPT_BOOT_FOCUS_CLICK_DURATION_SECONDS = 10
 IDEA_RESPONSE_ABORT_TIMEOUT_SECONDS = 80
 IDEA_RESPONSE_STUCK_PROMPT_RETRY_THRESHOLD = 8
@@ -136,6 +151,8 @@ IMAGE_GENERATION_MIN_WAIT_SECONDS = 12
 IMAGE_GENERATION_STUCK_PROMPT_RETRY_THRESHOLD = 8
 IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS = 10
 IMAGE_GENERATION_VERIFICATION_LIMIT = -1
+IDEA_RESPONSE_TIMEOUT_SECONDS = read_int_env("IDEA_RESPONSE_TIMEOUT_SECONDS", 60)
+POST_SAVE_EXTRACTION_WAIT_SECONDS = 2.0
 POST_SAVE_EXTRACTION_WAIT_SECONDS = 5.0 
 IMAGE_GENERATION_IN_PROGRESS_PHRASES = (
     "creating image",
@@ -286,7 +303,7 @@ def ensure_images_final_kind_folders(product_kinds: list[str]) -> None:
 
 def prompt_for_loop_count() -> int:
     while True:
-        choice = input("How many full cycles do you want to run? ").strip()
+        choice = input("How many successful full cycles do you want to run? ").strip()
         if not choice.isdigit():
             print("Please enter a valid whole number.")
             continue
@@ -532,12 +549,15 @@ def wait_for_stable_full_chat_text(
         "Starting full-chat copy cycle every 0.5 seconds until two consecutive copies match and idea output is present..."
     )
     previous_copy: str | None = None
+    last_non_empty_copy: str | None = None
     attempt = 0
     stuck_counter = 0
 
     while True:
         attempt += 1
         current_copy = copy_full_chat_text_once()
+        if current_copy:
+            last_non_empty_copy = current_copy
         print(f"Captured full chat copy attempt {attempt}.")
         is_stable_copy = bool(current_copy and previous_copy == current_copy)
         has_ideas = bool(parse_ideas(current_copy))
@@ -581,6 +601,23 @@ def wait_for_stable_full_chat_text(
             timeout_started_at is not None
             and time.time() - timeout_started_at >= IDEA_RESPONSE_ABORT_TIMEOUT_SECONDS
         ):
+            if current_copy and has_ideas and not still_in_progress:
+                print(
+                    "Timed out while waiting for two matching copies, but the latest copy has parseable idea output. Using it."
+                )
+                return current_copy
+
+            print(
+                f"Timed out after {IDEA_RESPONSE_TIMEOUT_SECONDS} seconds without detecting parseable idea JSON. Skipping this cycle."
+            )
+            if last_non_empty_copy:
+                IDEA_RESPONSE_TIMEOUT_CHAT_PATH.write_text(
+                    last_non_empty_copy + "\n",
+                    encoding="utf-8",
+                )
+                print(
+                    f"Saved timeout chat snapshot to: {IDEA_RESPONSE_TIMEOUT_CHAT_PATH}"
+                )
             print(
                 "Timed out after "
                 f"{IDEA_RESPONSE_ABORT_TIMEOUT_SECONDS} seconds without detecting "
@@ -1220,7 +1257,7 @@ def run_generation_prompt_for_remaining_images(
     extract_generated_images_from_latest_saved_html(product_kind)
 
 
-def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
+def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> bool:
     print()
     print("Firefox will open as a normal browser window.")
     print("Then manually go to ChatGPT, open the page you want, and keep it visible.")
@@ -1284,10 +1321,13 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
                 generation_prompt_text,
                 context.product_kind,
             )
+            return True
         else:
             print("No parsed ideas were found in the latest output.")
     else:
         print("No new latest output text could be isolated from the copied conversation.")
+
+    return False
 
 
 def wait_for_start_hotkey() -> None:
@@ -1315,14 +1355,21 @@ def wait_for_start_hotkey() -> None:
 
 
 def main() -> None:
-    loop_count = prompt_for_loop_count()
+    target_success_count = prompt_for_loop_count()
     kind_to_phrases = load_kind_to_used_phrases()
     ensure_images_final_kind_folders(sorted(kind_to_phrases.keys()))
     selected_kind = prompt_for_kind(kind_to_phrases)
 
-    for cycle_index in range(1, loop_count + 1):
+    attempted_cycles = 0
+    successful_cycles = 0
+    while successful_cycles < target_success_count:
+        attempted_cycles += 1
         print()
-        print(f"========== Starting cycle {cycle_index} of {loop_count} ==========")
+        print(
+            "========== Starting cycle "
+            f"{attempted_cycles} "
+            f"(successful {successful_cycles}/{target_success_count}) =========="
+        )
 
         context = prepare_product_prompt_context(selected_kind)
 
@@ -1331,13 +1378,38 @@ def main() -> None:
         print(f"Total images queued for generation: {len(context.image_paths)}")
         print(f"Prompt preview saved to: {PROMPT_PREVIEW_PATH}")
 
-        run_chatgpt_manual_browser_flow(context)
+        try:
+            cycle_succeeded = run_chatgpt_manual_browser_flow(context)
+        except Exception as exc:
+            cycle_succeeded = False
+            print(f"Cycle {attempted_cycles} failed with error: {exc}")
 
-        print(f"========== Finished cycle {cycle_index} of {loop_count} ==========")
+        if cycle_succeeded:
+            successful_cycles += 1
+            print(
+                "========== Finished successful cycle "
+                f"{successful_cycles} of {target_success_count} "
+                f"(attempt {attempted_cycles}) =========="
+            )
+        else:
+            print(
+                "========== Cycle "
+                f"{attempted_cycles} did not complete successfully; "
+                f"successful cycles remain {successful_cycles}/{target_success_count} =========="
+            )
+
+    print(
+        "All requested successful cycles completed: "
+        f"{successful_cycles}/{target_success_count} in {attempted_cycles} attempt(s)."
+    )
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print()
+        print("Stopped by keyboard interrupt. No traceback; run can be started again when ready.")
 
 
 

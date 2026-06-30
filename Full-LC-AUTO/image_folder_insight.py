@@ -1,18 +1,16 @@
 ﻿from __future__ import annotations
-
 import re
 from datetime import datetime
 from collections import OrderedDict
 from pathlib import Path
-
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 OUTPUT_PATH = PROJECT_ROOT / "image_folder_insight.xlsx"
 # LAPTOP_NAME = os.getenv("ASUS", "VAIO").upper()
-LAPTOP_NAME = "ASUS"
-# LAPTOP_NAME = "VAIO"
+# LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "VAIO"
 
 BRAND_CODE_MAP = OrderedDict(
     [
