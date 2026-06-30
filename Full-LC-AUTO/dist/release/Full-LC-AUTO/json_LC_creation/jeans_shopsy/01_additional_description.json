@@ -1,0 +1,392 @@
+{
+  "order": 2,
+  "step_name": "additional_description",
+  "handler": "field_fill_page",
+  "field_fill_mode": "additional_description",
+  "page_name": "Additional Description",
+  "tab": {
+    "label": "Additional Description",
+    "locator_candidates": [
+      {
+        "type": "xpath",
+        "value": "//button[@role='tab' and .//span[contains(normalize-space(), 'Additional Description')]]"
+      }
+    ]
+  },
+  "checkpoint_label": "Additional Description tab opened",
+  "data_source": {
+    "type": "excel_row",
+    "workbook_attr": "additional_description_excel",
+    "worksheet": "Jeans Addl Desc Inputs",
+    "match_by": {
+      "kind": "$listing.kind",
+      "size": "$listing.size"
+    }
+  },
+  "field_json_config_attr": "additional_description_json",
+  "excel_config_attr": "additional_description_excel",
+  "source_snapshot": "Full-LC-AUTO/assets/ADDITIONAL-SHOPSY-JEANS.htm",
+  "locator_strategy": "Prefer locating the field label text first, then target the nearest input, single-select combobox, multi-select combobox, textarea, or tag-style field inside the same attribute wrapper. Repeated ids like trigger-single-select and trigger-multi-select must always be scoped to the field label wrapper.",
+  "log_stage": "ADDL",
+  "log_message": "Starting Additional Description field fill from Excel + JSON mapping...",
+  "filled_checkpoint_label": "Additional Description fields filled",
+  "verification": {
+    "enabled": true,
+    "mode": "tab_cycle",
+    "cycle_label": "Additional Description page",
+    "tab_sequence": [
+      "Additional Description",
+      "Product Description"
+    ],
+    "success_conditions": [
+      {
+        "type": "toast",
+        "value": "Changes saved!"
+      },
+      {
+        "type": "tab_progress_nonzero"
+      }
+    ],
+    "checkpoint_label": "Changes saved detected after Additional Description click cycle"
+  },
+  "fields": [
+    {
+      "order": 1,
+      "label": "Sales Package",
+      "source_key": "Sales Package",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Sales Package' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Sales Package\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "label": "Wash",
+      "source_key": "Wash",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Wash' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Wash\"]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "label": "Fly",
+      "source_key": "Fly",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Fly' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Fly\"]]//input[@type='text']"
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "label": "Closure",
+      "source_key": "Closure",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Closure' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Closure\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    },
+    {
+      "order": 5,
+      "label": "Fabric Care",
+      "source_key": "Fabric Care",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Fabric Care' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Fabric Care\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "label": "Ornamentation Type",
+      "source_key": "Ornamentation Type",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Ornamentation Type' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Ornamentation Type\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 7,
+      "label": "Surface Styling",
+      "source_key": "Surface Styling",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Surface Styling' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Surface Styling\"]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 8,
+      "label": "Jeans Length",
+      "source_key": "Jeans Length",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Jeans Length' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Jeans Length\"]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 9,
+      "label": "Faded",
+      "source_key": "Faded",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Faded' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Faded\"]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 10,
+      "label": "Fit",
+      "source_key": "Fit",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Fit' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Fit\"]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 11,
+      "label": "Reversible",
+      "source_key": "Reversible",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Reversible' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Reversible\"]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ]
+    },
+    {
+      "order": 12,
+      "label": "Jeans Treatment",
+      "source_key": "Jeans Treatment",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Jeans Treatment' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Jeans Treatment\"]]//input[@type='text']"
+        }
+      ]
+    },
+    {
+      "order": 13,
+      "label": "Secondary Color",
+      "source_key": "Secondary Color",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Secondary Color' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Secondary Color\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 14,
+      "label": "Print Type",
+      "source_key": "Print Type",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Print Type' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Print Type\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 15,
+      "label": "Pattern",
+      "source_key": "Pattern",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Pattern' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Pattern\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 16,
+      "label": "Pocket Type",
+      "source_key": "Pocket Type",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Pocket Type' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Pocket Type\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 17,
+      "label": "Trend",
+      "source_key": "Trend",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Trend' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Trend\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ]
+    },
+    {
+      "order": 18,
+      "label": "Description",
+      "source_key": "Description",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Description' -> nearest textarea",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Description\"]]//textarea"
+        }
+      ]
+    },
+    {
+      "order": 19,
+      "label": "Key Features",
+      "source_key": "Key Features",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Key Features' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Key Features\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    },
+    {
+      "order": 20,
+      "label": "EAN/UPC",
+      "source_key": "EAN/UPC",
+      "required": false,
+      "input_type": "skip",
+      "locator_hint": "skip for now; field combines a tag-style value input and a qualifier dropdown such as EAN or UPC"
+    },
+    {
+      "order": 21,
+      "label": "Search Keywords",
+      "source_key": "Search Keywords",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Search Keywords' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Search Keywords\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    },
+    {
+      "order": 22,
+      "label": "Video URL",
+      "source_key": "Video URL",
+      "required": false,
+      "input_type": "skip",
+      "locator_hint": "skip for now; Seller Hub shows this field as disabled for manual entry"
+    },
+    {
+      "order": 23,
+      "label": "Other Details",
+      "source_key": "Other Details",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Other Details' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Other Details\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    },
+    {
+      "order": 24,
+      "label": "Other Dimensions",
+      "source_key": "Other Dimensions",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Other Dimensions' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Other Dimensions\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    },
+    {
+      "order": 25,
+      "label": "Size For Inwarding",
+      "source_key": "Size For Inwarding",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Size For Inwarding' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Size For Inwarding\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ]
+    }
+  ]
+}

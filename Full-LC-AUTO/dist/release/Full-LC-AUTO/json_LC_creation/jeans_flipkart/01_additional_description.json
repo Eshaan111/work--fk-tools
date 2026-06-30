@@ -1,0 +1,201 @@
+{
+  "order": 2,
+  "step_name": "additional_description",
+  "handler": "field_fill_page",
+  "field_fill_mode": "additional_description",
+  "page_name": "Additional Description",
+  "tab": {
+    "label": "Additional Description",
+    "locator_candidates": [
+      {
+        "type": "xpath",
+        "value": "//button[@role='tab' and .//span[contains(normalize-space(), 'Additional Description')]]"
+      }
+    ]
+  },
+  "checkpoint_label": "Additional Description tab opened",
+  "data_source": {
+    "type": "excel_row",
+    "workbook_attr": "additional_description_excel",
+    "worksheet": "Jeans Addl Desc Inputs",
+    "match_by": {
+      "kind": "$listing.kind",
+      "size": "$listing.size"
+    }
+  },
+  "field_json_config_attr": "additional_description_json",
+  "excel_config_attr": "additional_description_excel",
+  "source_snapshot": "Full-LC-AUTO/assets/Additional Description.htm",
+  "locator_strategy": "Prefer locating the field label text first, then target the nearest input, single-select combobox, multi-select combobox, textarea, or tag-style field inside the same attribute wrapper.",
+  "log_stage": "ADDL",
+  "log_message": "Starting Additional Description field fill from Excel + JSON mapping...",
+  "filled_checkpoint_label": "Additional Description fields filled",
+  "verification": {
+    "enabled": true,
+    "mode": "tab_cycle",
+    "cycle_label": "Additional Description page",
+    "tab_sequence": [
+      "Additional Description",
+      "Product Description"
+    ],
+    "success_conditions": [
+      {
+        "type": "toast",
+        "value": "Changes saved!"
+      },
+      {
+        "type": "tab_progress_nonzero"
+      }
+    ],
+    "checkpoint_label": "Changes saved detected after Additional Description click cycle"
+  },
+  "fields": [
+    {
+      "order": 1,
+      "label": "Jeans Length",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Jeans Length' -> nearest single-select combobox"
+    },
+    {
+      "order": 2,
+      "label": "Secondary Color",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Secondary Color' -> nearest multi-select combobox / checkbox-tree selector"
+    },
+    {
+      "order": 3,
+      "label": "EAN/UPC",
+      "required": false,
+      "input_type": "skip",
+      "locator_hint": "skip for now; field has two controls: a tag-style value input plus a qualifier dropdown with choices like 'EAN' and 'UPC'"
+    },
+    {
+      "order": 4,
+      "label": "Pattern",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Pattern' -> nearest multi-select combobox / checkbox-tree selector"
+    },
+    {
+      "order": 5,
+      "label": "Pocket Type",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Pocket Type' -> nearest multi-select combobox / checkbox-tree selector"
+    },
+    {
+      "order": 6,
+      "label": "Description",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Description' -> nearest textarea"
+    },
+    {
+      "order": 7,
+      "label": "Search Keywords",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Search Keywords' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field"
+    },
+    {
+      "order": 8,
+      "label": "Key Features",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Key Features' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field"
+    },
+    {
+      "order": 9,
+      "label": "Video URL",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Video URL' -> nearest input[type='text']"
+    },
+    {
+      "order": 10,
+      "label": "Product Title",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Product Title' -> nearest input[type='text']"
+    },
+    {
+      "order": 11,
+      "label": "External Identifier",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'External Identifier' -> nearest input[type='text']"
+    },
+    {
+      "order": 12,
+      "label": "Print Type",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Print Type' -> nearest multi-select combobox / checkbox-tree selector"
+    },
+    {
+      "order": 13,
+      "label": "Stretchable",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Stretchable' -> nearest single-select combobox"
+    },
+    {
+      "order": 14,
+      "label": "Fly",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Fly' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field"
+    },
+    {
+      "order": 15,
+      "label": "Closure",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Closure' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field"
+    },
+    {
+      "order": 16,
+      "label": "Fabric Care",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Fabric Care' -> nearest tag-style text input"
+    },
+    {
+      "order": 17,
+      "label": "Ornamentation Type",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Ornamentation Type' -> nearest multi-select combobox / checkbox-tree selector"
+    },
+    {
+      "order": 18,
+      "label": "Surface Styling",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Surface Styling' -> nearest single-select combobox"
+    },
+    {
+      "order": 19,
+      "label": "Other Details",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Other Details' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field"
+    },
+    {
+      "order": 20,
+      "label": "Items Included",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Items Included' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field"
+    },
+    {
+      "order": 21,
+      "label": "Size For Inwarding",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Size For Inwarding' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field"
+    }
+  ]
+}

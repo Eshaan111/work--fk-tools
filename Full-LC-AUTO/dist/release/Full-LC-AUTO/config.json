@@ -1,0 +1,294 @@
+{
+  "default_laptop_name": "VAIO",
+  "shared": {
+    "project_paths": {
+      "run_helpers_directory": "run_helpers",
+      "error_latest_path": "run_helpers/error_latest.txt",
+      "success_run_record_path": "successful-run-record.xlsx",
+      "snapshot_directory": "snapshots",
+      "flow_config_root": "json_LC_creation",
+      "data_inputs_root": "data inputs",
+      "assets_root": "assets"
+    },
+    "defaults": {
+      "listing_url": "https://seller.flipkart.com/index.html#dashboard/addListings/single?vertical=jean&vid=667",
+      "brand_name": "STARVIELLE",
+      "flow_surface": "flipkart",
+      "jeans_kind": "Beige",
+      "listing_size": "28",
+      "startup_run_count": 5,
+      "profile_name": "prabhu",
+      "product_type": "jeans",
+      "startup_window": {
+        "title": "Full LC Auto",
+        "geometry": "1080x760",
+        "min_width": 860,
+        "min_height": 560
+      }
+    },
+    "runtime": {
+      "use_changes_saved_toast_for_verification": true,
+      "phase_one_snapshot_name": "PHASE 1.html",
+      "enable_enter_commit_for_tag_input_fields": false,
+      "image_slot_ids": [
+        "thumbnail_0",
+        "thumbnail_1",
+        "thumbnail_2",
+        "thumbnail_3",
+        "thumbnail_4"
+      ],
+      "image_upload_verify_timeout_seconds": 60,
+      "image_upload_retry_passes": 2,
+      "success_close_delay_seconds": 5
+    },
+    "success_run_record": {
+      "accounts": [
+        "prabhu",
+        "seema"
+      ],
+      "data_start_row": 3
+    },
+    "brands": {
+      "brand_code_map": {
+        "STAR": "STARVIELLE",
+        "GENZ": "GENZ VANE",
+        "IND": "INDIVANE",
+        "FADE": "FADEVIELLE",
+        "FLEE": "FLEECRANE"
+      },
+      "profile_brand_codes": {
+        "prabhu": [
+          "STAR",
+          "GENZ"
+        ],
+        "seema": [
+          "FADE",
+          "FLEE",
+          "IND"
+        ]
+      }
+    },
+    "profiles": {
+      "aliases": {
+        "s": "seema",
+        "seema": "seema",
+        "p": "prabhu",
+        "prabhu": "prabhu"
+      }
+    },
+    "surfaces": {
+      "folder_suffix_by_surface": {
+        "shopsy": "'s",
+        "flipkart": "'f"
+      }
+    },
+    "common_inputs": {
+      "price_stock_shipping": {},
+      "variants": {
+        "sheet_name_by_product_type": {
+          "jeans": "Jeans Variant Inputs"
+        }
+      }
+    },
+    "products": {
+      "jeans": {
+        "default_size_by_surface": {
+          "flipkart": "28",
+          "shopsy": "28"
+        },
+        "sheet_names": {
+          "product_description_by_surface": {
+            "flipkart": "Jeans Product Inputs",
+            "shopsy": "Jeans Product Inputs"
+          },
+          "additional_description_by_surface": {
+            "flipkart": "Jeans Addl Desc Inputs",
+            "shopsy": "Jeans Addl Desc Inputs"
+          }
+        }
+      },
+      "trouser": {
+        "default_kind_by_surface": {
+          "flipkart": "Trouser",
+          "shopsy": "Trouser"
+        },
+        "default_size_by_surface": {
+          "flipkart": "28",
+          "shopsy": "M"
+        },
+        "sheet_names": {
+          "product_description_by_surface": {
+            "flipkart": "Trouser Product Inputs",
+            "shopsy": "Shorts Product Inputs"
+          },
+          "additional_description_by_surface": {
+            "flipkart": "Trouser Addl Desc Inputs",
+            "shopsy": "Shorts Addl Desc Inputs"
+          }
+        }
+      },
+      "shorts": {
+        "default_kind_by_surface": {
+          "default": "Shorts"
+        },
+        "default_size_by_surface": {
+          "default": "28"
+        },
+        "sheet_names": {
+          "product_description_by_surface": {
+            "default": "Shorts Product Inputs"
+          },
+          "additional_description_by_surface": {
+            "default": "Shorts Addl Desc Inputs"
+          }
+        },
+        "legacy_flow_steps": [
+          "additional_description",
+          "product_description",
+          "price_stock_shipping",
+          "images"
+        ]
+      }
+    },
+    "legacy_product_page_flows": {
+      "jeans": [
+        "additional_description",
+        "product_description",
+        "price_stock_shipping",
+        "images",
+        "variants"
+      ],
+      "shorts": [
+        "additional_description",
+        "product_description",
+        "price_stock_shipping",
+        "images"
+      ]
+    },
+    "routing": {
+      "surface_file_suffix_by_surface": {
+        "flipkart": "",
+        "shopsy": "-Shopsy",
+        "default": ""
+      },
+      "flow_directory_pattern": "{product_type}_{surface}",
+      "common_input_files": {
+        "price_stock_shipping_excel": "common/Price-Stock-Shipping-inputs.xlsx",
+        "price_stock_shipping_json": "Price-Stock-Shipping-inputs.json",
+        "variants_excel": "common/Variants-excel.xlsx"
+      },
+      "product_input_patterns": {
+        "product_description_excel": "{product_type}/Product-Description-inputs{surface_suffix}.xlsx",
+        "additional_description_excel": "{product_type}/Additional-Description-inputs{surface_suffix}.xlsx",
+        "product_description_asset_json": "Product-Description-inputs-{product_title}.json",
+        "additional_description_asset_json": "Additional-Description-inputs-{product_title}.json",
+        "product_description_flow_json": "02_product_description.json",
+        "additional_description_flow_json": "01_additional_description.json"
+      }
+    }
+  },
+  "laptops": {
+    "ASUS": {
+      "firefox_profiles": {
+        "seema": "C:/Users/ESHAAN/AppData/Roaming/Mozilla/Firefox/Profiles/shW5ycIM.Profile 2",
+        "prabhu": "C:/Users/ESHAAN/AppData/Roaming/Mozilla/Firefox/Profiles/kw3a25lf.default-release"
+      },
+      "paths": {
+        "snapshot_directory": "snapshots"
+      },
+      "verticals": {
+        "jeans": {
+          "kinds": {
+            "1": {
+              "kind": "Beige",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BEIGE"
+            },
+            "2": {
+              "kind": "Ice",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\ICE"
+            },
+            "3": {
+              "kind": "Black-baggy",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BLACK-BAGGY"
+            },
+            "4": {
+              "kind": "Black-Plain",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\Black-Plain"
+            },
+            "5": {
+              "kind": "White-Plain",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\White"
+            }
+          }
+        },
+        "trouser": {
+          "kinds": {
+            "1": {
+              "kind": "Trouser",
+              "image_directory": "C:/work-mom/LISTING IMAGES AUTOMATED/Trouser"
+            }
+          }
+        },
+        "shorts": {
+          "kinds": {
+            "1": {
+              "kind": "Shorts",
+              "image_directory": "C:/work-mom/LISTING IMAGES AUTOMATED/Shorts"
+            }
+          }
+        }
+      }
+    },
+    "VAIO": {
+      "firefox_profiles": {
+        "seema": "C:/Users/SONY/AppData/Roaming/Mozilla/Firefox/Profiles/S2AIZkXx.Profile 1",
+        "prabhu": "C:/Users/SONY/AppData/Roaming/Mozilla/Firefox/Profiles/gm1pmawk.default-release"
+      },
+      "paths": {
+        "snapshot_directory": "snapshots"
+      },
+      "verticals": {
+        "jeans": {
+          "kinds": {
+            "1": {
+              "kind": "Beige",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/BEIGE"
+            },
+            "2": {
+              "kind": "Ice",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/ICE"
+            },
+            "3": {
+              "kind": "Black-baggy",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-baggy"
+            },
+            "4": {
+              "kind": "Black-Plain",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-Plain"
+            },
+            "5": {
+              "kind": "White-Plain",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White"
+            }
+          }
+        },
+        "trouser": {
+          "kinds": {
+            "1": {
+              "kind": "Trouser",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Trouser"
+            }
+          }
+        },
+        "shorts": {
+          "kinds": {
+            "1": {
+              "kind": "Shorts",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED"
+            }
+          }
+        }
+      }
+    }
+  }
+}

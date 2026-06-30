@@ -35,8 +35,10 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from app_paths import get_app_root
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+
+PROJECT_ROOT = get_app_root()
 CONFIG_PATH = PROJECT_ROOT / "config.json"
 
 
@@ -1513,33 +1515,125 @@ def prompt_for_startup_selection() -> StartupSelection:
             return
         os.startfile(str(insight_workbook_path))
 
-    def submit() -> None:
-        nonlocal selection
-        try:
-            set_active_laptop(laptop_var.get())
-            run_count = int(run_count_var.get().strip())
-            if run_count < 1:
-                raise ValueError("Run count must be at least 1.")
-            selected_flow = flow_labels[flow_var.get()]
-            listing_selection = build_listing_selection(
-                profile_var.get(),
-                selected_flow.product_type,
-                selected_flow.surface,
-                kind_var.get(),
-                size_var.get(),
-                brand_var.get(),
-                image_directory_override=image_directory_var.get(),
-            )
-        except Exception as exc:
-            messagebox.showerror("Invalid startup values", str(exc), parent=root)
-            return
-
-        selection = StartupSelection(
+    def build_current_startup_selection() -> StartupSelection:
+        set_active_laptop(laptop_var.get())
+        run_count = int(run_count_var.get().strip())
+        if run_count < 1:
+            raise ValueError("Run count must be at least 1.")
+        selected_flow = flow_labels[flow_var.get()]
+        listing_selection = build_listing_selection(
+            profile_var.get(),
+            selected_flow.product_type,
+            selected_flow.surface,
+            kind_var.get(),
+            size_var.get(),
+            brand_var.get(),
+            image_directory_override=image_directory_var.get(),
+        )
+        return StartupSelection(
             laptop_name=laptop_var.get(),
             profile_name=resolve_profile_name(profile_var.get()),
             run_count=run_count,
             listing_selection=listing_selection,
         )
+
+    def run_preflight_check() -> None:
+        try:
+            startup_selection = build_current_startup_selection()
+            config, json_flow_definition = build_bot_config(startup_selection)
+        except Exception as exc:
+            messagebox.showerror("Preflight failed", str(exc), parent=root)
+            return
+
+        listing_selection = startup_selection.listing_selection
+        issues: list[str] = []
+        report_lines = [
+            "Preflight Check",
+            f"Laptop: {startup_selection.laptop_name}",
+            f"Profile: {startup_selection.profile_name}",
+            f"Flow: {listing_selection.product_type} / {listing_selection.surface}",
+            f"Kind: {listing_selection.kind} | Brand: {listing_selection.brand_name} | Size: {listing_selection.size}",
+            "",
+        ]
+
+        def mark(ok: bool, label: str, detail: str) -> None:
+            prefix = "OK" if ok else "ISSUE"
+            report_lines.append(f"[{prefix}] {label}: {detail}")
+            if not ok:
+                issues.append(f"{label}: {detail}")
+
+        def check_path(label: str, file_path: Path, *, expect_directory: bool = False) -> None:
+            exists = file_path.exists() and (file_path.is_dir() if expect_directory else file_path.is_file())
+            mark(exists, label, str(file_path))
+
+        check_path("Firefox profile", config.firefox_profile_path, expect_directory=True)
+        check_path("Image directory", config.image_directory, expect_directory=True)
+        check_path("Price/Stock/Shipping Excel", config.price_stock_shipping_excel)
+        check_path("Price/Stock/Shipping JSON", config.price_stock_shipping_json)
+        check_path("Product Description Excel", config.product_description_excel)
+        check_path("Product Description JSON", config.product_description_json)
+        check_path("Additional Description Excel", config.additional_description_excel)
+        check_path("Additional Description JSON", config.additional_description_json)
+        check_path("Variants Excel", config.variants_excel)
+        snapshot_parent = config.snapshot_directory if config.snapshot_directory.exists() else config.snapshot_directory.parent
+        mark(snapshot_parent.exists(), "Snapshot directory", str(config.snapshot_directory))
+
+        image_count = 0
+        if config.image_directory.exists():
+            image_count = sum(1 for image_path in config.image_directory.iterdir() if image_path.is_file() and image_path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"})
+        mark(image_count > 0, "Image files", f"{image_count} supported files found")
+
+        try:
+            pd_workbook = load_workbook(config.product_description_excel, read_only=True, data_only=True)
+            pd_sheet = get_product_description_sheet_name(listing_selection.product_type, listing_selection.surface)
+            mark(pd_sheet in pd_workbook.sheetnames, "Product Description sheet", pd_sheet)
+            pd_workbook.close()
+        except Exception as exc:
+            mark(False, "Product Description workbook", str(exc))
+
+        try:
+            ad_workbook = load_workbook(config.additional_description_excel, read_only=True, data_only=True)
+            ad_sheet = get_additional_description_sheet_name(listing_selection.product_type, listing_selection.surface)
+            mark(ad_sheet in ad_workbook.sheetnames, "Additional Description sheet", ad_sheet)
+            ad_workbook.close()
+        except Exception as exc:
+            mark(False, "Additional Description workbook", str(exc))
+
+        try:
+            variants_workbook = load_workbook(config.variants_excel, read_only=True, data_only=True)
+            variant_sheet = get_variants_sheet_name(listing_selection.product_type)
+            mark(variant_sheet in variants_workbook.sheetnames, "Variants sheet", variant_sheet)
+            variants_workbook.close()
+        except Exception as exc:
+            mark(False, "Variants workbook", str(exc))
+
+        preflight_url = resolve_preflight_listing_url(config, listing_selection, json_flow_definition)
+        mark(bool(preflight_url.strip()), "Listing URL", preflight_url or "missing")
+        if json_flow_definition is not None:
+            mark(True, "Flow definition", f"{json_flow_definition.flow_name} with {len(json_flow_definition.steps)} steps")
+        else:
+            has_legacy_flow = listing_selection.product_type in LEGACY_PRODUCT_PAGE_FLOWS
+            mark(has_legacy_flow, "Flow definition", "Legacy flow fallback" if has_legacy_flow else "No JSON or legacy flow available")
+
+        if insight_workbook_path is not None and insight_workbook_path.exists() and insight_laptop_name == laptop_var.get():
+            mark(True, "Insight workbook", str(insight_workbook_path))
+        else:
+            mark(False, "Insight workbook", "Run Image Folder Insight for this laptop selection")
+
+        report = "\n".join(report_lines)
+        set_insight_text(report)
+        if issues:
+            messagebox.showwarning("Preflight found issues", "\n".join(issues[:10]), parent=root)
+        else:
+            messagebox.showinfo("Preflight passed", "All checks passed for the current selection.", parent=root)
+
+    def submit() -> None:
+        nonlocal selection
+        try:
+            selection = build_current_startup_selection()
+        except Exception as exc:
+            messagebox.showerror("Invalid startup values", str(exc), parent=root)
+            return
         root.destroy()
 
     def cancel() -> None:
@@ -1593,7 +1687,8 @@ def prompt_for_startup_selection() -> StartupSelection:
     action_frame.grid(row=2, column=0, pady=(18, 0), sticky="ew")
     action_frame.columnconfigure(0, weight=1)
     ttk.Button(action_frame, text="Cancel", command=cancel, style="Secondary.TButton").grid(row=0, column=1, padx=(0, 10))
-    ttk.Button(action_frame, text="Start Batch", command=submit, style="App.TButton").grid(row=0, column=2)
+    ttk.Button(action_frame, text="Preflight Check", command=run_preflight_check, style="Secondary.TButton").grid(row=0, column=2, padx=(0, 10))
+    ttk.Button(action_frame, text="Start Batch", command=submit, style="App.TButton").grid(row=0, column=3)
 
     laptop_var.trace_add("write", refresh_profile_options)
     profile_var.trace_add("write", refresh_brand_options)
@@ -5640,6 +5735,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
 
 

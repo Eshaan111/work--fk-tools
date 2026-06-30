@@ -1,0 +1,53 @@
+{
+  "surface": "flipkart",
+  "product_type": "jeans",
+  "flow_name": "listing_creation",
+  "version": 1,
+  "context": {
+    "brand_name": "STARVIELLE"
+  },
+  "steps": [
+    {
+      "order": 1,
+      "step_id": "open_listing",
+      "handler": "navigation_step",
+      "spec_file": "00_open_listing.json"
+    },
+    {
+      "order": 2,
+      "step_id": "additional_description",
+      "handler": "field_fill_page",
+      "spec_file": "01_additional_description.json"
+    },
+    {
+      "order": 3,
+      "step_id": "product_description",
+      "handler": "field_fill_page",
+      "spec_file": "02_product_description.json"
+    },
+    {
+      "order": 4,
+      "step_id": "price_stock_shipping",
+      "handler": "field_fill_page",
+      "spec_file": "03_price_stock_shipping.json"
+    },
+    {
+      "order": 5,
+      "step_id": "images",
+      "handler": "image_upload_page",
+      "spec_file": "04_images.json"
+    },
+    {
+      "order": 6,
+      "step_id": "variants",
+      "handler": "variant_page",
+      "spec_file": "05_variants.json"
+    },
+    {
+      "order": 7,
+      "step_id": "save_and_exit",
+      "handler": "navigation_step",
+      "spec_file": "06_save_and_exit.json"
+    }
+  ]
+}
