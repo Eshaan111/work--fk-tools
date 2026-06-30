@@ -2,7 +2,9 @@ import "./styles.css";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  THRESHOLD_DEFAULTS,
   THRESHOLD_KEYS,
+  THRESHOLD_LABELS,
   SIZE_VALUES,
   applyDecision,
   bulkEdit,
@@ -18,22 +20,6 @@ import {
 } from "./rateInsight";
 
 const defaultFilters = { search: "", listing: "All", jeans: "All", size: "All", status: "All", settlementMax: 0, selectedRange: null };
-const DEFAULT_THRESHOLDS = {
-  ICE: "469",
-  BEIGE: "459",
-  WHITE: "389",
-  "BLACK-BAGGY": "429",
-  "BLACK-PLAIN": "399",
-  MIX: "469",
-};
-const THRESHOLD_LABELS = {
-  ICE: "ICE final price floor",
-  BEIGE: "BEIGE final price floor",
-  WHITE: "WHITE final price floor",
-  "BLACK-BAGGY": "BLACK BAGGY floor",
-  "BLACK-PLAIN": "BLACK PLAIN floor",
-  MIX: "MIX floor",
-};
 
 const LISTING_COLUMN_VIEWS = {
   overview: {
@@ -87,6 +73,23 @@ function metricCards(metrics) {
     { key: "active", label: "Active Listings", value: metrics?.active ?? 0, detail: `${metrics?.activePct ?? 0}% of visible` },
     { key: "inactive", label: "Inactive Listings", value: metrics?.inactive ?? 0, detail: `${metrics?.inactivePct ?? 0}% of visible` },
   ];
+}
+
+function modeMeta(mode) {
+  if (mode === "offer") {
+    return {
+      modeLabel: "Offer File",
+      valueLabel: "Selling Price(Rs)",
+      valueShort: "selling price",
+      thresholdBasis: "Final Price",
+    };
+  }
+  return {
+    modeLabel: "Standard File",
+    valueLabel: "Bank Settlement",
+    valueShort: "bank settlement",
+    thresholdBasis: "Final Price",
+  };
 }
 
 function MiniLineChart({ data, selectedRange, onRangeChange }) {
@@ -296,8 +299,8 @@ function App() {
   const [dashboard, setDashboard] = useState(null);
   const [filters, setFilters] = useState(defaultFilters);
   const [bulkEditState, setBulkEditState] = useState({ mode: "Add", value: "", capMode: "Min", capValue: "" });
-  const [offerConfig, setOfferConfig] = useState({ yPct: "15", xPct: "20", cap: "500", thresholds: { ...DEFAULT_THRESHOLDS } });
-  const [sizeOverride, setSizeOverrideState] = useState({ sku: "", size: "32" });
+  const [offerConfig, setOfferConfig] = useState({ yPct: "15", xPct: "20", cap: "500", thresholds: { ...THRESHOLD_DEFAULTS } });
+  const [sizeOverride, setSizeOverrideState] = useState({ sku: "", size: SIZE_VALUES[0] || "32" });
   const [listingView, setListingView] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -315,12 +318,20 @@ function App() {
     }
   }, [dataset, filters]);
 
+  useEffect(() => {
+    setOfferConfig((current) => ({
+      ...current,
+      thresholds: Object.fromEntries(THRESHOLD_KEYS.map((key) => [key, current.thresholds?.[key] ?? THRESHOLD_DEFAULTS[key] ?? "0"])),
+    }));
+  }, []);
+
   const cards = useMemo(() => metricCards(dashboard?.metrics), [dashboard]);
   const filterOptions = dashboard?.filterOptions || { listing: [], jeans: [], size: [], status: [], settlementMax: 0 };
   const rows = dashboard?.rows || [];
   const columns = dashboard?.columns || [];
   const displayedColumns = useMemo(() => visibleListingColumns(columns, listingView), [columns, listingView]);
   const chartData = dashboard?.chart || [];
+  const activeMode = modeMeta(dashboard?.mode);
 
   async function handleUpload(event) {
     const file = event.target.files?.[0];
@@ -385,7 +396,7 @@ function App() {
           {[ ["Listing type", "listing", filterOptions.listing, "Filters owner vs latched listing rows."], ["Jeans family", "jeans", filterOptions.jeans, "Filters the classified jeans bucket used by offer mode thresholds."], ["Detected size", "size", filterOptions.size, "Uses SKU-based size detection plus any saved overrides."], ["Listing status", "status", filterOptions.status, "Shows only ACTIVE or INACTIVE rows when needed."] ].map(([label, key, options, help]) => (
             <label className="field-block" key={key}><LabelWithHelp label={label} help={help} /><select value={filters[key]} onChange={(e) => setFilters((c) => ({ ...c, [key]: e.target.value }))}><option value="All">All</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
           ))}
-          <label className="field-block field-span-2"><LabelWithHelp label="Settlement ceiling" help="Only rows with settlement at or below this value stay visible." /><div className="slider-block"><input type="range" min="0" max={filterOptions.settlementMax || 0} value={filters.settlementMax || 0} onChange={(e) => setFilters((c) => ({ ...c, settlementMax: Number(e.target.value) }))} /><div className="mono-value">{Number(filters.settlementMax || 0).toLocaleString()}</div></div></label>
+          <label className="field-block field-span-2"><LabelWithHelp label={`${activeMode.valueLabel} ceiling`} help={`Only rows with ${activeMode.valueShort} at or below this value stay visible.`} /><div className="slider-block"><input type="range" min="0" max={filterOptions.settlementMax || 0} value={filters.settlementMax || 0} onChange={(e) => setFilters((c) => ({ ...c, settlementMax: Number(e.target.value) }))} /><div className="mono-value">{Number(filters.settlementMax || 0).toLocaleString()}</div></div></label>
         </div>
       </section>
     );
@@ -397,8 +408,8 @@ function App() {
         {renderFilterPanel()}
         <section className="metrics-grid">{cards.map((card) => <div className="metric-card" key={card.key}><div className="metric-label">{card.label}</div><div className="metric-value">{card.value}</div><div className="metric-detail">{card.detail}</div></div>)}</section>
         <section className="content-grid">
-          <div className="panel chart-panel"><div className="panel-head"><div><div className="panel-title">Settlement Distribution <HelpTip text="Drag across the graph to select a settlement band. The dashboard summary and listing table update to that band." /></div><div className="panel-subtitle">Interactive view of the currently visible settlement values.</div></div><button className="ghost-button" disabled={!dataset} onClick={() => setFilters((c) => ({ ...c, selectedRange: null }))}>Reset Selection</button></div><div className="chart-wrap"><MiniLineChart data={chartData} selectedRange={filters.selectedRange} onRangeChange={handleRangeChange} /></div></div>
-          <div className="panel"><div className="panel-head"><div><div className="panel-title">Settlement Summary</div><div className="panel-subtitle">Counts, selection stats, and active inactive matrix.</div></div></div><div className="summary-stack"><div className="summary-box">{dashboard?.summary?.rowCountText || "Loaded: 0 | Visible: 0 | Export: 0"}</div><div className="summary-box">Account: {dashboard?.accountName || "Unknown"}</div><div className="summary-box">Selection range: {dashboard?.summary?.selectionRange ? `${dashboard.summary.selectionRange[0].toFixed(2)} to ${dashboard.summary.selectionRange[1].toFixed(2)}` : "None"}</div><div className="summary-box">{dashboard?.summary?.selectionStats?.label || "No Selection"}</div><table className="summary-table"><thead><tr><th>Status</th><th>Count</th><th>Sizes</th></tr></thead><tbody>{(dashboard?.summary?.statusMatrix || []).map((row) => <tr key={row.status}><td>{row.status}</td><td>{row.count}</td><td>{row.sizes?.length ? row.sizes.join(", ") : "-"}</td></tr>)}</tbody></table></div></div>
+          <div className="panel chart-panel"><div className="panel-head"><div><div className="panel-title">{activeMode.valueLabel} Distribution <HelpTip text={`Drag across the graph to select a ${activeMode.valueShort} band. The dashboard summary and listing table update to that band.`} /></div><div className="panel-subtitle">{`Interactive view of the currently visible ${activeMode.valueShort} values.`}</div></div><button className="ghost-button" disabled={!dataset} onClick={() => setFilters((c) => ({ ...c, selectedRange: null }))}>Reset Selection</button></div><div className="chart-wrap"><MiniLineChart data={chartData} selectedRange={filters.selectedRange} onRangeChange={handleRangeChange} /></div></div>
+          <div className="panel"><div className="panel-head"><div><div className="panel-title">{activeMode.valueLabel} Summary</div><div className="panel-subtitle">{`Counts, ${activeMode.valueShort} selection stats, and active inactive matrix.`}</div></div></div><div className="summary-stack"><div className="summary-box">{dashboard?.summary?.rowCountText || "Loaded: 0 | Visible: 0 | Export: 0"}</div><div className="summary-box">Account: {dashboard?.accountName || "Unknown"}</div><div className="summary-box">Mode value source: {activeMode.valueLabel}</div><div className="summary-box">{`${activeMode.valueLabel} selection range: ${dashboard?.summary?.selectionRange ? `${dashboard.summary.selectionRange[0].toFixed(2)} to ${dashboard.summary.selectionRange[1].toFixed(2)}` : "None"}`}</div><div className="summary-box">{dashboard?.summary?.selectionStats?.label || "No Selection"}</div><table className="summary-table"><thead><tr><th>Status</th><th>Count</th><th>Sizes</th></tr></thead><tbody>{(dashboard?.summary?.statusMatrix || []).map((row) => <tr key={row.status}><td>{row.status}</td><td>{row.count}</td><td>{row.sizes?.length ? row.sizes.join(", ") : "-"}</td></tr>)}</tbody></table></div></div>
         </section>
         <section className="pie-grid">
           <div className="panel"><div className="panel-head"><div><div className="panel-title">Listing Type Ratio <HelpTip text="Shows how the current working set is split between Owner and Latched listings." /></div><div className="panel-subtitle">Owner versus latched mix in the filtered workset.</div></div></div><DonutChart data={dashboard?.summary?.listingTypeRatio || []} centerLabel="Listings" totalLabel="visible rows" palette={["#1e293b", "#6366f1"]} /></div>
@@ -413,8 +424,8 @@ function App() {
       <>
         {renderFilterPanel()}
         <section className="three-up-grid">
-          <div className="panel"><div className="panel-head"><div><div className="panel-title">Bulk Actions <HelpTip text="Apply a settlement rule to the currently filtered and selected rows." /></div><div className="panel-subtitle">Quick pricing edits without leaving the browser.</div></div></div><div className="stack-grid"><div className="mini-form-row"><label className="field-block"><LabelWithHelp label="Edit rule" help="Add increases by a fixed amount, Multiply scales the settlement, Replace sets one value for all selected rows." /><select value={bulkEditState.mode} onChange={(e) => setBulkEditState((c) => ({ ...c, mode: e.target.value }))}><option>Add</option><option>Multiply</option><option>Replace</option></select></label><label className="field-block"><LabelWithHelp label="Rule value" help="Examples: 25 for Add, 1.05 for Multiply, or a final settlement amount for Replace." /><input value={bulkEditState.value} onChange={(e) => setBulkEditState((c) => ({ ...c, value: e.target.value }))} placeholder="Examples: 25, 1.05, 499" /></label></div><div className="mini-form-row"><label className="field-block"><LabelWithHelp label="Clamp result" help="Min keeps the result from going above the cap. Max keeps the result from going below it." /><select value={bulkEditState.capMode} onChange={(e) => setBulkEditState((c) => ({ ...c, capMode: e.target.value }))}><option>Min</option><option>Max</option></select></label><label className="field-block"><LabelWithHelp label="Cap value" help="Optional. Leave blank if you do not want a floor or ceiling." /><input value={bulkEditState.capValue} onChange={(e) => setBulkEditState((c) => ({ ...c, capValue: e.target.value }))} placeholder="Optional floor or ceiling" /></label></div><button className="primary-button" disabled={!dataset} onClick={() => runAction(() => bulkEdit(dataset, filters, bulkEditState.mode, Number(bulkEditState.value || 0), bulkEditState.capValue ? bulkEditState.capMode : null, bulkEditState.capValue ? Number(bulkEditState.capValue) : null))}>Apply to Selected Rows</button><div className="status-button-row"><button className="status-chip status-chip-active" disabled={!dataset} onClick={() => runAction(() => setStatus(dataset, filters, "ACTIVE"))}>Mark Active</button><button className="status-chip status-chip-inactive" disabled={!dataset} onClick={() => runAction(() => setStatus(dataset, filters, "INACTIVE"))}>Mark Inactive</button></div></div></div>
-          <div className="panel"><div className="panel-head"><div><div className="panel-title">Offer Mode <HelpTip text="Offer mode uses offer-file columns to calculate discount, final price, and ACCEPT or REJECT decisions." /></div><div className="panel-subtitle">Clearer defaults taken from the desktop workflow.</div></div>{dashboard?.availableModes?.normal && dashboard?.availableModes?.offer ? <div className="toggle-row"><button className={dashboard.mode === "normal" ? "toggle-button toggle-button-active" : "toggle-button"} onClick={() => handleModeChange("normal")}>Standard File</button><button className={dashboard.mode === "offer" ? "toggle-button toggle-button-active" : "toggle-button"} onClick={() => handleModeChange("offer")}>Offer File</button></div> : null}</div><div className="stack-grid"><div className="hint-box">Formula: discount = min((x% of (y% of settlement)), cap). Final price = settlement minus discount.</div><div className="mini-form-row three-inputs"><label className="field-block"><LabelWithHelp label="Base percent (y)" help="First percentage applied to the settlement value before the discount calculation." /><input value={offerConfig.yPct} onChange={(e) => setOfferConfig((c) => ({ ...c, yPct: e.target.value }))} placeholder="Default 15" /></label><label className="field-block"><LabelWithHelp label="Discount percent (x)" help="Second percentage applied on top of the y percent amount." /><input value={offerConfig.xPct} onChange={(e) => setOfferConfig((c) => ({ ...c, xPct: e.target.value }))} placeholder="Default 20" /></label><label className="field-block"><LabelWithHelp label="Discount cap (Rs)" help="Maximum discount allowed for each selected row." /><input value={offerConfig.cap} onChange={(e) => setOfferConfig((c) => ({ ...c, cap: e.target.value }))} placeholder="Default 500" /></label></div><div className="threshold-grid">{THRESHOLD_KEYS.map((key) => <label className="threshold-card" key={key}><LabelWithHelp label={THRESHOLD_LABELS[key]} help={`Rows in ${key} are marked ACCEPT when final price is at or above this floor.`} /><input value={offerConfig.thresholds[key]} onChange={(e) => setOfferConfig((c) => ({ ...c, thresholds: { ...c.thresholds, [key]: e.target.value } }))} placeholder={`Default ${DEFAULT_THRESHOLDS[key]}`} /></label>)}</div><div className="status-button-row"><button className="primary-button" disabled={!dataset || dashboard?.mode !== "offer"} onClick={() => runAction(() => computeDiscount(dataset, filters, Number(offerConfig.yPct || 0), Number(offerConfig.xPct || 0), Number(offerConfig.cap || 0)))}>Calculate Discount + Final Price</button><button className="ghost-button" disabled={!dataset || dashboard?.mode !== "offer"} onClick={() => runAction(() => applyDecision(dataset, filters, Object.fromEntries(Object.entries(offerConfig.thresholds).map(([key, value]) => [key, Number(value || 0)]))))}>Apply Accept / Reject</button></div></div></div>
+          <div className="panel"><div className="panel-head"><div><div className="panel-title">Bulk Actions <HelpTip text={`Apply a ${activeMode.valueShort} edit rule to the currently filtered and selected rows.`} /></div><div className="panel-subtitle">{`Quick ${activeMode.valueShort} edits without leaving the browser.`}</div></div></div><div className="stack-grid"><div className="mini-form-row"><label className="field-block"><LabelWithHelp label="Edit rule" help={`Add increases the ${activeMode.valueShort}, Multiply scales the ${activeMode.valueShort}, Replace sets one ${activeMode.valueShort} value for all selected rows.`} /><select value={bulkEditState.mode} onChange={(e) => setBulkEditState((c) => ({ ...c, mode: e.target.value }))}><option>Add</option><option>Multiply</option><option>Replace</option></select></label><label className="field-block"><LabelWithHelp label={`${activeMode.valueLabel} rule value`} help={`Examples: 25 for Add, 1.05 for Multiply, or a final ${activeMode.valueShort} amount for Replace.`} /><input value={bulkEditState.value} onChange={(e) => setBulkEditState((c) => ({ ...c, value: e.target.value }))} placeholder="Examples: 25, 1.05, 499" /></label></div><div className="mini-form-row"><label className="field-block"><LabelWithHelp label="Clamp result" help={`Min keeps the ${activeMode.valueShort} result from going above the cap. Max keeps it from going below the cap.`} /><select value={bulkEditState.capMode} onChange={(e) => setBulkEditState((c) => ({ ...c, capMode: e.target.value }))}><option>Min</option><option>Max</option></select></label><label className="field-block"><LabelWithHelp label={`${activeMode.valueLabel} cap`} help={`Optional ${activeMode.valueShort} floor or ceiling.`} /><input value={bulkEditState.capValue} onChange={(e) => setBulkEditState((c) => ({ ...c, capValue: e.target.value }))} placeholder="Optional floor or ceiling" /></label></div><button className="primary-button" disabled={!dataset} onClick={() => runAction(() => bulkEdit(dataset, filters, bulkEditState.mode, Number(bulkEditState.value || 0), bulkEditState.capValue ? bulkEditState.capMode : null, bulkEditState.capValue ? Number(bulkEditState.capValue) : null))}>Apply to Selected Rows</button><div className="status-button-row"><button className="status-chip status-chip-active" disabled={!dataset} onClick={() => runAction(() => setStatus(dataset, filters, "ACTIVE"))}>Mark Active</button><button className="status-chip status-chip-inactive" disabled={!dataset} onClick={() => runAction(() => setStatus(dataset, filters, "INACTIVE"))}>Mark Inactive</button></div></div></div>
+          <div className="panel"><div className="panel-head"><div><div className="panel-title">Offer Mode <HelpTip text="Offer mode calculates Discount and Final Price from Selling Price(Rs), then compares Final Price against the threshold to mark ACCEPT or REJECT." /></div><div className="panel-subtitle">{`Current source column: ${activeMode.valueLabel}. Thresholds are compared against Final Price.`}</div></div>{dashboard?.availableModes?.normal && dashboard?.availableModes?.offer ? <div className="toggle-row"><button className={dashboard.mode === "normal" ? "toggle-button toggle-button-active" : "toggle-button"} onClick={() => handleModeChange("normal")}>Standard File</button><button className={dashboard.mode === "offer" ? "toggle-button toggle-button-active" : "toggle-button"} onClick={() => handleModeChange("offer")}>Offer File</button></div> : null}</div><div className="stack-grid"><div className="hint-box">{`Current value source: ${activeMode.valueLabel}. Formula: discount = min((x% of (y% of ${activeMode.valueShort})), cap). Final Price = ${activeMode.valueShort} minus discount. Threshold check: Final Price >= threshold.`}</div><div className="mini-form-row three-inputs"><label className="field-block"><LabelWithHelp label="Base percent (y)" help={`First percentage applied to the ${activeMode.valueShort} before the discount calculation.`} /><input value={offerConfig.yPct} onChange={(e) => setOfferConfig((c) => ({ ...c, yPct: e.target.value }))} placeholder="Default 15" /></label><label className="field-block"><LabelWithHelp label="Discount percent (x)" help="Second percentage applied on top of the y percent amount." /><input value={offerConfig.xPct} onChange={(e) => setOfferConfig((c) => ({ ...c, xPct: e.target.value }))} placeholder="Default 20" /></label><label className="field-block"><LabelWithHelp label="Discount cap (Rs)" help={`Maximum discount allowed for each selected row before ${activeMode.thresholdBasis} is compared to the threshold.`} /><input value={offerConfig.cap} onChange={(e) => setOfferConfig((c) => ({ ...c, cap: e.target.value }))} placeholder="Default 500" /></label></div><div className="threshold-grid">{THRESHOLD_KEYS.map((key) => <label className="threshold-card" key={key}><LabelWithHelp label={`${THRESHOLD_LABELS[key]} (${activeMode.thresholdBasis})`} help={`Rows in ${key} are marked ACCEPT when ${activeMode.thresholdBasis} is at or above this threshold.`} /><input value={offerConfig.thresholds[key]} onChange={(e) => setOfferConfig((c) => ({ ...c, thresholds: { ...c.thresholds, [key]: e.target.value } }))} placeholder={`Default ${THRESHOLD_DEFAULTS[key]}`} /></label>)}</div><div className="status-button-row"><button className="primary-button" disabled={!dataset || dashboard?.mode !== "offer"} onClick={() => runAction(() => computeDiscount(dataset, filters, Number(offerConfig.yPct || 0), Number(offerConfig.xPct || 0), Number(offerConfig.cap || 0)))}>Calculate Discount + Final Price</button><button className="ghost-button" disabled={!dataset || dashboard?.mode !== "offer"} onClick={() => runAction(() => applyDecision(dataset, filters, Object.fromEntries(Object.entries(offerConfig.thresholds).map(([key, value]) => [key, Number(value || 0)]))))}>Apply Accept / Reject</button></div></div></div>
           <div className="panel"><div className="panel-head"><div><div className="panel-title">Size Tools <HelpTip text="Use this when the auto-detected size is wrong for a SKU. The saved override is reused next time in this browser." /></div><div className="panel-subtitle">Saved in local browser storage.</div></div></div><div className="stack-grid"><label className="field-block"><LabelWithHelp label="SKU to override" help="Enter the exact SKU text from the workbook row you want to correct." /><input value={sizeOverride.sku} onChange={(e) => setSizeOverrideState((c) => ({ ...c, sku: e.target.value }))} placeholder="Paste exact SKU here" /></label><label className="field-block"><LabelWithHelp label="Correct size" help="Choose the size that should be assigned to this SKU." /><select value={sizeOverride.size} onChange={(e) => setSizeOverrideState((c) => ({ ...c, size: e.target.value }))}>{SIZE_VALUES.map((size) => <option key={size}>{size}</option>)}</select></label><button className="primary-button" disabled={!dataset} onClick={() => runAction(() => saveSizeOverride(dataset, filters, sizeOverride.sku, sizeOverride.size))}>Save Size Override</button><div className="hint-box">This React build stores overrides in <code>localStorage</code>, not a Python sidecar.</div></div></div>
         </section>
         <section className="panel"><div className="panel-head"><div><div className="panel-title">Listing Overview</div><div className="panel-subtitle">Focused column views keep the important fields visible without pushing everything into a wide spreadsheet.</div></div><div className="mono-value">{rows.length} / {dashboard?.exportCount || 0} rows shown</div></div><div className="listing-toolbar"><div className="listing-view-tabs">{Object.entries(LISTING_COLUMN_VIEWS).map(([key, config]) => <button key={key} className={listingView === key ? "listing-view-tab listing-view-tab-active" : "listing-view-tab"} onClick={() => setListingView(key)}>{config.label}</button>)}</div><div className="listing-toolbar-note">{displayedColumns.length} columns visible</div></div><div className="table-scroll"><table className="listing-table"><thead><tr>{displayedColumns.map((column, index) => <th key={column} className={index === 0 ? "sticky-first" : index === 1 ? "sticky-second" : ""}>{column}</th>)}</tr></thead><tbody>{rows.map((row) => { const status = String(row["Listing Status"] || "").toUpperCase(); const rowClass = status === "ACTIVE" ? "row-active" : status === "INACTIVE" ? "row-inactive" : ""; return <tr key={`${row.__orig_index}-${row[displayedColumns[0]] || "row"}`} className={rowClass}>{displayedColumns.map((column, index) => { const value = row[column]; const stickyClass = index === 0 ? "sticky-first-cell" : index === 1 ? "sticky-second-cell" : ""; if (column === "Listing Status") return <td key={column} className={stickyClass}><span className={`table-badge ${status === "ACTIVE" ? "table-badge-active" : status === "INACTIVE" ? "table-badge-inactive" : "table-badge-neutral"}`}>{status || "-"}</span></td>; if (column === "Auto Flag" && value) return <td key={column} className={`flag-cell ${stickyClass}`.trim()}><span className="flag-inline">! {String(value)}</span></td>; return <td key={column} className={stickyClass}>{value == null || value === "" ? "-" : String(value)}</td>; })}</tr>; })}</tbody></table></div></section>
@@ -441,7 +452,7 @@ function App() {
           <div className="topbar-actions"><button className={dataset ? "ghost-button" : "primary-button load-button-thematic"} onClick={() => fileInputRef.current?.click()}><span className="load-button-mark">+</span>{dataset ? "Load Excel" : "Load Workbook"}</button><button className="primary-button" disabled={!dataset} onClick={handleExport}>Export</button><button className="ghost-button" disabled={!dataset?.undoRows} onClick={() => runAction(() => undoDataset(dataset))}>Undo</button><input hidden ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleUpload} /></div>
         </header>
         <div className="page-scroll">
-          <section className="hero-panel"><div><div className="eyebrow">Standalone React App</div><h2>Unified settlement review across dashboard, listing management, and decision insights.</h2><p>Review settlement trends, refine listings, apply pricing actions, and export results from one streamlined workspace.</p></div><div className="hero-statuses"><div className="hero-pill">{dashboard?.accountName || "No file loaded"}</div><div className="hero-pill">Mode: {dashboard?.mode || "normal"}</div>{loading ? <div className="hero-pill hero-pill-accent">Working…</div> : null}</div></section>
+          <section className="hero-panel"><div><div className="eyebrow">Standalone React App</div><h2>Unified settlement review across dashboard, listing management, and decision insights.</h2><p>Review settlement trends, refine listings, apply pricing actions, and export results from one streamlined workspace.</p></div><div className="hero-statuses"><div className="hero-pill">{dashboard?.accountName || "No file loaded"}</div><div className="hero-pill">Mode: {activeMode.modeLabel}</div><div className="hero-pill">Value Source: {activeMode.valueLabel}</div><div className="hero-pill">Threshold Basis: {activeMode.thresholdBasis}</div>{loading ? <div className="hero-pill hero-pill-accent">Working…</div> : null}</div></section>
           {error ? <div className="error-banner">{error}</div> : null}
           {!dataset ? <section className="panel empty-upload-state"><div className="empty-upload-art"><div className="empty-upload-icon">RI</div><div className="empty-upload-lines"><span></span><span></span><span></span></div></div><div className="empty-upload-copy"><div className="eyebrow">Get Started</div><h3>Load your settlement workbook</h3><p>Start with an Excel or CSV export to unlock dashboard metrics, listing review, offer calculations, and final export.</p><div className="empty-upload-tags"><span>.xlsx</span><span>.xls</span><span>.csv</span></div><button className="primary-button empty-upload-button" onClick={() => fileInputRef.current?.click()}><span className="load-button-mark">+</span>Select Workbook</button></div></section> : null}
           {dataset && page === "Dashboard" ? renderDashboardPage() : null}
@@ -454,16 +465,6 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
-
-
-
-
 
 
 

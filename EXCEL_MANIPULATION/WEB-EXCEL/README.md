@@ -15,3 +15,5 @@ Standalone React workbook app for Rate Insight.
 - Parses `.xlsx`, `.xls`, and `.csv` locally with `xlsx`
 - Exports locally from the browser
 - Size overrides are stored in browser localStorage
+- Edit [src/rateInsightDetections.json](/abs/path/C:/Users/ESHAAN/HAKUR/work--fk-tools/EXCEL_MANIPULATION/WEB-EXCEL/src/rateInsightDetections.json) to add new size rules, size options, or kind detection cases
+

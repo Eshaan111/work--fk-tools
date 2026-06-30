@@ -1,15 +1,96 @@
 import * as XLSX from "xlsx";
-
-export const SIZE_VALUES = ["26", "28", "30", "32", "34", "36"];
-export const THRESHOLD_KEYS = ["ICE", "BEIGE", "WHITE", "BLACK-BAGGY", "BLACK-PLAIN", "MIX"];
+import detectionConfig from "./rateInsightDetections.json";
 
 const SIZE_OVERRIDE_KEY = "rate_insight_size_overrides_v1";
 const TITLE_FLAGS = ["Dark Blue"];
 const SKU_FLAGS = [];
-const INACTIVE_SIZES = ["26", "36"];
+const FALLBACK_SIZE_VALUES = ["26", "28", "30", "32", "34", "36"];
+const FALLBACK_KIND_DEFINITIONS = [
+  { key: "ICE", label: "ICE final price floor", defaultThreshold: "469", rules: [{ skuIncludesAny: ["ice", "blue"] }] },
+  { key: "BEIGE", label: "BEIGE final price floor", defaultThreshold: "459", rules: [{ skuIncludesAny: ["beige", "cream"] }] },
+  { key: "WHITE", label: "WHITE final price floor", defaultThreshold: "389", rules: [{ skuIncludesAny: ["white"] }] },
+  { key: "BLACK-BAGGY", label: "BLACK BAGGY floor", defaultThreshold: "429", rules: [{ skuIncludesAny: ["baggy"] }, { skuIncludesAll: ["black"], titleIncludesAny: ["relaxed"] }] },
+  { key: "BLACK-PLAIN", label: "BLACK PLAIN floor", defaultThreshold: "399", rules: [{ skuIncludesAny: ["black"] }] },
+  { key: "MIX", label: "MIX floor", defaultThreshold: "469", match: {} }
+];
+
+function normalizeStringList(values) {
+  return [...new Set((Array.isArray(values) ? values : []).map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+const configuredSizeValues = normalizeStringList(detectionConfig.sizeOptions);
+const SIZE_VALUES = configuredSizeValues.length ? configuredSizeValues : FALLBACK_SIZE_VALUES;
+const KIND_DEFINITIONS = (Array.isArray(detectionConfig.kindDefinitions) ? detectionConfig.kindDefinitions : [])
+  .map((entry) => ({
+    key: String(entry?.key || "").trim(),
+    label: String(entry?.label || "").trim(),
+    defaultThreshold: String(entry?.defaultThreshold ?? "").trim(),
+    match: entry?.match || {},
+    rules: Array.isArray(entry?.rules) ? entry.rules : []
+  }))
+  .filter((entry) => entry.key);
+
+export { SIZE_VALUES };
+export const THRESHOLD_KEYS = (KIND_DEFINITIONS.length ? KIND_DEFINITIONS : FALLBACK_KIND_DEFINITIONS).map((entry) => entry.key);
+export const THRESHOLD_LABELS = Object.fromEntries((KIND_DEFINITIONS.length ? KIND_DEFINITIONS : FALLBACK_KIND_DEFINITIONS).map((entry) => [entry.key, entry.label || `${entry.key} floor`]));
+export const THRESHOLD_DEFAULTS = Object.fromEntries((KIND_DEFINITIONS.length ? KIND_DEFINITIONS : FALLBACK_KIND_DEFINITIONS).map((entry) => [entry.key, entry.defaultThreshold || "0"]));
+
+const SIZE_DETECTION_RULES = Array.isArray(detectionConfig.sizeDetectionRules) ? detectionConfig.sizeDetectionRules : [];
+const UNDETECTED_SIZE = String(detectionConfig.undetectedSize || "UNDETECTED").trim() || "UNDETECTED";
+const INACTIVE_SIZES = normalizeStringList(detectionConfig.inactiveSizes);
+const ACTIVE_KIND_DEFINITIONS = KIND_DEFINITIONS.length ? KIND_DEFINITIONS : FALLBACK_KIND_DEFINITIONS;
+const FALLBACK_KIND = THRESHOLD_KEYS.includes("MIX") ? "MIX" : THRESHOLD_KEYS[THRESHOLD_KEYS.length - 1] || "UNKNOWN";
 
 function cloneRows(rows) {
   return rows.map((row) => ({ ...row }));
+}
+
+function normalizeText(value) {
+  return String(value || "").toLowerCase();
+}
+
+function testRegex(pattern, value) {
+  if (!pattern) return true;
+  try {
+    return new RegExp(String(pattern), "i").test(value);
+  } catch {
+    return false;
+  }
+}
+
+function includesAny(text, values) {
+  const items = normalizeStringList(values).map((value) => value.toLowerCase());
+  return !items.length || items.some((value) => text.includes(value));
+}
+
+function includesAll(text, values) {
+  const items = normalizeStringList(values).map((value) => value.toLowerCase());
+  return !items.length || items.every((value) => text.includes(value));
+}
+
+function matchesRule(match, context) {
+  const rule = match || {};
+  const hasCondition = [
+    rule.skuRegex,
+    rule.titleRegex,
+    ...(Array.isArray(rule.skuIncludesAny) ? rule.skuIncludesAny : []),
+    ...(Array.isArray(rule.skuIncludesAll) ? rule.skuIncludesAll : []),
+    ...(Array.isArray(rule.titleIncludesAny) ? rule.titleIncludesAny : []),
+    ...(Array.isArray(rule.titleIncludesAll) ? rule.titleIncludesAll : [])
+  ].some(Boolean);
+  if (!hasCondition) return false;
+
+  return testRegex(rule.skuRegex, context.skuRaw)
+    && testRegex(rule.titleRegex, context.titleRaw)
+    && includesAny(context.skuText, rule.skuIncludesAny)
+    && includesAll(context.skuText, rule.skuIncludesAll)
+    && includesAny(context.titleText, rule.titleIncludesAny)
+    && includesAll(context.titleText, rule.titleIncludesAll);
+}
+
+function matchesDefinition(definition, context) {
+  const rules = Array.isArray(definition?.rules) && definition.rules.length ? definition.rules : [definition?.match || {}];
+  return rules.some((rule) => matchesRule(rule, context));
 }
 
 function getModeColumns(mode) {
@@ -45,20 +126,21 @@ function getFileType(fileName) {
 
 function listingType(title) {
   const owners = ["Starvielle", "Genz Vane", "INDIVANE", "FADEVIELLE", "FLEECRANE"];
-  const text = String(title || "").toLowerCase();
+  const text = normalizeText(title);
   return owners.some((item) => text.includes(item.toLowerCase())) ? "Owner" : "Latched";
 }
 
 function jeansType(skuValue, titleValue) {
-  const sku = String(skuValue || "").toLowerCase();
-  const title = String(titleValue || "").toLowerCase();
-  if (sku.includes("white")) return "WHITE";
-  if (sku.includes("ice") || sku.includes("blue")) return "ICE";
-  if (sku.includes("beige") || sku.includes("cream")) return "BEIGE";
-  if (sku.includes("baggy")) return "BLACK-BAGGY";
-  if (sku.includes("black") && title.includes("relaxed")) return "BLACK-BAGGY";
-  if (sku.includes("black")) return "BLACK-PLAIN";
-  return "MIX";
+  const context = {
+    skuRaw: String(skuValue || ""),
+    titleRaw: String(titleValue || ""),
+    skuText: normalizeText(skuValue),
+    titleText: normalizeText(titleValue)
+  };
+  for (const definition of ACTIVE_KIND_DEFINITIONS) {
+    if (matchesDefinition(definition, context)) return definition.key;
+  }
+  return FALLBACK_KIND;
 }
 
 function loadSizeOverrides() {
@@ -75,13 +157,20 @@ function persistSizeOverrides(overrides) {
 
 function detectSize(skuValue, overrides) {
   const sku = String(skuValue || "").trim();
-  if (!sku) return "UNDETECTED";
+  if (!sku) return UNDETECTED_SIZE;
   if (overrides[sku]) return overrides[sku];
-  if (/_39$/i.test(sku)) return "32";
-  for (const size of SIZE_VALUES) {
-    if (new RegExp(`-${size}-|_${size}_|_${size}$`, "i").test(sku)) return size;
+  for (const rule of SIZE_DETECTION_RULES) {
+    const size = String(rule?.size || "").trim();
+    if (size && matchesRule(rule, { skuRaw: sku, titleRaw: "", skuText: sku.toLowerCase(), titleText: "" })) return size;
   }
-  return "UNDETECTED";
+  for (const size of SIZE_VALUES) {
+    if (new RegExp(`-${size}-|-${size}_|_${size}_|_${size}$`, "i").test(sku)) return size;
+  }
+  for (const size of FALLBACK_SIZE_VALUES) {
+    if (SIZE_VALUES.includes(size)) continue;
+    if (new RegExp(`-${size}-|-${size}_|_${size}_|_${size}$`, "i").test(sku)) return size;
+  }
+  return UNDETECTED_SIZE;
 }
 
 function applyFlags(rows, columns, overrides) {
@@ -205,7 +294,7 @@ function buildOptions(dataset) {
   const sizeSet = new Set(dataset.rows.map((row) => String(row.Size || "")).filter(Boolean));
   const statusSet = new Set(dataset.rows.map((row) => String(row["Listing Status"] || "").toUpperCase()).filter(Boolean));
   const sizeOptions = SIZE_VALUES.filter((size) => sizeSet.has(size));
-  if (sizeSet.has("UNDETECTED")) sizeOptions.push("UNDETECTED");
+  if (sizeSet.has(UNDETECTED_SIZE)) sizeOptions.push(UNDETECTED_SIZE);
   return {
     listing: [...new Set(dataset.rows.map((row) => row["Listing Type"]).filter(Boolean))].sort(),
     jeans: [...new Set(dataset.rows.map((row) => row["Jeans Type"]).filter(Boolean))].sort(),
@@ -229,7 +318,7 @@ function buildListingTypeRatio(rows) {
 function buildSizeColorStatusRatio(rows) {
   const groupMap = new Map();
   for (const row of rows) {
-    const size = String(row.Size || "UNDETECTED");
+    const size = String(row.Size || UNDETECTED_SIZE);
     const color = String(row["Jeans Type"] || "MIX");
     const status = String(row["Listing Status"] || "").toUpperCase();
     const key = `${size} | ${color}`;
@@ -497,6 +586,4 @@ export function exportDataset(dataset) {
     blob: new Blob([output], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
   };
 }
-
-
 

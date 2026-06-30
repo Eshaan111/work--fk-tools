@@ -1,0 +1,93 @@
+{
+  "sizeOptions": ["26", "28", "30", "32", "34", "36","M","XL","S","L"],
+  "undetectedSize": "UNDETECTED",
+  "inactiveSizes": ["26", "36"],
+  "sizeDetectionRules": [
+    {
+      "size": "32",
+      "skuRegex": "_39$"
+    }
+  ],
+  "kindDefinitions": [
+    {
+      "key": "Trouser",
+      "label": "Trouser final price floor",
+      "defaultThreshold": "315",
+      "rules": [
+        {
+          "skuIncludesAny": ["Trouser"]
+        }
+      ]
+    },
+    {
+      "key": "Shorts",
+      "label": "Shorts final price floor",
+      "defaultThreshold": "299",
+      "rules": [
+        {
+          "skuIncludesAny": ["Shorts"]
+        }
+      ]
+    },
+    {
+      "key": "ICE",
+      "label": "ICE final price floor",
+      "defaultThreshold": "469",
+      "rules": [
+        {
+          "skuIncludesAny": ["ice", "blue"]
+        }
+      ]
+    },
+    {
+      "key": "BEIGE",
+      "label": "BEIGE final price floor",
+      "defaultThreshold": "459",
+      "rules": [
+        {
+          "skuIncludesAny": ["beige", "cream"]
+        }
+      ]
+    },
+    {
+      "key": "WHITE",
+      "label": "WHITE final price floor",
+      "defaultThreshold": "389",
+      "rules": [
+        {
+          "skuIncludesAny": ["white"]
+        }
+      ]
+    },
+    {
+      "key": "BLACK-BAGGY",
+      "label": "BLACK BAGGY floor",
+      "defaultThreshold": "429",
+      "rules": [
+        {
+          "skuIncludesAny": ["baggy"]
+        },
+        {
+          "skuIncludesAll": ["black"],
+          "titleIncludesAny": ["relaxed"]
+        }
+      ]
+    },
+    {
+      "key": "BLACK-PLAIN",
+      "label": "BLACK PLAIN floor",
+      "defaultThreshold": "399",
+      "rules": [
+        {
+          "skuIncludesAny": ["black"]
+        }
+      ]
+    },
+    {
+      "key": "MIX",
+      "label": "MIX floor",
+      "defaultThreshold": "469",
+      "match": {}
+    }
+  ]
+}

@@ -72,20 +72,24 @@ def build_laptop_configs(config_payload: dict[str, object]) -> dict[str, dict[st
             key: resolve_config_path(value)
             for key, value in laptop_payload["paths"].items()
         }
-        jeans_kind_options = {
-            option_key: (
-                option_payload["kind"],
-                resolve_config_path(option_payload.get("image_directory")),
-            )
-            for option_key, option_payload in laptop_payload["jeans_kinds"].items()
-        }
+        vertical_payloads = laptop_payload.get("verticals", {})
+        vertical_configs: dict[str, list[tuple[str, Path | None]]] = {}
+        for vertical_name, vertical_payload in vertical_payloads.items():
+            kinds_payload = vertical_payload.get("kinds", {})
+            vertical_configs[str(vertical_name).strip().lower()] = [
+                (
+                    str(option_payload["kind"]),
+                    resolve_config_path(option_payload.get("image_directory")),
+                )
+                for _, option_payload in sorted(kinds_payload.items(), key=lambda item: int(item[0]))
+            ]
         firefox_profiles = {
             profile_name: resolve_config_path(profile_path)
             for profile_name, profile_path in laptop_payload["firefox_profiles"].items()
         }
         laptop_configs[laptop_name.upper()] = {
             **laptop_paths,
-            "jeans_kind_options": jeans_kind_options,
+            "verticals": vertical_configs,
             "firefox_profiles": firefox_profiles,
         }
     return laptop_configs
@@ -98,6 +102,7 @@ PRODUCT_CONFIGS: dict[str, object] = SHARED_CONFIG["products"]
 RUNTIME_CONFIG: dict[str, object] = SHARED_CONFIG["runtime"]
 DEFAULTS_CONFIG: dict[str, object] = SHARED_CONFIG["defaults"]
 COMMON_INPUTS_CONFIG: dict[str, object] = SHARED_CONFIG["common_inputs"]
+ROUTING_CONFIG: dict[str, object] = SHARED_CONFIG.get("routing", {})
 SUCCESS_RUN_RECORD_CONFIG: dict[str, object] = SHARED_CONFIG["success_run_record"]
 BRANDS_CONFIG: dict[str, object] = SHARED_CONFIG["brands"]
 PROFILES_CONFIG: dict[str, object] = SHARED_CONFIG["profiles"]
@@ -111,11 +116,14 @@ SUCCESS_RUN_ACCOUNTS = tuple(SUCCESS_RUN_RECORD_CONFIG["accounts"])
 SUCCESS_RUN_DATA_START_ROW = int(SUCCESS_RUN_RECORD_CONFIG["data_start_row"])
 
 FLOW_CONFIG_ROOT = resolve_config_path(PROJECT_PATHS["flow_config_root"])
+DATA_INPUTS_ROOT = resolve_config_path(PROJECT_PATHS["data_inputs_root"])
+ASSETS_ROOT = resolve_config_path(PROJECT_PATHS["assets_root"])
 
 LAPTOP_CONFIGS = build_laptop_configs(APP_CONFIG)
 LAPTOP_NAME = str(os.getenv("FK_LAPTOP_NAME", APP_CONFIG["default_laptop_name"])).upper()
 if LAPTOP_NAME not in LAPTOP_CONFIGS:
-    raise ValueError(f"Unknown FK_LAPTOP_NAME '{LAPTOP_NAME}'. Choose ASUS or VAIO.")
+    available_laptops = ", ".join(sorted(LAPTOP_CONFIGS))
+    raise ValueError(f"Unknown FK_LAPTOP_NAME '{LAPTOP_NAME}'. Choose one of: {available_laptops}.")
 ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME]
 
 
@@ -124,7 +132,8 @@ def set_active_laptop(laptop_name: str) -> None:
 
     normalized_laptop_name = laptop_name.strip().upper()
     if normalized_laptop_name not in LAPTOP_CONFIGS:
-        raise ValueError(f"Unknown FK_LAPTOP_NAME '{laptop_name}'. Choose ASUS or VAIO.")
+        available_laptops = ", ".join(sorted(LAPTOP_CONFIGS))
+        raise ValueError(f"Unknown FK_LAPTOP_NAME '{laptop_name}'. Choose one of: {available_laptops}.")
 
     LAPTOP_NAME = normalized_laptop_name
     ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[normalized_laptop_name]
@@ -133,6 +142,9 @@ def set_active_laptop(laptop_name: str) -> None:
 DEFAULT_LISTING_URL = str(DEFAULTS_CONFIG["listing_url"])
 DEFAULT_BRAND_NAME = str(DEFAULTS_CONFIG["brand_name"])
 DEFAULT_FLOW_SURFACE = str(DEFAULTS_CONFIG["flow_surface"])
+DEFAULT_PRODUCT_TYPE = str(DEFAULTS_CONFIG["product_type"])
+DEFAULT_PROFILE_NAME = str(DEFAULTS_CONFIG["profile_name"])
+STARTUP_WINDOW_CONFIG: dict[str, object] = DEFAULTS_CONFIG.get("startup_window", {})
 USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION = bool(RUNTIME_CONFIG["use_changes_saved_toast_for_verification"])
 DEFAULT_STARTUP_RUN_COUNT = str(DEFAULTS_CONFIG["startup_run_count"])
 PHASE_ONE_SNAPSHOT_NAME = str(RUNTIME_CONFIG["phase_one_snapshot_name"])
@@ -372,6 +384,26 @@ def active_path(config_key: str, path_label: str) -> Path:
     return require_configured_path(ACTIVE_LAPTOP_CONFIG[config_key], path_label)
 
 
+def get_default_vertical_image_directory(vertical_name: str) -> Path:
+    vertical_configs = ACTIVE_LAPTOP_CONFIG.get("verticals", {})
+    configured_vertical_kinds = vertical_configs.get(vertical_name.strip().lower(), [])
+    if not configured_vertical_kinds:
+        raise ValueError(f"No image directories were configured for vertical '{vertical_name}'.")
+    kind_name, image_directory = configured_vertical_kinds[0]
+    return require_configured_path(image_directory, f"default {kind_name} image directory")
+
+
+def get_default_flow_target(available_flow_targets: list[FlowTargetOption]) -> FlowTargetOption:
+    return next(
+        (
+            option
+            for option in available_flow_targets
+            if option.product_type == DEFAULT_PRODUCT_TYPE and option.surface == DEFAULT_FLOW_SURFACE
+        ),
+        available_flow_targets[0],
+    )
+
+
 @dataclass(slots=True)
 class BotConfig:
     listing_url: str = DEFAULT_LISTING_URL
@@ -379,7 +411,7 @@ class BotConfig:
         default_factory=lambda: Path(
             os.getenv(
                 "FLIPKART_IMAGE_DIR",
-                str(active_path("default_image_directory", "default shorts image directory")),
+                str(get_default_vertical_image_directory(DEFAULT_PRODUCT_TYPE)),
             )
         ).expanduser()
     )
@@ -392,7 +424,7 @@ class BotConfig:
         default_factory=lambda: Path(
             os.getenv(
                 "PRICE_STOCK_SHIPPING_EXCEL",
-                str(active_path("price_stock_shipping_excel", "Price/Stock/Shipping Excel")),
+                str(get_common_input_file_path("price_stock_shipping_excel")),
             )
         ).expanduser()
     )
@@ -400,7 +432,7 @@ class BotConfig:
         default_factory=lambda: Path(
             os.getenv(
                 "PRICE_STOCK_SHIPPING_JSON",
-                str(active_path("price_stock_shipping_json", "Price/Stock/Shipping JSON")),
+                str(get_common_input_file_path("price_stock_shipping_json")),
             )
         ).expanduser()
     )
@@ -408,7 +440,7 @@ class BotConfig:
         default_factory=lambda: Path(
             os.getenv(
                 "PRODUCT_DESCRIPTION_EXCEL",
-                str(active_path("product_description_excel", "Jeans Product Description Excel")),
+                str(get_product_description_excel_path(DEFAULT_PRODUCT_TYPE, DEFAULT_FLOW_SURFACE)),
             )
         ).expanduser()
     )
@@ -416,7 +448,7 @@ class BotConfig:
         default_factory=lambda: Path(
             os.getenv(
                 "PRODUCT_DESCRIPTION_JSON",
-                str(active_path("product_description_json", "Jeans Product Description JSON")),
+                str(get_product_description_json_path(DEFAULT_PRODUCT_TYPE, DEFAULT_FLOW_SURFACE)),
             )
         ).expanduser()
     )
@@ -424,7 +456,7 @@ class BotConfig:
         default_factory=lambda: Path(
             os.getenv(
                 "ADDITIONAL_DESCRIPTION_EXCEL",
-                str(active_path("additional_description_excel", "Jeans Additional Description Excel")),
+                str(get_additional_description_excel_path(DEFAULT_PRODUCT_TYPE, DEFAULT_FLOW_SURFACE)),
             )
         ).expanduser()
     )
@@ -432,13 +464,13 @@ class BotConfig:
         default_factory=lambda: Path(
             os.getenv(
                 "ADDITIONAL_DESCRIPTION_JSON",
-                str(active_path("additional_description_json", "Jeans Additional Description JSON")),
+                str(get_additional_description_json_path(DEFAULT_PRODUCT_TYPE, DEFAULT_FLOW_SURFACE)),
             )
         ).expanduser()
     )
     variants_excel: Path = field(
         default_factory=lambda: Path(
-            os.getenv("VARIANTS_EXCEL", str(active_path("variants_excel", "Variants Excel")))
+            os.getenv("VARIANTS_EXCEL", str(get_common_input_file_path("variants_excel")))
         ).expanduser()
     )
     data_directory: Path = field(
@@ -446,7 +478,7 @@ class BotConfig:
     )
     firefox_binary: str | None = os.getenv("FIREFOX_BINARY")
     geckodriver_path: str | None = os.getenv("GECKODRIVER_PATH")
-    profile_name: str = "seema"
+    profile_name: str = DEFAULT_PROFILE_NAME
     headless: bool = os.getenv("HEADLESS", "0") == "1"
 
     @property
@@ -545,16 +577,6 @@ class JobRunResult:
     result_path: Path | None = None
 
 
-def get_product_surface_payload(product_type: str, surface_type: str) -> dict[str, object]:
-    normalized_product_type = product_type.strip().lower()
-    normalized_surface_type = surface_type.strip().lower()
-    if normalized_product_type not in PRODUCT_CONFIGS:
-        raise ValueError(f"Unknown product type: {product_type}")
-    product_payload = PRODUCT_CONFIGS[normalized_product_type]
-    data_files_by_surface = product_payload.get("data_files_by_surface", {})
-    return get_surface_config(data_files_by_surface, normalized_surface_type)
-
-
 def get_product_sheet_name(product_type: str, surface_type: str, sheet_group: str) -> str:
     normalized_product_type = product_type.strip().lower()
     normalized_surface_type = surface_type.strip().lower()
@@ -566,12 +588,68 @@ def get_product_sheet_name(product_type: str, surface_type: str, sheet_group: st
     return str(get_surface_config(surface_mapping, normalized_surface_type))
 
 
+def get_surface_file_suffix(surface_type: str) -> str:
+    suffix_mapping = ROUTING_CONFIG.get("surface_file_suffix_by_surface", {})
+    return str(get_surface_config(suffix_mapping, surface_type))
+
+
+def get_product_title_token(product_type: str) -> str:
+    normalized_product_type = product_type.strip().lower()
+    return normalized_product_type.title()
+
+
+def get_common_input_file_path(config_key: str) -> Path:
+    common_input_files = ROUTING_CONFIG.get("common_input_files", {})
+    if config_key not in common_input_files:
+        raise ValueError(f"No common input routing was configured for: {config_key}")
+    routed_relative_path = str(common_input_files[config_key])
+    if config_key.endswith("_json"):
+        return (ASSETS_ROOT / routed_relative_path).resolve()
+    return (DATA_INPUTS_ROOT / routed_relative_path).resolve()
+
+
+def get_product_input_excel_path(product_type: str, surface_type: str, config_key: str) -> Path:
+    patterns = ROUTING_CONFIG.get("product_input_patterns", {})
+    if config_key not in patterns:
+        raise ValueError(f"No product input routing was configured for: {config_key}")
+    routed_relative_path = str(patterns[config_key]).format(
+        product_type=product_type.strip().lower(),
+        product_title=get_product_title_token(product_type),
+        surface=surface_type.strip().lower(),
+        surface_suffix=get_surface_file_suffix(surface_type),
+    )
+    return (DATA_INPUTS_ROOT / routed_relative_path).resolve()
+
+
+def get_product_routed_json_path(product_type: str, surface_type: str, flow_key: str, asset_key: str) -> Path:
+    patterns = ROUTING_CONFIG.get("product_input_patterns", {})
+    flow_file_name = str(patterns[flow_key])
+    try:
+        flow_candidate = resolve_flow_directory(product_type, surface_type) / flow_file_name
+        if flow_candidate.exists():
+            return flow_candidate
+    except ValueError:
+        pass
+    asset_file_name = str(patterns[asset_key]).format(
+        product_type=product_type.strip().lower(),
+        product_title=get_product_title_token(product_type),
+        surface=surface_type.strip().lower(),
+        surface_suffix=get_surface_file_suffix(surface_type),
+    )
+    return (ASSETS_ROOT / asset_file_name).resolve()
+
+
 def get_product_description_excel_path(product_type: str, surface_type: str) -> Path:
-    return resolve_config_path(get_product_surface_payload(product_type, surface_type)["product_description_excel"])
+    return get_product_input_excel_path(product_type, surface_type, "product_description_excel")
 
 
 def get_product_description_json_path(product_type: str, surface_type: str) -> Path:
-    return resolve_config_path(get_product_surface_payload(product_type, surface_type)["product_description_json"])
+    return get_product_routed_json_path(
+        product_type,
+        surface_type,
+        "product_description_flow_json",
+        "product_description_asset_json",
+    )
 
 
 def get_product_description_sheet_name(product_type: str, surface_type: str) -> str:
@@ -579,11 +657,16 @@ def get_product_description_sheet_name(product_type: str, surface_type: str) -> 
 
 
 def get_additional_description_excel_path(product_type: str, surface_type: str) -> Path:
-    return resolve_config_path(get_product_surface_payload(product_type, surface_type)["additional_description_excel"])
+    return get_product_input_excel_path(product_type, surface_type, "additional_description_excel")
 
 
 def get_additional_description_json_path(product_type: str, surface_type: str) -> Path:
-    return resolve_config_path(get_product_surface_payload(product_type, surface_type)["additional_description_json"])
+    return get_product_routed_json_path(
+        product_type,
+        surface_type,
+        "additional_description_flow_json",
+        "additional_description_asset_json",
+    )
 
 
 def get_additional_description_sheet_name(product_type: str, surface_type: str) -> str:
@@ -871,8 +954,9 @@ def resolve_profile_path(profile_name: str) -> Path:
 
 
 def prompt_for_profile() -> str:
-    env_profile = os.getenv("FIREFOX_PROFILE", "prabhu")
-    prompt = f"Choose Firefox profile - seema (s) or prabhu (p) [{env_profile}]: "
+    env_profile = os.getenv("FIREFOX_PROFILE", DEFAULT_PROFILE_NAME)
+    available_profiles = ", ".join(sorted(ACTIVE_LAPTOP_CONFIG["firefox_profiles"]))
+    prompt = f"Choose Firefox profile [{env_profile}] ({available_profiles}): "
     selected_value = input(prompt).strip()
     return resolve_profile_name(selected_value or env_profile)
 
@@ -883,8 +967,8 @@ def prompt_for_profile() -> str:
 
 
 def prompt_for_run_count() -> int:
-    selected_value = input("How many runs should the bot execute? [5]: ").strip()
-    run_count = int(selected_value or "5")
+    selected_value = input(f"How many runs should the bot execute? [{DEFAULT_STARTUP_RUN_COUNT}]: ").strip()
+    run_count = int(selected_value or DEFAULT_STARTUP_RUN_COUNT)
     if run_count < 1:
         raise ValueError("Run count must be at least 1.")
     return run_count
@@ -934,9 +1018,10 @@ def get_default_listing_size(product_type: str, surface_type: str) -> str:
 
 def get_kind_options_for_product(product_type: str) -> list[str]:
     normalized_product_type = product_type.strip().lower()
-    if normalized_product_type == "jeans":
-        jeans_kind_options = ACTIVE_LAPTOP_CONFIG["jeans_kind_options"]
-        return [jeans_kind_options[key][0] for key in sorted(jeans_kind_options, key=int)]
+    vertical_configs = ACTIVE_LAPTOP_CONFIG.get("verticals", {})
+    configured_vertical_kinds = vertical_configs.get(normalized_product_type, [])
+    if configured_vertical_kinds:
+        return [kind_name for kind_name, _ in configured_vertical_kinds]
     if normalized_product_type in PRODUCT_CONFIGS:
         default_kind_mapping = PRODUCT_CONFIGS[normalized_product_type].get("default_kind_by_surface")
         if isinstance(default_kind_mapping, dict):
@@ -958,27 +1043,17 @@ def resolve_image_directory_for_selection(
             raise ValueError(f"Image directory override is not a folder: {override_path}")
         return override_path
 
-    if product_type == "jeans":
-        jeans_kind_options = ACTIVE_LAPTOP_CONFIG["jeans_kind_options"]
-        for _, (kind_name, configured_image_directory) in sorted(
-            jeans_kind_options.items(),
-            key=lambda item: int(item[0]),
-        ):
-            if kind_name == selected_kind:
-                return require_configured_path(
-                    configured_image_directory,
-                    f"{selected_kind} jeans image directory",
-                )
-        raise ValueError(f"Unknown jeans kind: {selected_kind}")
-    if product_type == "trouser":
-        return require_configured_path(
-            ACTIVE_LAPTOP_CONFIG.get("trouser_image_directory"),
-            "default trouser image directory",
-        )
-    return require_configured_path(
-        ACTIVE_LAPTOP_CONFIG.get("default_image_directory"),
-        "default shorts image directory",
-    )
+    normalized_product_type = product_type.strip().lower()
+    vertical_configs = ACTIVE_LAPTOP_CONFIG.get("verticals", {})
+    configured_vertical_kinds = vertical_configs.get(normalized_product_type, [])
+    for kind_name, configured_image_directory in configured_vertical_kinds:
+        if kind_name == selected_kind:
+            return require_configured_path(
+                configured_image_directory,
+                f"{selected_kind} {normalized_product_type} image directory",
+            )
+
+    raise ValueError(f"Unknown kind '{selected_kind}' for product '{product_type}'.")
 
 
 def build_listing_selection(
@@ -1076,11 +1151,12 @@ def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
     if not available_flow_targets:
         raise ValueError(f"No flow folders with flow.json were found in {FLOW_CONFIG_ROOT}")
 
+    default_flow = get_default_flow_target(available_flow_targets)
     default_option_index = next(
         (
             index
             for index, option in enumerate(available_flow_targets, start=1)
-            if option.product_type == "jeans" and option.surface == DEFAULT_FLOW_SURFACE
+            if option.product_type == default_flow.product_type and option.surface == default_flow.surface
         ),
         1,
     )
@@ -1097,14 +1173,14 @@ def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
     selected_flow = available_flow_targets[selected_flow_index - 1]
     kind_options = get_kind_options_for_product(selected_flow.product_type)
     selected_kind = kind_options[0]
-    if selected_flow.product_type == "jeans":
-        print("Choose jeans kind:")
+    if len(kind_options) > 1:
+        print(f"Choose {selected_flow.product_type} kind:")
         for index, kind_name in enumerate(kind_options, start=1):
             print(f"{index}. {kind_name}")
         kind_choice = input("Enter option [1]: " ).strip() or "1"
         kind_index = int(kind_choice)
         if kind_index < 1 or kind_index > len(kind_options):
-            raise ValueError(f"Please choose a valid jeans option from 1 to {len(kind_options)}.")
+            raise ValueError(f"Please choose a valid kind option from 1 to {len(kind_options)}.")
         selected_kind = kind_options[kind_index - 1]
 
     default_size = get_default_listing_size(selected_flow.product_type, selected_flow.surface)
@@ -1128,24 +1204,20 @@ def prompt_for_startup_selection() -> StartupSelection:
 
     laptop_names = sorted(LAPTOP_CONFIGS)
     default_laptop = LAPTOP_NAME
-    default_profile = resolve_profile_name(os.getenv("FIREFOX_PROFILE", "prabhu"))
-    default_flow = next(
-        (
-            option
-            for option in available_flow_targets
-            if option.product_type == "jeans" and option.surface == DEFAULT_FLOW_SURFACE
-        ),
-        available_flow_targets[0],
-    )
+    default_profile = resolve_profile_name(os.getenv("FIREFOX_PROFILE", DEFAULT_PROFILE_NAME))
+    default_flow = get_default_flow_target(available_flow_targets)
     flow_labels = {
         f"{option.product_type.title()} / {option.surface.title()}": option
         for option in available_flow_targets
     }
 
     root = tk.Tk()
-    root.title("Full LC Auto")
-    root.geometry("1080x760")
-    root.minsize(860, 560)
+    root.title(str(STARTUP_WINDOW_CONFIG.get("title", "Full LC Auto")))
+    root.geometry(str(STARTUP_WINDOW_CONFIG.get("geometry", "1080x760")))
+    root.minsize(
+        int(STARTUP_WINDOW_CONFIG.get("min_width", 860)),
+        int(STARTUP_WINDOW_CONFIG.get("min_height", 560)),
+    )
     root.configure(bg="#f3efe7")
 
     style = ttk.Style(root)
@@ -4267,7 +4339,12 @@ def load_json_payload(json_path: Path) -> dict[str, object]:
 
 
 def resolve_flow_directory(product_type: str, surface: str = DEFAULT_FLOW_SURFACE) -> Path:
-    return FLOW_CONFIG_ROOT / f"{product_type}_{surface}"
+    flow_pattern = str(ROUTING_CONFIG.get("flow_directory_pattern", "{product_type}_{surface}"))
+    flow_directory_name = flow_pattern.format(
+        product_type=product_type.strip().lower(),
+        surface=surface.strip().lower(),
+    )
+    return FLOW_CONFIG_ROOT / flow_directory_name
 
 
 def discover_flow_target_options() -> list[FlowTargetOption]:
@@ -4790,7 +4867,7 @@ def run_additional_description_flow_step(
         handler="additional_description",
         tab_label="Additional Description",
         checkpoint_label="Additional Description tab opened",
-        worksheet_name=get_additional_description_sheet_name(listing_selection.product_type),
+        worksheet_name=get_additional_description_sheet_name(listing_selection.product_type, listing_selection.surface),
         field_json_config_attr="additional_description_json",
         excel_config_attr="additional_description_excel",
         log_stage="ADDL",
@@ -4856,7 +4933,7 @@ def run_product_description_flow_step(
         handler="product_description",
         tab_label="Product Description",
         checkpoint_label="Product Description tab opened",
-        worksheet_name=get_product_description_sheet_name(listing_selection.product_type),
+        worksheet_name=get_product_description_sheet_name(listing_selection.product_type, listing_selection.surface),
         field_json_config_attr="product_description_json",
         excel_config_attr="product_description_excel",
         log_stage="DESC",
@@ -5563,6 +5640,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
 
 

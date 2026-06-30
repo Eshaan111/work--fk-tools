@@ -83,17 +83,13 @@ def get_kind_directories(laptop_name: str) -> OrderedDict[str, Path]:
         raise ValueError(f"Unknown LAPTOP_NAME '{laptop_name}'. Choose ASUS or VAIO.")
 
     kind_directories: OrderedDict[str, Path] = OrderedDict()
-    jeans_kinds = laptop_payload.get("jeans_kinds", {})
-    for option_key in sorted(jeans_kinds, key=int):
-        option_payload = jeans_kinds[option_key]
-        kind_directories[str(option_payload["kind"])] = resolve_config_path(option_payload["image_directory"])
-
-    trouser_directory = resolve_config_path(laptop_payload["paths"].get("trouser_image_directory"))
-    default_image_directory = resolve_config_path(laptop_payload["paths"].get("default_image_directory"))
-    if trouser_directory is not None:
-        kind_directories["Trouser"] = trouser_directory
-    if default_image_directory is not None:
-        kind_directories["Shorts"] = default_image_directory
+    vertical_payloads = laptop_payload.get("verticals", {})
+    for vertical_name in ("jeans", "trouser", "shorts"):
+        vertical_payload = vertical_payloads.get(vertical_name, {})
+        kinds_payload = vertical_payload.get("kinds", {})
+        for option_key in sorted(kinds_payload, key=int):
+            option_payload = kinds_payload[option_key]
+            kind_directories[str(option_payload["kind"])] = resolve_config_path(option_payload["image_directory"])
     return kind_directories
 
 

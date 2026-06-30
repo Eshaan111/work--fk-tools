@@ -8,10 +8,6 @@
       "snapshot_directory": "snapshots",
       "flow_config_root": "json_LC_creation",
       "data_inputs_root": "data inputs",
-      "common_data_inputs_root": "data inputs/common",
-      "jeans_data_inputs_root": "data inputs/jeans",
-      "shorts_data_inputs_root": "data inputs/shorts",
-      "trouser_data_inputs_root": "data inputs/trouser",
       "assets_root": "assets"
     },
     "defaults": {
@@ -20,7 +16,15 @@
       "flow_surface": "flipkart",
       "jeans_kind": "Beige",
       "listing_size": "28",
-      "startup_run_count": 5
+      "startup_run_count": 5,
+      "profile_name": "prabhu",
+      "product_type": "jeans",
+      "startup_window": {
+        "title": "Full LC Auto",
+        "geometry": "1080x760",
+        "min_width": 860,
+        "min_height": 560
+      }
     },
     "runtime": {
       "use_changes_saved_toast_for_verification": true,
@@ -79,12 +83,8 @@
       }
     },
     "common_inputs": {
-      "price_stock_shipping": {
-        "excel": "data inputs/common/Price-Stock-Shipping-inputs.xlsx",
-        "json": "assets/Price-Stock-Shipping-inputs.json"
-      },
+      "price_stock_shipping": {},
       "variants": {
-        "excel": "data inputs/common/Variants-excel.xlsx",
         "sheet_name_by_product_type": {
           "jeans": "Jeans Variant Inputs"
         }
@@ -104,22 +104,6 @@
           "additional_description_by_surface": {
             "flipkart": "Jeans Addl Desc Inputs",
             "shopsy": "Jeans Addl Desc Inputs"
-          }
-        },
-        "data_files_by_surface": {
-          "flipkart": {
-            "product_description_excel": "data inputs/jeans/Product-Description-inputs.xlsx",
-            "product_description_json": "assets/Product-Description-inputs-Jeans.json",
-            "additional_description_excel": "data inputs/jeans/Additional-Description-inputs.xlsx",
-            "additional_description_json": "assets/Additional-Description-inputs-Jeans.json",
-            "flow_directory": "json_LC_creation/jeans_flipkart"
-          },
-          "shopsy": {
-            "product_description_excel": "data inputs/jeans/Product-Description-inputs-Shopsy.xlsx",
-            "product_description_json": "json_LC_creation/jeans_shopsy/02_product_description.json",
-            "additional_description_excel": "data inputs/jeans/Additional-Description-inputs-Shopsy.xlsx",
-            "additional_description_json": "json_LC_creation/jeans_shopsy/01_additional_description.json",
-            "flow_directory": "json_LC_creation/jeans_shopsy"
           }
         }
       },
@@ -141,22 +125,6 @@
             "flipkart": "Trouser Addl Desc Inputs",
             "shopsy": "Shorts Addl Desc Inputs"
           }
-        },
-        "data_files_by_surface": {
-          "flipkart": {
-            "product_description_excel": "data inputs/trouser/Product-Description-inputs.xlsx",
-            "product_description_json": "json_LC_creation/trouser_flipkart/02_product_description.json",
-            "additional_description_excel": "data inputs/trouser/Additional-Description-inputs.xlsx",
-            "additional_description_json": "json_LC_creation/trouser_flipkart/01_additional_description.json",
-            "flow_directory": "json_LC_creation/trouser_flipkart"
-          },
-          "shopsy": {
-            "product_description_excel": "data inputs/trouser/Product-Description-inputs-Shopsy.xlsx",
-            "product_description_json": "json_LC_creation/trouser_shopsy/02_product_description.json",
-            "additional_description_excel": "data inputs/trouser/Additional-Description-inputs-Shopsy.xlsx",
-            "additional_description_json": "json_LC_creation/trouser_shopsy/01_additional_description.json",
-            "flow_directory": "json_LC_creation/trouser_shopsy"
-          }
         }
       },
       "shorts": {
@@ -172,14 +140,6 @@
           },
           "additional_description_by_surface": {
             "default": "Shorts Addl Desc Inputs"
-          }
-        },
-        "data_files_by_surface": {
-          "default": {
-            "product_description_excel": "data inputs/shorts/Product-Description-inputs.xlsx",
-            "product_description_json": "assets/Product-Description-inputs-Shorts.json",
-            "additional_description_excel": "data inputs/shorts/Additional-Description-inputs.xlsx",
-            "additional_description_json": "assets/Additional-Description-inputs-Shorts.json"
           }
         },
         "legacy_flow_steps": [
@@ -204,6 +164,27 @@
         "price_stock_shipping",
         "images"
       ]
+    },
+    "routing": {
+      "surface_file_suffix_by_surface": {
+        "flipkart": "",
+        "shopsy": "-Shopsy",
+        "default": ""
+      },
+      "flow_directory_pattern": "{product_type}_{surface}",
+      "common_input_files": {
+        "price_stock_shipping_excel": "common/Price-Stock-Shipping-inputs.xlsx",
+        "price_stock_shipping_json": "Price-Stock-Shipping-inputs.json",
+        "variants_excel": "common/Variants-excel.xlsx"
+      },
+      "product_input_patterns": {
+        "product_description_excel": "{product_type}/Product-Description-inputs{surface_suffix}.xlsx",
+        "additional_description_excel": "{product_type}/Additional-Description-inputs{surface_suffix}.xlsx",
+        "product_description_asset_json": "Product-Description-inputs-{product_title}.json",
+        "additional_description_asset_json": "Additional-Description-inputs-{product_title}.json",
+        "product_description_flow_json": "02_product_description.json",
+        "additional_description_flow_json": "01_additional_description.json"
+      }
     }
   },
   "laptops": {
@@ -213,41 +194,48 @@
         "prabhu": "C:/Users/ESHAAN/AppData/Roaming/Mozilla/Firefox/Profiles/kw3a25lf.default-release"
       },
       "paths": {
-        "default_image_directory": "C:/work-mom/LISTING IMAGES AUTOMATED/Shorts",
-        "trouser_image_directory": "C:/work-mom/LISTING IMAGES AUTOMATED/Trouser",
-        "snapshot_directory": "snapshots",
-        "price_stock_shipping_excel": "data inputs/common/Price-Stock-Shipping-inputs.xlsx",
-        "price_stock_shipping_json": "assets/Price-Stock-Shipping-inputs.json",
-        "product_description_excel": "data inputs/jeans/Product-Description-inputs.xlsx",
-        "product_description_shorts_excel": "data inputs/shorts/Product-Description-inputs.xlsx",
-        "product_description_json": "assets/Product-Description-inputs-Jeans.json",
-        "product_description_shorts_json": "assets/Product-Description-inputs-Shorts.json",
-        "additional_description_excel": "data inputs/jeans/Additional-Description-inputs.xlsx",
-        "additional_description_shorts_excel": "data inputs/shorts/Additional-Description-inputs.xlsx",
-        "additional_description_json": "assets/Additional-Description-inputs-Jeans.json",
-        "additional_description_shorts_json": "assets/Additional-Description-inputs-Shorts.json",
-        "variants_excel": "data inputs/common/Variants-excel.xlsx"
+        "snapshot_directory": "snapshots"
       },
-      "jeans_kinds": {
-        "1": {
-          "kind": "Beige",
-          "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BEIGE"
+      "verticals": {
+        "jeans": {
+          "kinds": {
+            "1": {
+              "kind": "Beige",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BEIGE"
+            },
+            "2": {
+              "kind": "Ice",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\ICE"
+            },
+            "3": {
+              "kind": "Black-baggy",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BLACK-BAGGY"
+            },
+            "4": {
+              "kind": "Black-Plain",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\Black-Plain"
+            },
+            "5": {
+              "kind": "White-Plain",
+              "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\White"
+            }
+          }
         },
-        "2": {
-          "kind": "Ice",
-          "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\ICE"
+        "trouser": {
+          "kinds": {
+            "1": {
+              "kind": "Trouser",
+              "image_directory": "C:/work-mom/LISTING IMAGES AUTOMATED/Trouser"
+            }
+          }
         },
-        "3": {
-          "kind": "Black-baggy",
-          "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BLACK-BAGGY"
-        },
-        "4": {
-          "kind": "Black-Plain",
-          "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\Black-Plain"
-        },
-        "5": {
-          "kind": "White-Plain",
-          "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\White"
+        "shorts": {
+          "kinds": {
+            "1": {
+              "kind": "Shorts",
+              "image_directory": "C:/work-mom/LISTING IMAGES AUTOMATED/Shorts"
+            }
+          }
         }
       }
     },
@@ -257,41 +245,48 @@
         "prabhu": "C:/Users/SONY/AppData/Roaming/Mozilla/Firefox/Profiles/gm1pmawk.default-release"
       },
       "paths": {
-        "default_image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED",
-        "trouser_image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Trouser",
-        "snapshot_directory": "snapshots",
-        "price_stock_shipping_excel": "data inputs/common/Price-Stock-Shipping-inputs.xlsx",
-        "price_stock_shipping_json": "assets/Price-Stock-Shipping-inputs.json",
-        "product_description_excel": "data inputs/jeans/Product-Description-inputs.xlsx",
-        "product_description_shorts_excel": "data inputs/shorts/Product-Description-inputs.xlsx",
-        "product_description_json": "assets/Product-Description-inputs-Jeans.json",
-        "product_description_shorts_json": "assets/Product-Description-inputs-Shorts.json",
-        "additional_description_excel": "data inputs/jeans/Additional-Description-inputs.xlsx",
-        "additional_description_shorts_excel": "data inputs/shorts/Additional-Description-inputs.xlsx",
-        "additional_description_json": "assets/Additional-Description-inputs-Jeans.json",
-        "additional_description_shorts_json": "assets/Additional-Description-inputs-Shorts.json",
-        "variants_excel": "data inputs/common/Variants-excel.xlsx"
+        "snapshot_directory": "snapshots"
       },
-      "jeans_kinds": {
-        "1": {
-          "kind": "Beige",
-          "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/BEIGE"
+      "verticals": {
+        "jeans": {
+          "kinds": {
+            "1": {
+              "kind": "Beige",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/BEIGE"
+            },
+            "2": {
+              "kind": "Ice",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/ICE"
+            },
+            "3": {
+              "kind": "Black-baggy",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-baggy"
+            },
+            "4": {
+              "kind": "Black-Plain",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-Plain"
+            },
+            "5": {
+              "kind": "White-Plain",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White"
+            }
+          }
         },
-        "2": {
-          "kind": "Ice",
-          "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/ICE"
+        "trouser": {
+          "kinds": {
+            "1": {
+              "kind": "Trouser",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Trouser"
+            }
+          }
         },
-        "3": {
-          "kind": "Black-baggy",
-          "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-baggy"
-        },
-        "4": {
-          "kind": "Black-Plain",
-          "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-Plain"
-        },
-        "5": {
-          "kind": "White-Plain",
-          "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White"
+        "shorts": {
+          "kinds": {
+            "1": {
+              "kind": "Shorts",
+              "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED"
+            }
+          }
         }
       }
     }
