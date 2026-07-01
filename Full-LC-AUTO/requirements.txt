@@ -1,0 +1,6 @@
+cryptography
+openpyxl
+PyAutoGUI
+pynput
+pyinstaller
+selenium
