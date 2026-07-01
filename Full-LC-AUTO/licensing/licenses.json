@@ -49,6 +49,14 @@
       "expiry_date": "2026-07-31",
       "machine_id": "32d94d5d-0e25-4342-96ec-43479a876b04",
       "allowed_version": "1.0.0"
+    },
+    {
+      "license_key": "VAIO-TESTING-001",
+      "customer_name": "VAIo-TESTING",
+      "status": "active",
+      "expiry_date": "2026-07-31",
+      "machine_id": "32d94d5d-0e25-4342-96ec-43479a876b04",
+      "allowed_version": "1.0.0"
     }
   ]
 }
