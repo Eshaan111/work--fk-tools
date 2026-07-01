@@ -1,3 +1,6 @@
 Full-LC-AUTO/licenses.json -text
 Full-LC-AUTO/licenses.sig -text
 Full-LC-AUTO/license_public_key.pem -text
+Full-LC-AUTO/licensing/licenses.json -text
+Full-LC-AUTO/licensing/licenses.sig -text
+Full-LC-AUTO/licensing/license_public_key.pem -text
