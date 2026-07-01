@@ -24,10 +24,16 @@ RUNTIME_DIRECTORY = get_runtime_directory()
 DEFAULT_KEY_DIRECTORY = Path('C:/Full-LC-AUTO-License-Keys')
 DEFAULT_PRIVATE_KEY = DEFAULT_KEY_DIRECTORY / 'license_private_key.pem'
 DEFAULT_PUBLIC_KEY = DEFAULT_KEY_DIRECTORY / 'license_public_key.pem'
-DEFAULT_APP_PUBLIC_KEY = RUNTIME_DIRECTORY / 'license_public_key.pem'
-DEFAULT_LICENSES_JSON = RUNTIME_DIRECTORY / 'licenses.json'
-DEFAULT_LICENSES_SIG = RUNTIME_DIRECTORY / 'licenses.sig'
-DEFAULT_CUSTOMER_LICENSE_JSON = RUNTIME_DIRECTORY / 'customer_license.json'
+DEFAULT_LICENSING_DIRECTORY = (
+    RUNTIME_DIRECTORY / 'licensing'
+    if (RUNTIME_DIRECTORY / 'licensing').exists()
+    else RUNTIME_DIRECTORY
+)
+DEFAULT_APP_PUBLIC_KEY = DEFAULT_LICENSING_DIRECTORY / 'license_public_key.pem'
+DEFAULT_LICENSES_JSON = DEFAULT_LICENSING_DIRECTORY / 'licenses.json'
+DEFAULT_LICENSES_SIG = DEFAULT_LICENSING_DIRECTORY / 'licenses.sig'
+DEFAULT_CUSTOMER_LICENSE_JSON = DEFAULT_LICENSING_DIRECTORY / 'customer_license.json'
+DEFAULT_TO_COPY_JSON = DEFAULT_LICENSING_DIRECTORY / 'to copy.json'
 
 
 def ensure_parent(path: Path) -> None:
@@ -109,13 +115,21 @@ def save_licenses_payload(json_path: Path, payload: dict[str, object]) -> None:
     json_path.write_text(json.dumps(payload, indent=2), encoding='utf-8', newline='\n')
 
 
+def write_json_file(output_path: Path, payload: object) -> None:
+    ensure_parent(output_path)
+    output_path.write_text(json.dumps(payload, indent=2), encoding='utf-8', newline='\n')
+
+
 def write_customer_license_file(customer_license_path: Path, license_key: str, customer_name: str) -> None:
-    ensure_parent(customer_license_path)
     payload = {
         'license_key': license_key.strip(),
         'customer_name': customer_name.strip(),
     }
-    customer_license_path.write_text(json.dumps(payload, indent=2), encoding='utf-8', newline='\n')
+    write_json_file(customer_license_path, payload)
+
+
+def write_to_copy_file(output_path: Path, entry_payload: dict[str, str]) -> None:
+    write_json_file(output_path, entry_payload)
 
 
 def build_license_entry(
@@ -265,6 +279,7 @@ def run_interactive() -> None:
 
     if choice == '5':
         json_path = prompt_path('licenses.json path', DEFAULT_LICENSES_JSON)
+        to_copy_path = prompt_path('to copy.json path', DEFAULT_TO_COPY_JSON)
         customer_license_path = prompt_path('customer_license.json path', DEFAULT_CUSTOMER_LICENSE_JSON)
         license_key = input('License key [auto]: ').strip()
         customer_name = input('Customer name: ').strip()
@@ -282,10 +297,12 @@ def run_interactive() -> None:
             status=status,
             existing_licenses=existing_licenses if isinstance(existing_licenses, list) else [],
         )
+        write_to_copy_file(to_copy_path, entry_payload)
         write_customer_license_file(customer_license_path, created_key, customer_name)
         print(f'License key: {created_key}')
         print('Add this entry to licenses.json:')
         print(json.dumps(entry_payload, indent=2))
+        print(f'To-copy file saved to: {to_copy_path}')
         print(f'Customer license file saved to: {customer_license_path}')
         return
 
@@ -316,6 +333,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_license_bundle_parser = subparsers.add_parser('print-license-entry')
     add_license_bundle_parser.add_argument('--json', default=str(DEFAULT_LICENSES_JSON))
+    add_license_bundle_parser.add_argument('--to-copy-out', default=str(DEFAULT_TO_COPY_JSON))
     add_license_bundle_parser.add_argument('--customer-license-out', default=str(DEFAULT_CUSTOMER_LICENSE_JSON))
     add_license_bundle_parser.add_argument('--license-key')
     add_license_bundle_parser.add_argument('--customer-name', required=True)
@@ -375,9 +393,11 @@ def main() -> None:
             status=args.status,
             existing_licenses=existing_licenses if isinstance(existing_licenses, list) else [],
         )
+        write_to_copy_file(Path(args.to_copy_out), entry_payload)
         write_customer_license_file(Path(args.customer_license_out), created_key, args.customer_name)
         print(f'License key: {created_key}')
         print(json.dumps(entry_payload, indent=2))
+        print(f'To-copy file saved to: {args.to_copy_out}')
         print(f'Customer license file saved to: {args.customer_license_out}')
         return
 
