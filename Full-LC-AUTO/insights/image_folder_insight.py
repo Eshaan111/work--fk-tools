@@ -12,7 +12,6 @@ from app_paths import get_app_root
 
 PROJECT_ROOT = get_app_root()
 CONFIG_PATH = PROJECT_ROOT / "config.json"
-OUTPUT_PATH = PROJECT_ROOT / "image_folder_insight.xlsx"
 TOKEN_PATTERN = re.compile(r"([A-Z]+)('?[SF])?$")
 
 THIN_BORDER = Border(
@@ -54,6 +53,8 @@ def resolve_config_path(path_value: str | None) -> Path | None:
 APP_CONFIG = load_app_config()
 DEFAULT_LAPTOP_NAME = str(APP_CONFIG["default_laptop_name"]).upper()
 SHARED_CONFIG: dict[str, object] = APP_CONFIG["shared"]
+PROJECT_PATHS: dict[str, object] = SHARED_CONFIG.get("project_paths", {})
+OUTPUT_PATH = resolve_config_path(str(PROJECT_PATHS.get("image_folder_insight_output_path", "insights/image_folder_insight.xlsx"))) or (PROJECT_ROOT / "insights" / "image_folder_insight.xlsx")
 BRAND_CODE_MAP = OrderedDict(SHARED_CONFIG["brands"]["brand_code_map"])
 PROFILE_BRAND_CODES = OrderedDict(
     (account_name, tuple(brand_codes))

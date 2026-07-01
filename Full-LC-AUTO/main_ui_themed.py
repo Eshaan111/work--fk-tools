@@ -16,7 +16,7 @@ from time import sleep
 
 import msvcrt
 from openpyxl import Workbook, load_workbook
-import image_folder_insight as image_folder_insight_module
+from insights import image_folder_insight as image_folder_insight_module
 import pyautogui
 from pynput.mouse import Button as PynputButton
 from pynput.mouse import Controller as MouseController
@@ -36,7 +36,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from license_verifier import LicenseValidationError, validate_license
+from licensing.license_verifier import LicenseValidationError, validate_license
 from app_paths import get_app_root
 
 

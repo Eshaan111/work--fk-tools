@@ -15,7 +15,7 @@ from time import sleep
 
 import msvcrt
 from openpyxl import Workbook, load_workbook
-import image_folder_insight as image_folder_insight_module
+from insights import image_folder_insight as image_folder_insight_module
 import pyautogui
 from pynput.mouse import Button as PynputButton
 from pynput.mouse import Controller as MouseController

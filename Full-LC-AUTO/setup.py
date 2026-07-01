@@ -659,6 +659,8 @@ class App:
         paths["flow_config_root"] = self.flow_root.get().strip() or "json_LC_creation"
         paths["data_inputs_root"] = self.data_inputs_root.get().strip() or "data inputs"
         paths["assets_root"] = self.assets_root.get().strip() or "assets"
+        paths["image_folder_insight_output_path"] = str(Path("insights") / "image_folder_insight.xlsx")
+        paths["legacy_root"] = "legacy"
 
         defaults["profile_name"] = str(accounts[0]["profile"])
         defaults["product_type"] = str(verticals[0]["name"])

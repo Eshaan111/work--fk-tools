@@ -36,9 +36,8 @@ Get-ChildItem -Path $runtimeDistRoot | ForEach-Object {
 
 $copyTargets = @(
     'config.json',
-    'customer_license.json',
-    'license_public_key.pem',
-    'image_folder_insight.xlsx',
+    'licensing',
+    'insights',
     'successful-run-record.xlsx',
     'assets',
     'data inputs',
@@ -65,7 +64,15 @@ if (Test-Path $productionConfigPath) {
     }
 }
 
-foreach ($target in @('licenses.json', 'licenses.sig')) {
+foreach ($target in @(
+    'licenses.json',
+    'licenses.sig',
+    'customer_license.json',
+    'license_public_key.pem',
+    'image_folder_insight.xlsx',
+    'licensing\licenses.json',
+    'licensing\licenses.sig'
+)) {
     $stalePath = Join-Path $releaseRoot $target
     if (Test-Path $stalePath) {
         Remove-Item -LiteralPath $stalePath -Force

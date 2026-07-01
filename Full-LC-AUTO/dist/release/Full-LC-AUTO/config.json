@@ -8,7 +8,9 @@
                                          "snapshot_directory":  "snapshots",
                                          "flow_config_root":  "json_LC_creation",
                                          "data_inputs_root":  "data inputs",
-                                         "assets_root":  "assets"
+                                         "assets_root":  "assets",
+                                         "image_folder_insight_output_path":  "insights/image_folder_insight.xlsx",
+                                         "legacy_root":  "legacy"
                                      },
                    "defaults":  {
                                     "listing_url":  "https://seller.flipkart.com/index.html#dashboard/addListings/single?vertical=jean\u0026vid=667",
@@ -191,13 +193,13 @@
                    "license":  {
                                    "enabled":  true,
                                    "app_version":  "1.0.0",
-                                   "public_key_path":  "license_public_key.pem",
-                                   "customer_license_path":  "customer_license.json",
-                                   "remote_licenses_url":  "https://raw.githubusercontent.com/Eshaan111/work--fk-tools/license-based-lc/Full-LC-AUTO/licenses.json",
-                                   "remote_signature_url":  "https://raw.githubusercontent.com/Eshaan111/work--fk-tools/license-based-lc/Full-LC-AUTO/licenses.sig",
+                                   "public_key_path":  "licensing/license_public_key.pem",
+                                   "customer_license_path":  "licensing/customer_license.json",
+                                   "remote_licenses_url":  "https://raw.githubusercontent.com/Eshaan111/work--fk-tools/license-based-lc/Full-LC-AUTO/licensing/licenses.json",
+                                   "remote_signature_url":  "https://raw.githubusercontent.com/Eshaan111/work--fk-tools/license-based-lc/Full-LC-AUTO/licensing/licenses.sig",
                                    "allow_local_fallback":  false,
-                                   "local_licenses_path":  "licenses.json",
-                                   "local_signature_path":  "licenses.sig"
+                                   "local_licenses_path":  "licensing/licenses.json",
+                                   "local_signature_path":  "licensing/licenses.sig"
                                }
                },
     "laptops":  {
@@ -305,4 +307,3 @@
                              }
                 }
 }
-
