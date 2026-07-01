@@ -5,19 +5,29 @@ import base64
 import json
 import re
 import shutil
+import sys
+import winreg
+from datetime import date, timedelta
 from pathlib import Path
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
+def get_runtime_directory() -> Path:
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+RUNTIME_DIRECTORY = get_runtime_directory()
 DEFAULT_KEY_DIRECTORY = Path('C:/Full-LC-AUTO-License-Keys')
 DEFAULT_PRIVATE_KEY = DEFAULT_KEY_DIRECTORY / 'license_private_key.pem'
 DEFAULT_PUBLIC_KEY = DEFAULT_KEY_DIRECTORY / 'license_public_key.pem'
-DEFAULT_APP_PUBLIC_KEY = Path(__file__).resolve().parent / 'license_public_key.pem'
-DEFAULT_LICENSES_JSON = Path(__file__).resolve().parent / 'licenses.json'
-DEFAULT_LICENSES_SIG = Path(__file__).resolve().parent / 'licenses.sig'
-DEFAULT_CUSTOMER_LICENSE_JSON = Path(__file__).resolve().parent / 'customer_license.json'
+DEFAULT_APP_PUBLIC_KEY = RUNTIME_DIRECTORY / 'license_public_key.pem'
+DEFAULT_LICENSES_JSON = RUNTIME_DIRECTORY / 'licenses.json'
+DEFAULT_LICENSES_SIG = RUNTIME_DIRECTORY / 'licenses.sig'
+DEFAULT_CUSTOMER_LICENSE_JSON = RUNTIME_DIRECTORY / 'customer_license.json'
 
 
 def ensure_parent(path: Path) -> None:
@@ -35,6 +45,43 @@ def prompt_yes_no(prompt_text: str, default: bool = True) -> bool:
     if not raw_value:
         return default
     return raw_value in {'y', 'yes'}
+
+
+def get_machine_id() -> str:
+    with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Cryptography") as key:
+        value, _ = winreg.QueryValueEx(key, "MachineGuid")
+    machine_id = str(value).strip()
+    if not machine_id:
+        raise SystemExit('Windows MachineGuid is empty.')
+    return machine_id
+
+
+def resolve_machine_id(machine_id: str | None) -> str:
+    normalized = (machine_id or '').strip()
+    if not normalized or normalized.lower() == 'auto':
+        return get_machine_id()
+    return normalized
+
+
+def prompt_machine_id() -> str:
+    detected = get_machine_id()
+    raw_value = input(f"Machine ID [{detected}]: " ).strip()
+    return raw_value or detected
+
+
+def get_default_expiry_date() -> str:
+    return (date.today() + timedelta(days=30)).isoformat()
+
+
+def resolve_expiry_date(expiry_date: str | None) -> str:
+    normalized = (expiry_date or '').strip()
+    return normalized or get_default_expiry_date()
+
+
+def prompt_expiry_date() -> str:
+    detected = get_default_expiry_date()
+    raw_value = input(f"Expiry date (YYYY-MM-DD) [{detected}]: " ).strip()
+    return raw_value or detected
 
 
 def copy_public_key_to_app(public_key_path: Path, app_public_key_path: Path) -> None:
@@ -71,6 +118,31 @@ def write_customer_license_file(customer_license_path: Path, license_key: str, c
     customer_license_path.write_text(json.dumps(payload, indent=2), encoding='utf-8', newline='\n')
 
 
+def build_license_entry(
+    license_key: str | None,
+    customer_name: str,
+    machine_id: str,
+    expiry_date: str,
+    allowed_version: str,
+    status: str,
+    existing_licenses: list[object] | None = None,
+) -> tuple[str, dict[str, str]]:
+    existing_licenses = existing_licenses or []
+    normalized_key = (license_key or '').strip() or build_auto_license_key(existing_licenses, customer_name)
+    for entry in existing_licenses:
+        if isinstance(entry, dict) and str(entry.get('license_key', '')).strip() == normalized_key:
+            raise SystemExit(f'License key already exists: {normalized_key}')
+    payload = {
+        'license_key': normalized_key,
+        'customer_name': customer_name.strip(),
+        'status': status.strip().lower(),
+        'expiry_date': expiry_date.strip(),
+        'machine_id': machine_id.strip(),
+        'allowed_version': allowed_version.strip(),
+    }
+    return normalized_key, payload
+
+
 def build_auto_license_key(licenses: list[object], customer_name: str) -> str:
     cleaned_name = re.sub(r'[^A-Za-z0-9]+', '-', customer_name.strip().upper()).strip('-') or 'CUSTOMER'
     prefix = cleaned_name[:20]
@@ -96,21 +168,17 @@ def add_license_entry(
 ) -> str:
     payload = load_licenses_payload(json_path)
     licenses = payload['licenses']
-    normalized_key = (license_key or '').strip() or build_auto_license_key(licenses, customer_name)
-    for entry in licenses:
-        if isinstance(entry, dict) and str(entry.get('license_key', '')).strip() == normalized_key:
-            raise SystemExit(f'License key already exists: {normalized_key}')
-
-    licenses.append(
-        {
-            'license_key': normalized_key,
-            'customer_name': customer_name.strip(),
-            'status': status.strip().lower(),
-            'expiry_date': expiry_date.strip(),
-            'machine_id': machine_id.strip(),
-            'allowed_version': allowed_version.strip(),
-        }
+    normalized_key, entry_payload = build_license_entry(
+        license_key=license_key,
+        customer_name=customer_name,
+        machine_id=machine_id,
+        expiry_date=expiry_date,
+        allowed_version=allowed_version,
+        status=status,
+        existing_licenses=licenses,
     )
+
+    licenses.append(entry_payload)
     save_licenses_payload(json_path, payload)
     return normalized_key
 
@@ -153,10 +221,9 @@ def run_interactive() -> None:
     print('1. Create keypair in C:')
     print('2. Validate a signed file')
     print('3. Sign a JSON file')
-    print('4. Add a license entry')
-    print('5. Add a license entry and sign')
-    print('6. Add a license entry, sign, and write customer license file')
-    choice = input('Choose 1, 2, 3, 4, 5, or 6: ').strip()
+    print('4. Print current machine ID')
+    print('5. Print license JSON entry and write customer_license.json')
+    choice = input('Choose 1, 2, 3, 4, or 5: ').strip()
 
     if choice == '1':
         private_out = prompt_path('Private key output path', DEFAULT_PRIVATE_KEY)
@@ -193,81 +260,36 @@ def run_interactive() -> None:
         return
 
     if choice == '4':
-        json_path = prompt_path('licenses.json path', DEFAULT_LICENSES_JSON)
-        license_key = input('License key [auto]: ').strip()
-        customer_name = input('Customer name: ').strip()
-        machine_id = input('Machine ID: ').strip()
-        expiry_date = input('Expiry date (YYYY-MM-DD): ').strip()
-        allowed_version = input('Allowed app version [1.0.0]: ').strip() or '1.0.0'
-        status = input('Status [active]: ').strip() or 'active'
-        created_key = add_license_entry(
-            json_path=json_path,
-            license_key=license_key,
-            customer_name=customer_name,
-            machine_id=machine_id,
-            expiry_date=expiry_date,
-            allowed_version=allowed_version,
-            status=status,
-        )
-        print(f'License key: {created_key}')
-        print(f'License added to: {json_path}')
-        print('Re-sign licenses.json before using this license.')
+        print(f'Current machine ID: {get_machine_id()}')
         return
 
     if choice == '5':
         json_path = prompt_path('licenses.json path', DEFAULT_LICENSES_JSON)
-        signature_path = prompt_path('Signature output path', DEFAULT_LICENSES_SIG)
-        private_key_path = prompt_path('Private key path', DEFAULT_PRIVATE_KEY)
-        license_key = input('License key [auto]: ').strip()
-        customer_name = input('Customer name: ').strip()
-        machine_id = input('Machine ID: ').strip()
-        expiry_date = input('Expiry date (YYYY-MM-DD): ').strip()
-        allowed_version = input('Allowed app version [1.0.0]: ').strip() or '1.0.0'
-        status = input('Status [active]: ').strip() or 'active'
-        created_key = add_license_entry(
-            json_path=json_path,
-            license_key=license_key,
-            customer_name=customer_name,
-            machine_id=machine_id,
-            expiry_date=expiry_date,
-            allowed_version=allowed_version,
-            status=status,
-        )
-        sign_json(private_key_path, json_path, signature_path)
-        print(f'License key: {created_key}')
-        print(f'License added to: {json_path}')
-        print(f'Signature saved to: {signature_path}')
-        return
-
-    if choice == '6':
-        json_path = prompt_path('licenses.json path', DEFAULT_LICENSES_JSON)
-        signature_path = prompt_path('Signature output path', DEFAULT_LICENSES_SIG)
-        private_key_path = prompt_path('Private key path', DEFAULT_PRIVATE_KEY)
         customer_license_path = prompt_path('customer_license.json path', DEFAULT_CUSTOMER_LICENSE_JSON)
         license_key = input('License key [auto]: ').strip()
         customer_name = input('Customer name: ').strip()
-        machine_id = input('Machine ID: ').strip()
-        expiry_date = input('Expiry date (YYYY-MM-DD): ').strip()
+        machine_id = prompt_machine_id()
+        expiry_date = prompt_expiry_date()
         allowed_version = input('Allowed app version [1.0.0]: ').strip() or '1.0.0'
         status = input('Status [active]: ').strip() or 'active'
-        created_key = add_license_entry(
-            json_path=json_path,
+        existing_licenses = load_licenses_payload(json_path).get('licenses', [])
+        created_key, entry_payload = build_license_entry(
             license_key=license_key,
             customer_name=customer_name,
             machine_id=machine_id,
             expiry_date=expiry_date,
             allowed_version=allowed_version,
             status=status,
+            existing_licenses=existing_licenses if isinstance(existing_licenses, list) else [],
         )
-        sign_json(private_key_path, json_path, signature_path)
         write_customer_license_file(customer_license_path, created_key, customer_name)
         print(f'License key: {created_key}')
-        print(f'License added to: {json_path}')
-        print(f'Signature saved to: {signature_path}')
+        print('Add this entry to licenses.json:')
+        print(json.dumps(entry_payload, indent=2))
         print(f'Customer license file saved to: {customer_license_path}')
         return
 
-    raise SystemExit('Invalid choice. Expected 1, 2, 3, 4, 5, or 6.')
+    raise SystemExit('Invalid choice. Expected 1, 2, 3, 4, or 5.')
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -290,35 +312,15 @@ def build_parser() -> argparse.ArgumentParser:
     verify_parser.add_argument('--json', required=True)
     verify_parser.add_argument('--sig', required=True)
 
-    add_license_parser = subparsers.add_parser('add-license')
-    add_license_parser.add_argument('--json', default=str(DEFAULT_LICENSES_JSON))
-    add_license_parser.add_argument('--license-key')
-    add_license_parser.add_argument('--customer-name', required=True)
-    add_license_parser.add_argument('--machine-id', required=True)
-    add_license_parser.add_argument('--expiry-date', required=True)
-    add_license_parser.add_argument('--allowed-version', default='1.0.0')
-    add_license_parser.add_argument('--status', default='active')
+    machine_id_parser = subparsers.add_parser('print-machine-id')
 
-    add_license_sign_parser = subparsers.add_parser('add-license-and-sign')
-    add_license_sign_parser.add_argument('--json', default=str(DEFAULT_LICENSES_JSON))
-    add_license_sign_parser.add_argument('--sig', default=str(DEFAULT_LICENSES_SIG))
-    add_license_sign_parser.add_argument('--private-key', default=str(DEFAULT_PRIVATE_KEY))
-    add_license_sign_parser.add_argument('--license-key')
-    add_license_sign_parser.add_argument('--customer-name', required=True)
-    add_license_sign_parser.add_argument('--machine-id', required=True)
-    add_license_sign_parser.add_argument('--expiry-date', required=True)
-    add_license_sign_parser.add_argument('--allowed-version', default='1.0.0')
-    add_license_sign_parser.add_argument('--status', default='active')
-
-    add_license_bundle_parser = subparsers.add_parser('add-license-sign-and-write-customer')
+    add_license_bundle_parser = subparsers.add_parser('print-license-entry')
     add_license_bundle_parser.add_argument('--json', default=str(DEFAULT_LICENSES_JSON))
-    add_license_bundle_parser.add_argument('--sig', default=str(DEFAULT_LICENSES_SIG))
-    add_license_bundle_parser.add_argument('--private-key', default=str(DEFAULT_PRIVATE_KEY))
     add_license_bundle_parser.add_argument('--customer-license-out', default=str(DEFAULT_CUSTOMER_LICENSE_JSON))
     add_license_bundle_parser.add_argument('--license-key')
     add_license_bundle_parser.add_argument('--customer-name', required=True)
-    add_license_bundle_parser.add_argument('--machine-id', required=True)
-    add_license_bundle_parser.add_argument('--expiry-date', required=True)
+    add_license_bundle_parser.add_argument('--machine-id', default='auto')
+    add_license_bundle_parser.add_argument('--expiry-date')
     add_license_bundle_parser.add_argument('--allowed-version', default='1.0.0')
     add_license_bundle_parser.add_argument('--status', default='active')
     return parser
@@ -357,57 +359,25 @@ def main() -> None:
         print('Signature is valid.')
         return
 
-    if args.command == 'add-license':
-        created_key = add_license_entry(
-            json_path=Path(args.json),
-            license_key=args.license_key,
-            customer_name=args.customer_name,
-            machine_id=args.machine_id,
-            expiry_date=args.expiry_date,
-            allowed_version=args.allowed_version,
-            status=args.status,
-        )
-        print(f'License key: {created_key}')
-        print(f'License added to: {args.json}')
-        print('Re-sign licenses.json before using this license.')
+    if args.command == 'print-machine-id':
+        print(get_machine_id())
         return
 
-    if args.command == 'add-license-and-sign':
+    if args.command == 'print-license-entry':
         json_path = Path(args.json)
-        signature_path = Path(args.sig)
-        created_key = add_license_entry(
-            json_path=json_path,
+        existing_licenses = load_licenses_payload(json_path).get('licenses', [])
+        created_key, entry_payload = build_license_entry(
             license_key=args.license_key,
             customer_name=args.customer_name,
-            machine_id=args.machine_id,
-            expiry_date=args.expiry_date,
+            machine_id=resolve_machine_id(args.machine_id),
+            expiry_date=resolve_expiry_date(args.expiry_date),
             allowed_version=args.allowed_version,
             status=args.status,
+            existing_licenses=existing_licenses if isinstance(existing_licenses, list) else [],
         )
-        sign_json(Path(args.private_key), json_path, signature_path)
+        write_customer_license_file(Path(args.customer_license_out), created_key, args.customer_name)
         print(f'License key: {created_key}')
-        print(f'License added to: {args.json}')
-        print(f'Signature saved to: {args.sig}')
-        return
-
-    if args.command == 'add-license-sign-and-write-customer':
-        json_path = Path(args.json)
-        signature_path = Path(args.sig)
-        customer_license_out = Path(args.customer_license_out)
-        created_key = add_license_entry(
-            json_path=json_path,
-            license_key=args.license_key,
-            customer_name=args.customer_name,
-            machine_id=args.machine_id,
-            expiry_date=args.expiry_date,
-            allowed_version=args.allowed_version,
-            status=args.status,
-        )
-        sign_json(Path(args.private_key), json_path, signature_path)
-        write_customer_license_file(customer_license_out, created_key, args.customer_name)
-        print(f'License key: {created_key}')
-        print(f'License added to: {args.json}')
-        print(f'Signature saved to: {args.sig}')
+        print(json.dumps(entry_payload, indent=2))
         print(f'Customer license file saved to: {args.customer_license_out}')
         return
 

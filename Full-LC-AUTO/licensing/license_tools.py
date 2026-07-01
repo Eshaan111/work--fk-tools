@@ -5,6 +5,7 @@ import base64
 import json
 import re
 import shutil
+import sys
 import winreg
 from datetime import date, timedelta
 from pathlib import Path
@@ -13,13 +14,20 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
+def get_runtime_directory() -> Path:
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+RUNTIME_DIRECTORY = get_runtime_directory()
 DEFAULT_KEY_DIRECTORY = Path('C:/Full-LC-AUTO-License-Keys')
 DEFAULT_PRIVATE_KEY = DEFAULT_KEY_DIRECTORY / 'license_private_key.pem'
 DEFAULT_PUBLIC_KEY = DEFAULT_KEY_DIRECTORY / 'license_public_key.pem'
-DEFAULT_APP_PUBLIC_KEY = Path(__file__).resolve().parent / 'license_public_key.pem'
-DEFAULT_LICENSES_JSON = Path(__file__).resolve().parent / 'licenses.json'
-DEFAULT_LICENSES_SIG = Path(__file__).resolve().parent / 'licenses.sig'
-DEFAULT_CUSTOMER_LICENSE_JSON = Path(__file__).resolve().parent / 'customer_license.json'
+DEFAULT_APP_PUBLIC_KEY = RUNTIME_DIRECTORY / 'license_public_key.pem'
+DEFAULT_LICENSES_JSON = RUNTIME_DIRECTORY / 'licenses.json'
+DEFAULT_LICENSES_SIG = RUNTIME_DIRECTORY / 'licenses.sig'
+DEFAULT_CUSTOMER_LICENSE_JSON = RUNTIME_DIRECTORY / 'customer_license.json'
 
 
 def ensure_parent(path: Path) -> None:

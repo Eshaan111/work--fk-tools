@@ -23,7 +23,20 @@ $buildArgs = @(
     (Join-Path $projectRoot 'main_ui_themed.py')
 )
 
+$licenseToolBuildArgs = @(
+    '--noconfirm',
+    '--clean',
+    '--onefile',
+    '--console',
+    '--name', 'license_tools',
+    '--distpath', $distRoot,
+    '--workpath', $buildRoot,
+    '--specpath', $projectRoot,
+    (Join-Path $projectRoot 'licensing\license_tools.py')
+)
+
 & $venvPython -m PyInstaller @buildArgs
+& $venvPython -m PyInstaller @licenseToolBuildArgs
 
 if (Test-Path $releaseRoot) {
     Remove-Item -LiteralPath $releaseRoot -Recurse -Force
@@ -32,6 +45,14 @@ New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
 
 Get-ChildItem -Path $runtimeDistRoot | ForEach-Object {
     Copy-Item -Path $_.FullName -Destination $releaseRoot -Recurse -Force
+}
+
+$licenseToolExe = Join-Path $distRoot 'license_tools.exe'
+if (Test-Path $licenseToolExe) {
+    Copy-Item -Path $licenseToolExe -Destination (Join-Path $releaseRoot 'license_tools.exe') -Force
+}
+else {
+    throw "License tools exe was not produced at $licenseToolExe"
 }
 
 $copyTargets = @(
@@ -80,3 +101,4 @@ foreach ($target in @(
 }
 
 Write-Host "Runtime release ready at $releaseRoot"
+Write-Host "License tools exe ready at $(Join-Path $releaseRoot 'license_tools.exe')"

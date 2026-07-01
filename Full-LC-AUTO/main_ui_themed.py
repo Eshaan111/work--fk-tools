@@ -455,6 +455,47 @@ def get_default_flow_target(available_flow_targets: list[FlowTargetOption]) -> F
     )
 
 
+def get_required_flow_asset_paths(product_type: str, surface: str) -> list[Path]:
+    required_paths = [
+        resolve_flow_directory(product_type, surface) / "flow.json",
+        get_product_description_excel_path(product_type, surface),
+        get_product_description_json_path(product_type, surface),
+        get_additional_description_excel_path(product_type, surface),
+        get_additional_description_json_path(product_type, surface),
+        get_common_input_file_path("price_stock_shipping_excel"),
+        get_common_input_file_path("price_stock_shipping_json"),
+    ]
+    legacy_flow_steps = LEGACY_PRODUCT_PAGE_FLOWS.get(product_type.strip().lower(), ())
+    if "variants" in legacy_flow_steps:
+        required_paths.append(get_common_input_file_path("variants_excel"))
+    return required_paths
+
+
+def is_flow_target_available(option: FlowTargetOption) -> bool:
+    try:
+        load_listing_flow_definition(option.product_type, option.surface)
+        required_paths = get_required_flow_asset_paths(option.product_type, option.surface)
+    except Exception:
+        return False
+    return all(path.exists() for path in required_paths)
+
+
+def build_available_flow_catalog(
+    available_flow_targets: list[FlowTargetOption],
+) -> tuple[dict[str, list[str]], dict[tuple[str, str], FlowTargetOption]]:
+    surfaces_by_product: dict[str, list[str]] = {}
+    option_lookup: dict[tuple[str, str], FlowTargetOption] = {}
+    for option in available_flow_targets:
+        if not is_flow_target_available(option):
+            continue
+        surfaces_by_product.setdefault(option.product_type, []).append(option.surface)
+        option_lookup[(option.product_type, option.surface)] = option
+
+    for product_type, surfaces in surfaces_by_product.items():
+        surfaces_by_product[product_type] = sorted(surfaces)
+    return surfaces_by_product, option_lookup
+
+
 @dataclass(slots=True)
 class BotConfig:
     listing_url: str = DEFAULT_LISTING_URL
@@ -1202,40 +1243,74 @@ def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
     if not available_flow_targets:
         raise ValueError(f"No flow folders with flow.json were found in {FLOW_CONFIG_ROOT}")
 
-    default_flow = get_default_flow_target(available_flow_targets)
-    default_option_index = next(
+    surfaces_by_product, flow_options_by_target = build_available_flow_catalog(available_flow_targets)
+    if not flow_options_by_target:
+        raise ValueError(
+            "No valid flow targets were found with the required JSON and Excel assets."
+        )
+
+    selectable_flow_targets = list(flow_options_by_target.values())
+    default_flow = get_default_flow_target(selectable_flow_targets)
+    product_options = sorted(surfaces_by_product)
+    default_product_index = next(
         (
             index
-            for index, option in enumerate(available_flow_targets, start=1)
-            if option.product_type == default_flow.product_type and option.surface == default_flow.surface
+            for index, product_type in enumerate(product_options, start=1)
+            if product_type == default_flow.product_type
         ),
         1,
     )
-    print("Choose listing flow:")
-    for index, option in enumerate(available_flow_targets, start=1):
-        print(f"{index}. {option.product_type} / {option.surface}")
-    selected_flow_value = input(f"Enter option [{default_option_index}]: " ).strip()
-    selected_flow_index = int(selected_flow_value or str(default_option_index))
-    if selected_flow_index < 1 or selected_flow_index > len(available_flow_targets):
+
+    print("Choose product vertical:")
+    for index, product_type in enumerate(product_options, start=1):
+        print(f"{index}. {product_type}")
+    selected_product_value = input(f"Enter option [{default_product_index}]: ").strip()
+    selected_product_index = int(selected_product_value or str(default_product_index))
+    if selected_product_index < 1 or selected_product_index > len(product_options):
         raise ValueError(
-            f"Please choose a valid flow option from 1 to {len(available_flow_targets)}."
+            f"Please choose a valid product option from 1 to {len(product_options)}."
         )
 
-    selected_flow = available_flow_targets[selected_flow_index - 1]
+    selected_product_type = product_options[selected_product_index - 1]
+    surface_options = surfaces_by_product[selected_product_type]
+    default_surface_index = next(
+        (
+            index
+            for index, surface_name in enumerate(surface_options, start=1)
+            if (
+                selected_product_type == default_flow.product_type
+                and surface_name == default_flow.surface
+            )
+        ),
+        1,
+    )
+
+    print(f"Choose {selected_product_type} surface:")
+    for index, surface_name in enumerate(surface_options, start=1):
+        print(f"{index}. {surface_name}")
+    selected_surface_value = input(f"Enter option [{default_surface_index}]: ").strip()
+    selected_surface_index = int(selected_surface_value or str(default_surface_index))
+    if selected_surface_index < 1 or selected_surface_index > len(surface_options):
+        raise ValueError(
+            f"Please choose a valid surface option from 1 to {len(surface_options)}."
+        )
+
+    selected_surface = surface_options[selected_surface_index - 1]
+    selected_flow = flow_options_by_target[(selected_product_type, selected_surface)]
     kind_options = get_kind_options_for_product(selected_flow.product_type)
     selected_kind = kind_options[0]
     if len(kind_options) > 1:
         print(f"Choose {selected_flow.product_type} kind:")
         for index, kind_name in enumerate(kind_options, start=1):
             print(f"{index}. {kind_name}")
-        kind_choice = input("Enter option [1]: " ).strip() or "1"
+        kind_choice = input("Enter option [1]: ").strip() or "1"
         kind_index = int(kind_choice)
         if kind_index < 1 or kind_index > len(kind_options):
             raise ValueError(f"Please choose a valid kind option from 1 to {len(kind_options)}.")
         selected_kind = kind_options[kind_index - 1]
 
     default_size = get_default_listing_size(selected_flow.product_type, selected_flow.surface)
-    size_value = input(f"Enter size [{default_size}]: " ).strip() or default_size
+    size_value = input(f"Enter size [{default_size}]: ").strip() or default_size
     brand_name = prompt_for_brand(profile_name)
     return build_listing_selection(
         profile_name,
@@ -1248,18 +1323,26 @@ def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
     )
 
 
+
 def prompt_for_startup_selection() -> StartupSelection:
     available_flow_targets = discover_flow_target_options()
     if not available_flow_targets:
         raise ValueError(f"No flow folders with flow.json were found in {FLOW_CONFIG_ROOT}")
 
+    surfaces_by_product, flow_options_by_target = build_available_flow_catalog(available_flow_targets)
+    if not flow_options_by_target:
+        raise ValueError(
+            "No valid flow targets were found with the required JSON and Excel assets."
+        )
+
+    selectable_flow_targets = list(flow_options_by_target.values())
     laptop_names = sorted(LAPTOP_CONFIGS)
     default_laptop = LAPTOP_NAME
     default_profile = resolve_profile_name(os.getenv("FIREFOX_PROFILE", DEFAULT_PROFILE_NAME))
-    default_flow = get_default_flow_target(available_flow_targets)
-    flow_labels = {
-        f"{option.product_type.title()} / {option.surface.title()}": option
-        for option in available_flow_targets
+    default_flow = get_default_flow_target(selectable_flow_targets)
+    product_labels = {
+        product_type.title(): product_type
+        for product_type in sorted(surfaces_by_product)
     }
 
     root = tk.Tk()
@@ -1391,7 +1474,8 @@ def prompt_for_startup_selection() -> StartupSelection:
 
     laptop_var = tk.StringVar(value=default_laptop)
     profile_var = tk.StringVar(value=default_profile)
-    flow_var = tk.StringVar(value=f"{default_flow.product_type.title()} / {default_flow.surface.title()}")
+    product_type_var = tk.StringVar(value=default_flow.product_type.title())
+    surface_var = tk.StringVar()
     run_count_var = tk.StringVar(value=DEFAULT_STARTUP_RUN_COUNT)
     kind_var = tk.StringVar()
     size_var = tk.StringVar()
@@ -1432,7 +1516,7 @@ def prompt_for_startup_selection() -> StartupSelection:
     sidebar_points = [
         "Laptop-aware paths and Firefox profiles",
         "Live image-folder availability insight",
-        "Same automation engine underneath",
+        "Only ready surfaces are shown",
     ]
     for row_index, point in enumerate(sidebar_points, start=4):
         ttk.Label(
@@ -1455,7 +1539,7 @@ def prompt_for_startup_selection() -> StartupSelection:
     ttk.Label(setup_card, text="Run Setup", style="SectionTitle.TLabel").grid(row=0, column=0, columnspan=2, sticky="w")
     ttk.Label(
         setup_card,
-        text="Pick the target account, flow, and image source before starting the batch.",
+        text="Pick the laptop, account, vertical, and only the surfaces that already have the required JSON and Excel files.",
         style="Muted.TLabel",
         wraplength=600,
         justify="left",
@@ -1463,7 +1547,8 @@ def prompt_for_startup_selection() -> StartupSelection:
 
     laptop_combo = ttk.Combobox(setup_card, textvariable=laptop_var, state="readonly", values=laptop_names, style="App.TCombobox")
     profile_combo = ttk.Combobox(setup_card, textvariable=profile_var, state="readonly", style="App.TCombobox")
-    flow_combo = ttk.Combobox(setup_card, textvariable=flow_var, state="readonly", values=list(flow_labels), style="App.TCombobox")
+    product_type_combo = ttk.Combobox(setup_card, textvariable=product_type_var, state="readonly", values=list(product_labels), style="App.TCombobox")
+    surface_combo = ttk.Combobox(setup_card, textvariable=surface_var, state="readonly", style="App.TCombobox")
     kind_combo = ttk.Combobox(setup_card, textvariable=kind_var, state="readonly", style="App.TCombobox")
     brand_combo = ttk.Combobox(setup_card, textvariable=brand_var, state="readonly", style="App.TCombobox")
     size_entry = ttk.Entry(setup_card, textvariable=size_var, width=20, style="App.TEntry")
@@ -1492,8 +1577,21 @@ def prompt_for_startup_selection() -> StartupSelection:
         insight_text.insert("1.0", message)
         insight_text.configure(state="disabled")
 
+    def current_product_type() -> str:
+        return product_labels[product_type_var.get()]
+
+    def get_surface_labels_for_product(product_type: str) -> dict[str, str]:
+        return {
+            surface_name.title(): surface_name
+            for surface_name in surfaces_by_product.get(product_type, [])
+        }
+
     def current_surface_name() -> str:
-        return flow_labels[flow_var.get()].surface
+        surface_labels = get_surface_labels_for_product(current_product_type())
+        return surface_labels[surface_var.get()]
+
+    def get_selected_flow() -> FlowTargetOption:
+        return flow_options_by_target[(current_product_type(), current_surface_name())]
 
     def refresh_insight_preview() -> None:
         if insight_workbook_path is None or insight_laptop_name != laptop_var.get() or not insight_workbook_path.exists():
@@ -1528,7 +1626,7 @@ def prompt_for_startup_selection() -> StartupSelection:
         insight_workbook_path = None
         insight_laptop_name = None
         refresh_brand_options()
-        refresh_flow_options()
+        refresh_surface_options()
         refresh_insight_preview()
 
     def refresh_brand_options(*_args: object) -> None:
@@ -1547,8 +1645,27 @@ def prompt_for_startup_selection() -> StartupSelection:
         elif insight_workbook_path is not None:
             refresh_insight_preview()
 
-    def refresh_flow_options(*_args: object) -> None:
-        selected_flow = flow_labels[flow_var.get()]
+    def refresh_surface_options(*_args: object) -> None:
+        selected_product_type = current_product_type()
+        surface_labels = get_surface_labels_for_product(selected_product_type)
+        surface_combo["values"] = list(surface_labels)
+        default_surface_label = next(
+            (
+                label
+                for label, surface_name in surface_labels.items()
+                if (
+                    selected_product_type == default_flow.product_type
+                    and surface_name == default_flow.surface
+                )
+            ),
+            next(iter(surface_labels)),
+        )
+        if surface_var.get() not in surface_labels:
+            surface_var.set(default_surface_label)
+        refresh_kind_options()
+
+    def refresh_kind_options(*_args: object) -> None:
+        selected_flow = get_selected_flow()
         kind_options = get_kind_options_for_product(selected_flow.product_type)
         kind_combo["values"] = kind_options
         if kind_var.get() not in kind_options:
@@ -1584,7 +1701,7 @@ def prompt_for_startup_selection() -> StartupSelection:
             run_count = int(run_count_var.get().strip())
             if run_count < 1:
                 raise ValueError("Run count must be at least 1.")
-            selected_flow = flow_labels[flow_var.get()]
+            selected_flow = get_selected_flow()
             listing_selection = build_listing_selection(
                 profile_var.get(),
                 selected_flow.product_type,
@@ -1612,8 +1729,9 @@ def prompt_for_startup_selection() -> StartupSelection:
     fields = [
         ("Laptop Mode", laptop_combo),
         ("Seller Profile", profile_combo),
-        ("Flow Target", flow_combo),
-        ("Product Kind", kind_combo),
+        ("Vertical", product_type_combo),
+        ("Surface", surface_combo),
+        ("Kind", kind_combo),
         ("Listing Size", size_entry),
         ("Brand", brand_combo),
         ("Batch Runs", run_count_entry),
@@ -1661,7 +1779,8 @@ def prompt_for_startup_selection() -> StartupSelection:
 
     laptop_var.trace_add("write", refresh_profile_options)
     profile_var.trace_add("write", refresh_brand_options)
-    flow_var.trace_add("write", refresh_flow_options)
+    product_type_var.trace_add("write", refresh_surface_options)
+    surface_var.trace_add("write", refresh_kind_options)
     kind_var.trace_add("write", lambda *_args: refresh_insight_preview())
     brand_var.trace_add("write", lambda *_args: refresh_insight_preview())
 
@@ -1679,7 +1798,6 @@ def prompt_for_startup_selection() -> StartupSelection:
     if selection is None:
         raise SystemExit("Startup selection cancelled.")
     return selection
-
 
 def build_firefox_driver(config: BotConfig) -> webdriver.Firefox:
     options = FirefoxOptions()
