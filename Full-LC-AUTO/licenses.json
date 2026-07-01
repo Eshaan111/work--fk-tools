@@ -9,6 +9,14 @@
       "expiry_date": "2027-12-31",
       "machine_id": "a6942543-7244-4782-ba1d-1d8ae516c295",
       "allowed_version": "1.0.0"
+    },
+    {
+      "license_key": "DEMO-ESHAAN-003",
+      "customer_name": "Eshaan Demo",
+      "status": "active",
+      "expiry_date": "2027-12-31",
+      "machine_id": "a6942543-7244-4782-ba1d-1d8ae516c295",
+      "allowed_version": "1.0.0"
     }
   ]
 }
