@@ -38,8 +38,6 @@ $copyTargets = @(
     'config.json',
     'customer_license.json',
     'license_public_key.pem',
-    'licenses.json',
-    'licenses.sig',
     'image_folder_insight.xlsx',
     'successful-run-record.xlsx',
     'assets',
@@ -53,6 +51,24 @@ foreach ($target in $copyTargets) {
     $source = Join-Path $projectRoot $target
     if (Test-Path $source) {
         Copy-Item -Path $source -Destination $releaseRoot -Recurse -Force
+    }
+}
+
+
+
+$productionConfigPath = Join-Path $releaseRoot 'config.json'
+if (Test-Path $productionConfigPath) {
+    $configJson = Get-Content -Path $productionConfigPath -Raw | ConvertFrom-Json
+    if ($null -ne $configJson.shared -and $null -ne $configJson.shared.license) {
+        $configJson.shared.license.allow_local_fallback = $false
+        $configJson | ConvertTo-Json -Depth 100 | Set-Content -Path $productionConfigPath
+    }
+}
+
+foreach ($target in @('licenses.json', 'licenses.sig')) {
+    $stalePath = Join-Path $releaseRoot $target
+    if (Test-Path $stalePath) {
+        Remove-Item -LiteralPath $stalePath -Force
     }
 }
 
