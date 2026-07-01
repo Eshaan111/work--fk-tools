@@ -5,6 +5,8 @@ import base64
 import json
 import re
 import shutil
+import winreg
+from datetime import date, timedelta
 from pathlib import Path
 
 from cryptography.exceptions import InvalidSignature
@@ -35,6 +37,43 @@ def prompt_yes_no(prompt_text: str, default: bool = True) -> bool:
     if not raw_value:
         return default
     return raw_value in {'y', 'yes'}
+
+
+def get_machine_id() -> str:
+    with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Cryptography") as key:
+        value, _ = winreg.QueryValueEx(key, "MachineGuid")
+    machine_id = str(value).strip()
+    if not machine_id:
+        raise SystemExit('Windows MachineGuid is empty.')
+    return machine_id
+
+
+def resolve_machine_id(machine_id: str | None) -> str:
+    normalized = (machine_id or '').strip()
+    if not normalized or normalized.lower() == 'auto':
+        return get_machine_id()
+    return normalized
+
+
+def prompt_machine_id() -> str:
+    detected = get_machine_id()
+    raw_value = input(f"Machine ID [{detected}]: " ).strip()
+    return raw_value or detected
+
+
+def get_default_expiry_date() -> str:
+    return (date.today() + timedelta(days=30)).isoformat()
+
+
+def resolve_expiry_date(expiry_date: str | None) -> str:
+    normalized = (expiry_date or '').strip()
+    return normalized or get_default_expiry_date()
+
+
+def prompt_expiry_date() -> str:
+    detected = get_default_expiry_date()
+    raw_value = input(f"Expiry date (YYYY-MM-DD) [{detected}]: " ).strip()
+    return raw_value or detected
 
 
 def copy_public_key_to_app(public_key_path: Path, app_public_key_path: Path) -> None:
@@ -196,8 +235,8 @@ def run_interactive() -> None:
         json_path = prompt_path('licenses.json path', DEFAULT_LICENSES_JSON)
         license_key = input('License key [auto]: ').strip()
         customer_name = input('Customer name: ').strip()
-        machine_id = input('Machine ID: ').strip()
-        expiry_date = input('Expiry date (YYYY-MM-DD): ').strip()
+        machine_id = prompt_machine_id()
+        expiry_date = prompt_expiry_date()
         allowed_version = input('Allowed app version [1.0.0]: ').strip() or '1.0.0'
         status = input('Status [active]: ').strip() or 'active'
         created_key = add_license_entry(
@@ -220,8 +259,8 @@ def run_interactive() -> None:
         private_key_path = prompt_path('Private key path', DEFAULT_PRIVATE_KEY)
         license_key = input('License key [auto]: ').strip()
         customer_name = input('Customer name: ').strip()
-        machine_id = input('Machine ID: ').strip()
-        expiry_date = input('Expiry date (YYYY-MM-DD): ').strip()
+        machine_id = prompt_machine_id()
+        expiry_date = prompt_expiry_date()
         allowed_version = input('Allowed app version [1.0.0]: ').strip() or '1.0.0'
         status = input('Status [active]: ').strip() or 'active'
         created_key = add_license_entry(
@@ -246,8 +285,8 @@ def run_interactive() -> None:
         customer_license_path = prompt_path('customer_license.json path', DEFAULT_CUSTOMER_LICENSE_JSON)
         license_key = input('License key [auto]: ').strip()
         customer_name = input('Customer name: ').strip()
-        machine_id = input('Machine ID: ').strip()
-        expiry_date = input('Expiry date (YYYY-MM-DD): ').strip()
+        machine_id = prompt_machine_id()
+        expiry_date = prompt_expiry_date()
         allowed_version = input('Allowed app version [1.0.0]: ').strip() or '1.0.0'
         status = input('Status [active]: ').strip() or 'active'
         created_key = add_license_entry(
@@ -294,8 +333,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_license_parser.add_argument('--json', default=str(DEFAULT_LICENSES_JSON))
     add_license_parser.add_argument('--license-key')
     add_license_parser.add_argument('--customer-name', required=True)
-    add_license_parser.add_argument('--machine-id', required=True)
-    add_license_parser.add_argument('--expiry-date', required=True)
+    add_license_parser.add_argument('--machine-id', default='auto')
+    add_license_parser.add_argument('--expiry-date')
     add_license_parser.add_argument('--allowed-version', default='1.0.0')
     add_license_parser.add_argument('--status', default='active')
 
@@ -305,8 +344,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_license_sign_parser.add_argument('--private-key', default=str(DEFAULT_PRIVATE_KEY))
     add_license_sign_parser.add_argument('--license-key')
     add_license_sign_parser.add_argument('--customer-name', required=True)
-    add_license_sign_parser.add_argument('--machine-id', required=True)
-    add_license_sign_parser.add_argument('--expiry-date', required=True)
+    add_license_sign_parser.add_argument('--machine-id', default='auto')
+    add_license_sign_parser.add_argument('--expiry-date')
     add_license_sign_parser.add_argument('--allowed-version', default='1.0.0')
     add_license_sign_parser.add_argument('--status', default='active')
 
@@ -317,8 +356,8 @@ def build_parser() -> argparse.ArgumentParser:
     add_license_bundle_parser.add_argument('--customer-license-out', default=str(DEFAULT_CUSTOMER_LICENSE_JSON))
     add_license_bundle_parser.add_argument('--license-key')
     add_license_bundle_parser.add_argument('--customer-name', required=True)
-    add_license_bundle_parser.add_argument('--machine-id', required=True)
-    add_license_bundle_parser.add_argument('--expiry-date', required=True)
+    add_license_bundle_parser.add_argument('--machine-id', default='auto')
+    add_license_bundle_parser.add_argument('--expiry-date')
     add_license_bundle_parser.add_argument('--allowed-version', default='1.0.0')
     add_license_bundle_parser.add_argument('--status', default='active')
     return parser
@@ -362,8 +401,8 @@ def main() -> None:
             json_path=Path(args.json),
             license_key=args.license_key,
             customer_name=args.customer_name,
-            machine_id=args.machine_id,
-            expiry_date=args.expiry_date,
+            machine_id=resolve_machine_id(args.machine_id),
+            expiry_date=resolve_expiry_date(args.expiry_date),
             allowed_version=args.allowed_version,
             status=args.status,
         )
@@ -379,8 +418,8 @@ def main() -> None:
             json_path=json_path,
             license_key=args.license_key,
             customer_name=args.customer_name,
-            machine_id=args.machine_id,
-            expiry_date=args.expiry_date,
+            machine_id=resolve_machine_id(args.machine_id),
+            expiry_date=resolve_expiry_date(args.expiry_date),
             allowed_version=args.allowed_version,
             status=args.status,
         )
@@ -398,8 +437,8 @@ def main() -> None:
             json_path=json_path,
             license_key=args.license_key,
             customer_name=args.customer_name,
-            machine_id=args.machine_id,
-            expiry_date=args.expiry_date,
+            machine_id=resolve_machine_id(args.machine_id),
+            expiry_date=resolve_expiry_date(args.expiry_date),
             allowed_version=args.allowed_version,
             status=args.status,
         )
