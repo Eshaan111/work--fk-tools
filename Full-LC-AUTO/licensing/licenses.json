@@ -25,6 +25,14 @@
       "expiry_date": "2027-12-31",
       "machine_id": "a6942543-7244-4782-ba1d-1d8ae516c295",
       "allowed_version": "1.0.0"
+    },
+    {
+      "license_key": "VAIO-001",
+      "customer_name": "Vaio",
+      "status": "active",
+      "expiry_date": "2026-07-31",
+      "machine_id": "32d94d5d-0e25-4342-96ec-43479a876b04",
+      "allowed_version": "1.0.0"
     }
   ]
 }
