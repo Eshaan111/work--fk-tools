@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import shutil
 from pathlib import Path
 
 from cryptography.exceptions import InvalidSignature
@@ -11,6 +12,7 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 DEFAULT_KEY_DIRECTORY = Path('C:/Full-LC-AUTO-License-Keys')
 DEFAULT_PRIVATE_KEY = DEFAULT_KEY_DIRECTORY / 'license_private_key.pem'
 DEFAULT_PUBLIC_KEY = DEFAULT_KEY_DIRECTORY / 'license_public_key.pem'
+DEFAULT_APP_PUBLIC_KEY = Path(__file__).resolve().parent / 'license_public_key.pem'
 
 
 def ensure_parent(path: Path) -> None:
@@ -20,6 +22,19 @@ def ensure_parent(path: Path) -> None:
 def prompt_path(prompt_text: str, default: Path) -> Path:
     raw_value = input(f"{prompt_text} [{default}]: ").strip()
     return Path(raw_value) if raw_value else default
+
+
+def prompt_yes_no(prompt_text: str, default: bool = True) -> bool:
+    suffix = 'Y/n' if default else 'y/N'
+    raw_value = input(f"{prompt_text} [{suffix}]: ").strip().lower()
+    if not raw_value:
+        return default
+    return raw_value in {'y', 'yes'}
+
+
+def copy_public_key_to_app(public_key_path: Path, app_public_key_path: Path) -> None:
+    ensure_parent(app_public_key_path)
+    shutil.copy2(public_key_path, app_public_key_path)
 
 
 def generate_keypair(private_out: Path, public_out: Path) -> None:
@@ -68,6 +83,9 @@ def run_interactive() -> None:
         generate_keypair(private_out, public_out)
         print(f'Private key saved to: {private_out}')
         print(f'Public key saved to: {public_out}')
+        if prompt_yes_no(f'Copy public key into app repo at {DEFAULT_APP_PUBLIC_KEY}?', True):
+            copy_public_key_to_app(public_out, DEFAULT_APP_PUBLIC_KEY)
+            print(f'App public key updated at: {DEFAULT_APP_PUBLIC_KEY}')
         return
 
     if choice == '2':
@@ -103,6 +121,8 @@ def build_parser() -> argparse.ArgumentParser:
     generate_parser = subparsers.add_parser('generate-keypair')
     generate_parser.add_argument('--private-out', default=str(DEFAULT_PRIVATE_KEY))
     generate_parser.add_argument('--public-out', default=str(DEFAULT_PUBLIC_KEY))
+    generate_parser.add_argument('--copy-public-to-app', action='store_true')
+    generate_parser.add_argument('--app-public-out', default=str(DEFAULT_APP_PUBLIC_KEY))
 
     sign_parser = subparsers.add_parser('sign-json')
     sign_parser.add_argument('--private-key', default=str(DEFAULT_PRIVATE_KEY))
@@ -125,9 +145,15 @@ def main() -> None:
         return
 
     if args.command == 'generate-keypair':
-        generate_keypair(Path(args.private_out), Path(args.public_out))
-        print(f'Private key saved to: {args.private_out}')
-        print(f'Public key saved to: {args.public_out}')
+        private_out = Path(args.private_out)
+        public_out = Path(args.public_out)
+        generate_keypair(private_out, public_out)
+        print(f'Private key saved to: {private_out}')
+        print(f'Public key saved to: {public_out}')
+        if args.copy_public_to_app:
+            app_public_out = Path(args.app_public_out)
+            copy_public_key_to_app(public_out, app_public_out)
+            print(f'App public key updated at: {app_public_out}')
         return
 
     if args.command == 'sign-json':

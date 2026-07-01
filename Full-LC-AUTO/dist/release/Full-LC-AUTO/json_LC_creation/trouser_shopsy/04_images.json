@@ -1,0 +1,52 @@
+{
+  "order": 5,
+  "step_name": "images",
+  "handler": "image_upload_page",
+  "page_name": "Image addition",
+  "tab": {
+    "label": "Image addition",
+    "locator_candidates": [
+      {
+        "type": "xpath",
+        "value": "//button[@role='tab' and .//span[contains(normalize-space(), 'Image addition')]]"
+      }
+    ]
+  },
+  "checkpoint_label": "Images tab opened",
+  "brand_name": "STARVIELLE",
+  "image_source": {
+    "type": "selected_listing_image_directory",
+    "brand_name_from": "$context.brand_name"
+  },
+  "selection_rules": {
+    "folder_strategy": "choose_next_available_for_brand",
+    "ordered_images": true,
+    "max_images": 5
+  },
+  "upload_targets": {
+    "slot_ids": [
+      "thumbnail_0",
+      "thumbnail_1",
+      "thumbnail_2",
+      "thumbnail_3",
+      "thumbnail_4"
+    ]
+  },
+  "filled_checkpoint_label": "Images uploaded",
+  "verification": {
+    "enabled": true,
+    "mode": "tab_cycle",
+    "cycle_label": "Images page",
+    "tab_sequence": [
+      "Image addition",
+      "Variant addition"
+    ],
+    "success_conditions": [
+      {
+        "type": "toast",
+        "value": "Changes saved!"
+      }
+    ],
+    "checkpoint_label": "Changes saved detected after Images page click cycle"
+  }
+}

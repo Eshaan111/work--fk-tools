@@ -195,7 +195,7 @@
                                    "customer_license_path":  "customer_license.json",
                                    "remote_licenses_url":  "https://raw.githubusercontent.com/Eshaan111/work--fk-tools/main/Full-LC-AUTO/licenses.json",
                                    "remote_signature_url":  "https://raw.githubusercontent.com/Eshaan111/work--fk-tools/main/Full-LC-AUTO/licenses.sig",
-                                   "allow_local_fallback":  true,
+                                   "allow_local_fallback":  false,
                                    "local_licenses_path":  "licenses.json",
                                    "local_signature_path":  "licenses.sig"
                                }

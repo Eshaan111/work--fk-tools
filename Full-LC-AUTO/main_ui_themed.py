@@ -6,6 +6,7 @@ import random
 import re
 import string
 import threading
+import traceback
 import tkinter as tk
 from tkinter import messagebox, ttk
 from datetime import datetime
@@ -36,9 +37,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from license_verifier import LicenseValidationError, validate_license
+from app_paths import get_app_root
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = get_app_root()
 CONFIG_PATH = PROJECT_ROOT / "config.json"
 
 
@@ -98,6 +100,7 @@ def build_laptop_configs(config_payload: dict[str, object]) -> dict[str, dict[st
 
 
 APP_CONFIG = load_app_config()
+ACTIVE_LICENSE_RESULT = None
 SHARED_CONFIG: dict[str, object] = APP_CONFIG["shared"]
 PROJECT_PATHS: dict[str, str] = SHARED_CONFIG["project_paths"]
 PRODUCT_CONFIGS: dict[str, object] = SHARED_CONFIG["products"]
@@ -130,7 +133,49 @@ ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME]
 
 
 def enforce_runtime_license() -> None:
-    validate_license(PROJECT_ROOT, APP_CONFIG)
+    global ACTIVE_LICENSE_RESULT
+    ACTIVE_LICENSE_RESULT = validate_license(PROJECT_ROOT, APP_CONFIG)
+
+
+def get_license_status_text() -> tuple[str, str]:
+    result = ACTIVE_LICENSE_RESULT
+    if result is None:
+        return ("License not checked", "#8a6d3b")
+    if getattr(result, "source", "") == "remote":
+        return (f"License verified: {result.customer_name}", "#215732")
+    if getattr(result, "source", "") == "local":
+        return (f"Test mode: local license fallback for {result.customer_name}", "#8a5a12")
+    if getattr(result, "source", "") == "disabled":
+        return ("License disabled", "#8a6d3b")
+    return (f"License source: {getattr(result, 'source', 'unknown')}", "#8a6d3b")
+
+
+def show_startup_error_dialog(title: str, message: str, details: str | None = None) -> None:
+    try:
+        RUN_HELPERS_DIRECTORY.mkdir(parents=True, exist_ok=True)
+        error_lines = [message]
+        if details:
+            error_lines.extend(['', details])
+        (RUN_HELPERS_DIRECTORY / 'startup_error_latest.txt').write_text('\n'.join(error_lines) + '\n', encoding='utf-8')
+    except Exception:
+        pass
+
+    dialog_root: tk.Tk | None = None
+    try:
+        dialog_root = tk.Tk()
+        dialog_root.withdraw()
+        dialog_message = message
+        if details:
+            dialog_message += '\n\nDetails:\n' + details
+        messagebox.showerror(title, dialog_message, parent=dialog_root)
+    except Exception:
+        pass
+    finally:
+        if dialog_root is not None:
+            try:
+                dialog_root.destroy()
+            except Exception:
+                pass
 
 
 def set_active_laptop(laptop_name: str) -> None:
@@ -1371,12 +1416,25 @@ def prompt_for_startup_selection() -> StartupSelection:
         justify="left",
     ).grid(row=1, column=0, pady=(10, 24), sticky="w")
 
+    license_status_text, license_status_color = get_license_status_text()
+    license_status_var = tk.StringVar(value=license_status_text)
+    license_status_label = ttk.Label(
+        sidebar,
+        textvariable=license_status_var,
+        background="#17352d",
+        foreground=license_status_color,
+        font=("Segoe UI Semibold", 10),
+        wraplength=280,
+        justify="left",
+    )
+    license_status_label.grid(row=2, column=0, pady=(0, 20), sticky="w")
+
     sidebar_points = [
         "Laptop-aware paths and Firefox profiles",
         "Live image-folder availability insight",
         "Same automation engine underneath",
     ]
-    for row_index, point in enumerate(sidebar_points, start=2):
+    for row_index, point in enumerate(sidebar_points, start=4):
         ttk.Label(
             sidebar,
             text=f"? {point}",
@@ -5642,11 +5700,19 @@ def main() -> None:
         run_job(startup_selection)
     except KeyboardInterrupt:
         raise SystemExit("Interrupted by user.") from None
-    except (LicenseValidationError, ValueError, RuntimeError) as exc:
-        raise SystemExit(str(exc)) from exc
+    except SystemExit as exc:
+        exit_message = str(exc)
+        if exit_message and exit_message != 'Startup selection cancelled.':
+            show_startup_error_dialog('Full LC Auto', exit_message)
+        raise
+    except Exception as exc:
+        details = traceback.format_exc()
+        show_startup_error_dialog('Full LC Auto', str(exc) or exc.__class__.__name__, details)
+        raise SystemExit(str(exc) or exc.__class__.__name__) from exc
 
 if __name__ == "__main__":
     main()
+
 
 
 

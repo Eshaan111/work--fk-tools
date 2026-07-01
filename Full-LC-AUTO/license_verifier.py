@@ -96,6 +96,20 @@ def load_local_bundle(project_root: Path, license_config: dict[str, object]) -> 
         raise LicenseValidationError(f"Could not load local license files: {exc}") from exc
 
 
+def resolve_license_record_from_bundle(
+    licenses_bytes: bytes,
+    signature_text: str,
+    public_key,
+    license_key: str,
+) -> dict[str, object]:
+    verify_signature(licenses_bytes, signature_text, public_key)
+    try:
+        licenses_payload = json.loads(licenses_bytes.decode("utf-8"))
+    except Exception as exc:
+        raise LicenseValidationError(f"licenses.json is not valid UTF-8 JSON: {exc}") from exc
+    return find_license_record(licenses_payload, license_key)
+
+
 def find_license_record(licenses_payload: dict[str, object], license_key: str) -> dict[str, object]:
     licenses = licenses_payload.get("licenses", [])
     if not isinstance(licenses, list):
@@ -134,16 +148,16 @@ def validate_license(project_root: Path, app_config: dict[str, object]) -> Licen
         raise LicenseValidationError("customer_license.json does not contain a license_key.")
 
     public_key = load_public_key(public_key_path)
+    remote_error: LicenseValidationError | None = None
     try:
         licenses_bytes, signature_text, source = load_remote_bundle(remote_licenses_url, remote_signature_url)
-    except LicenseValidationError:
+        license_record = resolve_license_record_from_bundle(licenses_bytes, signature_text, public_key, license_key)
+    except LicenseValidationError as exc:
+        remote_error = exc
         if not allow_local_fallback:
             raise
         licenses_bytes, signature_text, source = load_local_bundle(project_root, license_config)
-
-    verify_signature(licenses_bytes, signature_text, public_key)
-    licenses_payload = json.loads(licenses_bytes.decode("utf-8"))
-    license_record = find_license_record(licenses_payload, license_key)
+        license_record = resolve_license_record_from_bundle(licenses_bytes, signature_text, public_key, license_key)
 
     status = str(license_record.get("status", "")).strip().lower()
     if status != "active":

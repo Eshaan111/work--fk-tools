@@ -8,8 +8,9 @@ from pathlib import Path
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from app_paths import get_app_root
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = get_app_root()
 CONFIG_PATH = PROJECT_ROOT / "config.json"
 OUTPUT_PATH = PROJECT_ROOT / "image_folder_insight.xlsx"
 TOKEN_PATTERN = re.compile(r"([A-Z]+)('?[SF])?$")
@@ -333,3 +334,4 @@ def main(laptop_name: str | None = None) -> Path:
 
 if __name__ == "__main__":
     main()
+

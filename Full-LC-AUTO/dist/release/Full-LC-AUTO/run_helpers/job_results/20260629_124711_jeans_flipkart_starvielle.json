@@ -1,0 +1,58 @@
+{
+  "saved_at": "2026-06-29T12:47:11",
+  "summary": {
+    "completed_runs": 0,
+    "failed_runs": 1,
+    "total_runs": 1,
+    "result_path": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\run_helpers\\job_results\\20260629_124711_jeans_flipkart_starvielle.json"
+  },
+  "listing_selection": {
+    "product_type": "jeans",
+    "surface": "flipkart",
+    "kind": "Beige",
+    "size": "28",
+    "brand_name": "STARVIELLE",
+    "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BEIGE"
+  },
+  "config": {
+    "profile_name": "prabhu",
+    "listing_url": "https://seller.flipkart.com/index.html#dashboard/addListings/single?vertical=jean&vid=667",
+    "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BEIGE",
+    "snapshot_directory": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\snapshots",
+    "price_stock_shipping_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\common\\Price-Stock-Shipping-inputs.xlsx",
+    "price_stock_shipping_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\assets\\Price-Stock-Shipping-inputs.json",
+    "product_description_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\jeans\\Product-Description-inputs.xlsx",
+    "product_description_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\assets\\Product-Description-inputs-Jeans.json",
+    "additional_description_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\jeans\\Additional-Description-inputs.xlsx",
+    "additional_description_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\assets\\Additional-Description-inputs-Jeans.json",
+    "variants_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\common\\Variants-excel.xlsx",
+    "firefox_profile_path": "C:\\Users\\ESHAAN\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\kw3a25lf.default-release",
+    "headless": false
+  },
+  "flow": {
+    "enabled": true,
+    "flow_name": "listing_creation",
+    "product_type": "jeans",
+    "surface": "flipkart",
+    "step_ids": [
+      "open_listing",
+      "additional_description",
+      "product_description",
+      "price_stock_shipping",
+      "images",
+      "variants",
+      "save_and_exit"
+    ]
+  },
+  "sessions": [
+    {
+      "run_index": 1,
+      "total_runs": 1,
+      "succeeded": false,
+      "error_message": "Run 1/1 failed: Message: Could not find label element for field: Jeans Length\n",
+      "snapshot_path": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\snapshots\\20260629_124709_run_1_error_before_close.html",
+      "success_record_path": null,
+      "success_record_error": null
+    }
+  ]
+}
