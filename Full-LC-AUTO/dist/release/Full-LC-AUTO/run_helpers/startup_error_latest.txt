@@ -1,0 +1,9 @@
+This license is not approved for the current machine.
+
+Traceback (most recent call last):
+  File "main_ui_themed.py", line 5933, in main
+  File "main_ui_themed.py", line 247, in enforce_runtime_license
+  File "licensing\license_verifier.py", line 168, in validate_license
+    raise LicenseValidationError("This license is not approved for the current machine.")
+licensing.license_verifier.LicenseValidationError: This license is not approved for the current machine.
+

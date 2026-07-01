@@ -20,6 +20,10 @@ $buildArgs = @(
     '--distpath', $distRoot,
     '--workpath', $buildRoot,
     '--specpath', $projectRoot,
+    '--collect-submodules', 'selenium.webdriver',
+    '--hidden-import', 'selenium.webdriver.firefox.webdriver',
+    '--hidden-import', 'selenium.webdriver.firefox.service',
+    '--hidden-import', 'selenium.webdriver.firefox.options',
     (Join-Path $projectRoot 'main_ui_themed.py')
 )
 

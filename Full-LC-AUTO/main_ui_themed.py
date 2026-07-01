@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import atexit
+import ctypes
 import json
 import os
 import random
@@ -42,6 +44,114 @@ from app_paths import get_app_root
 
 PROJECT_ROOT = get_app_root()
 CONFIG_PATH = PROJECT_ROOT / "config.json"
+WINDOWS_JOB_OBJECTS: list[object] = []
+ACTIVE_WEBDRIVERS: list[webdriver.Firefox] = []
+
+
+def register_windows_job_kill_on_close(process_id: int) -> object | None:
+    if os.name != "nt":
+        return None
+
+    kernel32 = ctypes.windll.kernel32
+    PROCESS_TERMINATE = 0x0001
+    PROCESS_SET_QUOTA = 0x0100
+    PROCESS_SET_INFORMATION = 0x0200
+    JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000
+    JobObjectExtendedLimitInformation = 9
+
+    class JOBOBJECT_BASIC_LIMIT_INFORMATION(ctypes.Structure):
+        _fields_ = [
+            ("PerProcessUserTimeLimit", ctypes.c_longlong),
+            ("PerJobUserTimeLimit", ctypes.c_longlong),
+            ("LimitFlags", ctypes.c_uint32),
+            ("MinimumWorkingSetSize", ctypes.c_size_t),
+            ("MaximumWorkingSetSize", ctypes.c_size_t),
+            ("ActiveProcessLimit", ctypes.c_uint32),
+            ("Affinity", ctypes.c_size_t),
+            ("PriorityClass", ctypes.c_uint32),
+            ("SchedulingClass", ctypes.c_uint32),
+        ]
+
+    class IO_COUNTERS(ctypes.Structure):
+        _fields_ = [
+            ("ReadOperationCount", ctypes.c_uint64),
+            ("WriteOperationCount", ctypes.c_uint64),
+            ("OtherOperationCount", ctypes.c_uint64),
+            ("ReadTransferCount", ctypes.c_uint64),
+            ("WriteTransferCount", ctypes.c_uint64),
+            ("OtherTransferCount", ctypes.c_uint64),
+        ]
+
+    class JOBOBJECT_EXTENDED_LIMIT_INFORMATION(ctypes.Structure):
+        _fields_ = [
+            ("BasicLimitInformation", JOBOBJECT_BASIC_LIMIT_INFORMATION),
+            ("IoInfo", IO_COUNTERS),
+            ("ProcessMemoryLimit", ctypes.c_size_t),
+            ("JobMemoryLimit", ctypes.c_size_t),
+            ("PeakProcessMemoryUsed", ctypes.c_size_t),
+            ("PeakJobMemoryUsed", ctypes.c_size_t),
+        ]
+
+    job_handle = kernel32.CreateJobObjectW(None, None)
+    if not job_handle:
+        return None
+
+    extended_info = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
+    extended_info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+    if not kernel32.SetInformationJobObject(
+        job_handle,
+        JobObjectExtendedLimitInformation,
+        ctypes.byref(extended_info),
+        ctypes.sizeof(extended_info),
+    ):
+        kernel32.CloseHandle(job_handle)
+        return None
+
+    process_handle = kernel32.OpenProcess(
+        PROCESS_TERMINATE | PROCESS_SET_QUOTA | PROCESS_SET_INFORMATION,
+        False,
+        process_id,
+    )
+    if not process_handle:
+        kernel32.CloseHandle(job_handle)
+        return None
+
+    try:
+        if not kernel32.AssignProcessToJobObject(job_handle, process_handle):
+            kernel32.CloseHandle(job_handle)
+            return None
+    finally:
+        kernel32.CloseHandle(process_handle)
+
+    WINDOWS_JOB_OBJECTS.append(job_handle)
+    return job_handle
+
+
+def track_webdriver_for_shutdown(driver: webdriver.Firefox) -> None:
+    ACTIVE_WEBDRIVERS.append(driver)
+    service_process = getattr(getattr(driver, "service", None), "process", None)
+    service_pid = getattr(service_process, "pid", None)
+    if isinstance(service_pid, int):
+        register_windows_job_kill_on_close(service_pid)
+
+
+def untrack_webdriver(driver: webdriver.Firefox) -> None:
+    try:
+        ACTIVE_WEBDRIVERS.remove(driver)
+    except ValueError:
+        pass
+
+
+def cleanup_active_webdrivers() -> None:
+    while ACTIVE_WEBDRIVERS:
+        driver = ACTIVE_WEBDRIVERS.pop()
+        try:
+            driver.quit()
+        except Exception:
+            pass
+
+
+atexit.register(cleanup_active_webdrivers)
 
 
 def load_app_config() -> dict[str, object]:
@@ -1815,10 +1925,14 @@ def build_firefox_driver(config: BotConfig) -> webdriver.Firefox:
 
     if config.geckodriver_path:
         service = FirefoxService(executable_path=config.geckodriver_path)
-        return webdriver.Firefox(service=service, options=options)
+        driver = webdriver.Firefox(service=service, options=options)
+        track_webdriver_for_shutdown(driver)
+        return driver
 
     # Selenium Manager can resolve the driver automatically in recent Selenium versions.
-    return webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(options=options)
+    track_webdriver_for_shutdown(driver)
+    return driver
 
 
 def open_listing_page(driver: webdriver.Firefox, url: str) -> None:
@@ -5742,7 +5856,10 @@ def run_single_listing_session(
         return session_result
     finally:
         pause_controller.stop()
-        driver.quit()
+        try:
+            driver.quit()
+        finally:
+            untrack_webdriver(driver)
         log_event("BOOT", f"Closed browser for run {run_index}/{total_runs}.")
 
 
