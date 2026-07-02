@@ -1,0 +1,1 @@
+powershell -ExecutionPolicy Bypass -File Full-LC-AUTO/build_runtime_exe.ps1

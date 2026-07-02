@@ -3,6 +3,10 @@ from PyInstaller.utils.hooks import collect_submodules
 
 hiddenimports = ['selenium.webdriver.firefox.webdriver', 'selenium.webdriver.firefox.service', 'selenium.webdriver.firefox.options']
 hiddenimports += collect_submodules('selenium.webdriver')
+hiddenimports += collect_submodules('urllib3')
+hiddenimports += collect_submodules('websocket')
+hiddenimports += collect_submodules('trio')
+hiddenimports += collect_submodules('trio_websocket')
 
 
 a = Analysis(

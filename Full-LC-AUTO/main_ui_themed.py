@@ -4,6 +4,7 @@ import atexit
 import ctypes
 import json
 import os
+import queue
 import random
 import re
 import string
@@ -331,6 +332,74 @@ FOLDER_SUFFIX_SURFACE = {
 }
 PROFILE_ALIASES = dict(PROFILES_CONFIG["aliases"])
 CURRENT_RUN_LABEL = "setup"
+LOG_LISTENERS: list[object] = []
+
+
+class RunAbortRequested(Exception):
+    pass
+
+
+class RunControl:
+    def __init__(self) -> None:
+        self.abort_batch_event = threading.Event()
+        self.abort_current_run_event = threading.Event()
+        self._active_driver_lock = threading.Lock()
+        self._active_driver: webdriver.Firefox | None = None
+
+    def set_active_driver(self, driver: webdriver.Firefox | None) -> None:
+        with self._active_driver_lock:
+            self._active_driver = driver
+
+    def clear_active_driver(self, driver: webdriver.Firefox | None = None) -> None:
+        with self._active_driver_lock:
+            if driver is None or self._active_driver is driver:
+                self._active_driver = None
+
+    def request_abort_current_run(self) -> None:
+        self.abort_current_run_event.set()
+        self._close_active_driver()
+
+    def request_abort_batch(self) -> None:
+        self.abort_batch_event.set()
+        self.abort_current_run_event.set()
+        self._close_active_driver()
+
+    def finish_current_run(self) -> None:
+        if not self.abort_batch_event.is_set():
+            self.abort_current_run_event.clear()
+
+    def should_abort_batch(self) -> bool:
+        return self.abort_batch_event.is_set()
+
+    def should_abort_current_run(self) -> bool:
+        return self.abort_current_run_event.is_set()
+
+    def check_abort(self) -> None:
+        if self.abort_batch_event.is_set():
+            raise RunAbortRequested("Batch aborted by user.")
+        if self.abort_current_run_event.is_set():
+            raise RunAbortRequested("Current run aborted by user.")
+
+    def _close_active_driver(self) -> None:
+        with self._active_driver_lock:
+            active_driver = self._active_driver
+        if active_driver is None:
+            return
+        try:
+            active_driver.quit()
+        except Exception:
+            pass
+
+
+def add_log_listener(listener: object) -> None:
+    LOG_LISTENERS.append(listener)
+
+
+def remove_log_listener(listener: object) -> None:
+    try:
+        LOG_LISTENERS.remove(listener)
+    except ValueError:
+        pass
 
 
 def set_current_run_label(run_label: str) -> None:
@@ -340,7 +409,13 @@ def set_current_run_label(run_label: str) -> None:
 
 def log_event(stage: str, message: str) -> None:
     timestamp = datetime.now().strftime("%H:%M:%S")
-    print(f"[{timestamp} {CURRENT_RUN_LABEL}] [{stage}] {message}")
+    log_line = f"[{timestamp} {CURRENT_RUN_LABEL}] [{stage}] {message}"
+    print(log_line)
+    for listener in list(LOG_LISTENERS):
+        try:
+            listener(log_line)
+        except Exception:
+            pass
 
 
 def write_latest_error(error_message: str) -> None:
@@ -766,6 +841,8 @@ class JobSessionResult:
     snapshot_path: Path | None = None
     success_record_path: Path | None = None
     success_record_error: str | None = None
+    launch_failed_before_browser: bool = False
+    driver_log_path: Path | None = None
 
 
 @dataclass(slots=True)
@@ -886,10 +963,11 @@ def get_variants_sheet_name(product_type: str) -> str:
 
 
 class PauseController:
-    def __init__(self) -> None:
+    def __init__(self, run_control: RunControl | None = None) -> None:
         self.pause_requested = False
         self._stop_event = threading.Event()
         self._listener_thread: threading.Thread | None = None
+        self.run_control = run_control
 
     def start(self) -> None:
         if self._listener_thread is not None:
@@ -900,6 +978,10 @@ class PauseController:
 
     def stop(self) -> None:
         self._stop_event.set()
+        if self._listener_thread is not None and self._listener_thread.is_alive():
+            self._listener_thread.join(timeout=0.5)
+        self._listener_thread = None
+        self.pause_requested = False
 
     def pause_if_requested(
         self,
@@ -907,6 +989,8 @@ class PauseController:
         driver: webdriver.Firefox,
         config: BotConfig,
     ) -> None:
+        if self.run_control is not None:
+            self.run_control.check_abort()
         if not self.pause_requested:
             return
 
@@ -1909,7 +1993,243 @@ def prompt_for_startup_selection() -> StartupSelection:
         raise SystemExit("Startup selection cancelled.")
     return selection
 
-def build_firefox_driver(config: BotConfig) -> webdriver.Firefox:
+def get_geckodriver_log_path(run_index: int) -> Path:
+    RUN_HELPERS_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    return RUN_HELPERS_DIRECTORY / f"geckodriver_run_{run_index}_latest.log"
+
+
+def read_log_tail(log_path: Path, max_lines: int = 20) -> str:
+    if not log_path.exists():
+        return ""
+    try:
+        lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except Exception:
+        return ""
+    return "\n".join(lines[-max_lines:]).strip()
+
+
+def get_firefox_profile_lock_hint(profile_path: Path) -> str:
+    lock_candidates = [
+        profile_path / "parent.lock",
+        profile_path / "lock",
+        profile_path / ".parentlock",
+    ]
+    active_locks = [str(candidate) for candidate in lock_candidates if candidate.exists()]
+    if not active_locks:
+        return ""
+    return "Firefox profile appears locked: " + ", ".join(active_locks)
+
+
+def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
+    root = tk.Tk()
+    root.title("Full LC Auto Batch Monitor")
+    root.geometry("1040x760")
+    root.minsize(820, 520)
+    root.configure(bg="#f3efe7")
+
+    style = ttk.Style(root)
+    available_themes = set(style.theme_names())
+    if "clam" in available_themes:
+        style.theme_use("clam")
+    elif "vista" in available_themes:
+        style.theme_use("vista")
+
+    style.configure("Monitor.TFrame", background="#f3efe7")
+    style.configure("MonitorCard.TFrame", background="#fffaf2")
+    style.configure("MonitorTitle.TLabel", background="#fffaf2", foreground="#17352d", font=("Segoe UI Semibold", 13))
+    style.configure("MonitorBody.TLabel", background="#fffaf2", foreground="#2e453d", font=("Segoe UI", 10))
+    style.configure("MonitorMuted.TLabel", background="#fffaf2", foreground="#5f665f", font=("Segoe UI", 9))
+    style.configure("App.TButton", font=("Segoe UI Semibold", 10), padding=(12, 8))
+    style.configure("Secondary.TButton", font=("Segoe UI Semibold", 10), padding=(12, 8))
+
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(1, weight=1)
+
+    run_control = RunControl()
+    log_messages: queue.Queue[str] = queue.Queue()
+    result_state: dict[str, object] = {"done": False, "error": None, "job_result": None}
+
+    def enqueue_log(log_line: str) -> None:
+        log_messages.put(log_line)
+
+    add_log_listener(enqueue_log)
+
+    header_card = ttk.Frame(root, style="MonitorCard.TFrame", padding=(18, 16, 18, 14))
+    header_card.grid(row=0, column=0, padx=18, pady=(18, 10), sticky="ew")
+    header_card.columnconfigure(0, weight=1)
+
+    log_card = ttk.Frame(root, style="MonitorCard.TFrame", padding=(18, 16, 18, 18))
+    log_card.grid(row=1, column=0, padx=18, pady=(0, 18), sticky="nsew")
+    log_card.columnconfigure(0, weight=1)
+    log_card.rowconfigure(2, weight=1)
+
+    listing_selection = startup_selection.listing_selection
+    summary_lines = [
+        f"Laptop: {startup_selection.laptop_name}",
+        f"Profile: {startup_selection.profile_name}",
+        f"Vertical: {listing_selection.product_type}",
+        f"Surface: {listing_selection.surface}",
+        f"Kind: {listing_selection.kind}",
+        f"Brand: {listing_selection.brand_name}",
+        f"Runs: {startup_selection.run_count}",
+    ]
+
+    ttk.Label(header_card, text="Batch Monitor", style="MonitorTitle.TLabel").grid(row=0, column=0, sticky="w")
+    ttk.Label(
+        header_card,
+        text=" | ".join(summary_lines),
+        style="MonitorBody.TLabel",
+        wraplength=940,
+        justify="left",
+    ).grid(row=1, column=0, pady=(8, 12), sticky="w")
+
+    status_var = tk.StringVar(value="Starting batch...")
+    status_label = ttk.Label(header_card, textvariable=status_var, style="MonitorMuted.TLabel")
+    status_label.grid(row=2, column=0, sticky="w")
+
+    button_frame = ttk.Frame(header_card, style="MonitorCard.TFrame")
+    button_frame.grid(row=0, column=1, rowspan=3, padx=(16, 0), sticky="ne")
+
+    abort_current_button = ttk.Button(button_frame, text="Abort Current Run", style="Secondary.TButton")
+    abort_batch_button = ttk.Button(button_frame, text="Abort Batch", style="App.TButton")
+    close_button = ttk.Button(button_frame, text="Close", style="Secondary.TButton")
+    abort_current_button.grid(row=0, column=0, padx=(0, 8))
+    abort_batch_button.grid(row=0, column=1, padx=(0, 8))
+    close_button.grid(row=0, column=2)
+    close_button.state(["disabled"])
+
+    ttk.Label(log_card, text="Live Logs", style="MonitorTitle.TLabel").grid(row=0, column=0, sticky="w")
+    ttk.Label(
+        log_card,
+        text="The batch keeps running in the background while this window stays open.",
+        style="MonitorMuted.TLabel",
+    ).grid(row=1, column=0, pady=(6, 12), sticky="w")
+
+    log_text = tk.Text(
+        log_card,
+        wrap="word",
+        font=("Consolas", 10),
+        bg="#fbf7ef",
+        fg="#17352d",
+        relief="flat",
+        padx=12,
+        pady=12,
+        insertbackground="#17352d",
+    )
+    log_scrollbar = ttk.Scrollbar(log_card, orient="vertical", command=log_text.yview)
+    log_text.configure(yscrollcommand=log_scrollbar.set, state="disabled")
+    log_text.grid(row=2, column=0, sticky="nsew")
+    log_scrollbar.grid(row=2, column=1, sticky="ns")
+
+    monitor_finished = False
+    poll_after_id: str | None = None
+    max_log_lines = 600
+
+    def append_log_lines(log_lines: list[str]) -> None:
+        if not log_lines:
+            return
+        log_text.configure(state="normal")
+        log_text.insert(tk.END, "\n".join(log_lines) + "\n")
+        current_line_count = int(log_text.index("end-1c").split(".")[0])
+        if current_line_count > max_log_lines:
+            overflow_line_count = current_line_count - max_log_lines
+            log_text.delete("1.0", f"{overflow_line_count + 1}.0")
+        log_text.see(tk.END)
+        log_text.configure(state="disabled")
+
+    def abort_current_run() -> None:
+        if result_state["done"]:
+            return
+        status_var.set("Abort requested for the current run...")
+        log_event("RUN", "Abort current run requested from UI.")
+        run_control.request_abort_current_run()
+
+    def abort_batch() -> None:
+        if result_state["done"]:
+            return
+        status_var.set("Abort requested for the whole batch...")
+        log_event("RUN", "Abort batch requested from UI.")
+        run_control.request_abort_batch()
+        abort_current_button.state(["disabled"])
+        abort_batch_button.state(["disabled"])
+
+    def worker() -> None:
+        try:
+            result_state["job_result"] = run_job(startup_selection, run_control=run_control)
+        except Exception:
+            result_state["error"] = traceback.format_exc()
+            write_latest_error(result_state["error"])
+            for line in result_state["error"].splitlines():
+                log_messages.put(line)
+        finally:
+            result_state["done"] = True
+
+    worker_thread = threading.Thread(target=worker, daemon=True)
+    worker_thread.start()
+
+    def poll_log_queue() -> None:
+        nonlocal monitor_finished, poll_after_id
+        drained_lines: list[str] = []
+        while True:
+            try:
+                drained_lines.append(log_messages.get_nowait())
+            except queue.Empty:
+                break
+        append_log_lines(drained_lines)
+
+        if result_state["done"] and not monitor_finished:
+            monitor_finished = True
+            abort_current_button.state(["disabled"])
+            abort_batch_button.state(["disabled"])
+            close_button.state(["!disabled"])
+            if result_state["error"] is not None:
+                status_var.set("Batch stopped because of an error. You can review the logs and close this window.")
+            elif run_control.should_abort_batch():
+                status_var.set("Batch aborted. You can review the logs and close this window.")
+            else:
+                status_var.set("Batch finished. You can review the logs and close this window.")
+
+        if not root.winfo_exists():
+            poll_after_id = None
+            return
+        if monitor_finished and log_messages.empty():
+            poll_after_id = None
+            return
+        poll_after_id = root.after(180, poll_log_queue)
+
+    def close_window() -> None:
+        nonlocal poll_after_id
+        if not result_state["done"]:
+            status_var.set("Close requested while batch is running. Requesting batch abort first...")
+            abort_batch()
+            return
+        remove_log_listener(enqueue_log)
+        if poll_after_id is not None:
+            try:
+                root.after_cancel(poll_after_id)
+            except Exception:
+                pass
+            poll_after_id = None
+        root.destroy()
+
+    abort_current_button.configure(command=abort_current_run)
+    abort_batch_button.configure(command=abort_batch)
+    close_button.configure(command=close_window)
+    root.protocol("WM_DELETE_WINDOW", close_window)
+
+    poll_log_queue()
+    try:
+        root.mainloop()
+    finally:
+        remove_log_listener(enqueue_log)
+        if poll_after_id is not None:
+            try:
+                root.after_cancel(poll_after_id)
+            except Exception:
+                pass
+
+
+def build_firefox_driver(config: BotConfig, geckodriver_log_path: Path | None = None) -> webdriver.Firefox:
     options = FirefoxOptions()
 
     if config.firefox_binary:
@@ -1923,14 +2243,16 @@ def build_firefox_driver(config: BotConfig) -> webdriver.Firefox:
     options.add_argument("-profile")
     options.add_argument(str(config.firefox_profile_path))
 
+    service_kwargs: dict[str, object] = {}
     if config.geckodriver_path:
-        service = FirefoxService(executable_path=config.geckodriver_path)
-        driver = webdriver.Firefox(service=service, options=options)
-        track_webdriver_for_shutdown(driver)
-        return driver
+        service_kwargs["executable_path"] = config.geckodriver_path
+    if geckodriver_log_path is not None:
+        ensure_parent_directory = geckodriver_log_path.parent
+        ensure_parent_directory.mkdir(parents=True, exist_ok=True)
+        service_kwargs["log_output"] = str(geckodriver_log_path)
 
-    # Selenium Manager can resolve the driver automatically in recent Selenium versions.
-    driver = webdriver.Firefox(options=options)
+    service = FirefoxService(**service_kwargs)
+    driver = webdriver.Firefox(service=service, options=options)
     track_webdriver_for_shutdown(driver)
     return driver
 
@@ -5782,6 +6104,7 @@ def run_single_listing_session(
     json_flow_definition: FlowDefinition | None,
     run_index: int,
     total_runs: int,
+    run_control: RunControl | None = None,
 ) -> JobSessionResult:
     set_current_run_label(f"run {run_index}/{total_runs}")
     session_result = JobSessionResult(
@@ -5789,9 +6112,14 @@ def run_single_listing_session(
         total_runs=total_runs,
         succeeded=False,
     )
+    geckodriver_log_path = get_geckodriver_log_path(run_index)
+    if run_control is not None:
+        run_control.check_abort()
     try:
         log_event("BOOT", f"Launching Firefox WebDriver for run {run_index}/{total_runs}...")
-        driver = build_firefox_driver(config)
+        driver = build_firefox_driver(config, geckodriver_log_path=geckodriver_log_path)
+        if run_control is not None:
+            run_control.set_active_driver(driver)
         log_event("BOOT", f"Firefox WebDriver launched successfully for run {run_index}/{total_runs}.")
     except WebDriverException as exc:
         log_event(
@@ -5800,16 +6128,27 @@ def run_single_listing_session(
             "profile is valid, and that the same profile is not already open in another Firefox "
             "window. You can also set GECKODRIVER_PATH/FIREFOX_BINARY if needed.",
         )
-        error_message = f"Run {run_index}/{total_runs} failed before browser launch: {exc}"
+        log_tail = read_log_tail(geckodriver_log_path)
+        profile_lock_hint = get_firefox_profile_lock_hint(config.firefox_profile_path)
+        detail_parts = [str(exc)]
+        if profile_lock_hint:
+            detail_parts.append(profile_lock_hint)
+        if log_tail:
+            detail_parts.append(f"Geckodriver log tail:\n{log_tail}")
+        error_message = f"Run {run_index}/{total_runs} failed before browser launch: {' | '.join(part for part in detail_parts if part)}"
         write_latest_error(error_message)
         log_event("ERROR", error_message)
         session_result.error_message = error_message
+        session_result.launch_failed_before_browser = True
+        session_result.driver_log_path = geckodriver_log_path if geckodriver_log_path.exists() else None
         return session_result
 
-    pause_controller = PauseController()
+    pause_controller = PauseController(run_control=run_control)
     pause_controller.start()
 
     try:
+        if run_control is not None:
+            run_control.check_abort()
         log_event("RUN", f"Starting run {run_index} of {total_runs}.")
 
         if json_flow_definition is None:
@@ -5837,7 +6176,19 @@ def run_single_listing_session(
         sleep(SUCCESS_CLOSE_DELAY_SECONDS)
         session_result.succeeded = True
         return session_result
+    except RunAbortRequested as exc:
+        error_message = str(exc)
+        write_latest_error(error_message)
+        log_event("RUN", error_message)
+        session_result.error_message = error_message
+        return session_result
     except Exception as exc:
+        if run_control is not None and (run_control.should_abort_current_run() or run_control.should_abort_batch()):
+            error_message = "Batch aborted by user." if run_control.should_abort_batch() else "Current run aborted by user."
+            write_latest_error(error_message)
+            log_event("RUN", error_message)
+            session_result.error_message = error_message
+            return session_result
         try:
             snapshot_path = save_html_snapshot(
                 driver,
@@ -5860,10 +6211,12 @@ def run_single_listing_session(
             driver.quit()
         finally:
             untrack_webdriver(driver)
+            if run_control is not None:
+                run_control.clear_active_driver(driver)
         log_event("BOOT", f"Closed browser for run {run_index}/{total_runs}.")
 
 
-def run_job(startup_selection: StartupSelection) -> JobRunResult:
+def run_job(startup_selection: StartupSelection, run_control: RunControl | None = None) -> JobRunResult:
     selected_profile = startup_selection.profile_name
     run_count = startup_selection.run_count
     listing_selection = startup_selection.listing_selection
@@ -5887,12 +6240,16 @@ def run_job(startup_selection: StartupSelection) -> JobRunResult:
     failed_runs = 0
     session_results: list[JobSessionResult] = []
     for run_index in range(1, run_count + 1):
+        if run_control is not None and run_control.should_abort_batch():
+            log_event("RUN", "Batch abort requested before starting next run.")
+            break
         session_result = run_single_listing_session(
             config,
             listing_selection,
             json_flow_definition,
             run_index,
             run_count,
+            run_control=run_control,
         )
         if session_result.succeeded:
             completed_runs += 1
@@ -5909,6 +6266,16 @@ def run_job(startup_selection: StartupSelection) -> JobRunResult:
         else:
             failed_runs += 1
         session_results.append(session_result)
+        if run_control is not None:
+            if run_control.should_abort_batch():
+                log_event("RUN", "Stopping remaining runs because batch abort was requested.")
+                break
+            if run_control.should_abort_current_run():
+                log_event("RUN", "Current run abort completed. Continuing to the next run.")
+                run_control.finish_current_run()
+        if session_result.launch_failed_before_browser:
+            log_event("ERROR", "Stopping remaining runs because Firefox WebDriver could not launch.")
+            break
 
     set_current_run_label("summary")
     log_event(
@@ -5932,7 +6299,7 @@ def main() -> None:
     try:
         enforce_runtime_license()
         startup_selection = prompt_for_startup_selection()
-        run_job(startup_selection)
+        show_batch_monitor_and_run(startup_selection)
     except KeyboardInterrupt:
         raise SystemExit("Interrupted by user.") from None
     except SystemExit as exc:
@@ -5947,6 +6314,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
 
 
 
