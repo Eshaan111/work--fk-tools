@@ -224,6 +224,12 @@ BRANDS_CONFIG: dict[str, object] = SHARED_CONFIG["brands"]
 PROFILES_CONFIG: dict[str, object] = SHARED_CONFIG["profiles"]
 SURFACES_CONFIG: dict[str, object] = SHARED_CONFIG["surfaces"]
 
+FINAL_LISTING_ACTION_OPTIONS: dict[str, str] = {
+    "Draft": "save_and_go_back",
+    "Send to QC": "send_to_qc",
+}
+DEFAULT_FINAL_LISTING_ACTION = "save_and_go_back"
+
 RUN_HELPERS_DIRECTORY = resolve_config_path(PROJECT_PATHS["run_helpers_directory"])
 JOB_RESULTS_DIRECTORY = RUN_HELPERS_DIRECTORY / "job_results"
 ERROR_LATEST_PATH = resolve_config_path(PROJECT_PATHS["error_latest_path"])
@@ -757,6 +763,7 @@ class BotConfig:
     geckodriver_path: str | None = os.getenv("GECKODRIVER_PATH")
     profile_name: str = DEFAULT_PROFILE_NAME
     headless: bool = os.getenv("HEADLESS", "0") == "1"
+    final_listing_action: str = os.getenv("FINAL_LISTING_ACTION", DEFAULT_FINAL_LISTING_ACTION).strip().lower()
 
     @property
     def firefox_profile_path(self) -> Path:
@@ -830,6 +837,7 @@ class StartupSelection:
     profile_name: str
     run_count: int
     listing_selection: ListingSelection
+    final_listing_action: str = DEFAULT_FINAL_LISTING_ACTION
 
 
 @dataclass(slots=True)
@@ -1675,6 +1683,15 @@ def prompt_for_startup_selection() -> StartupSelection:
     size_var = tk.StringVar()
     brand_var = tk.StringVar()
     image_directory_var = tk.StringVar(value="")
+    default_final_action_value = os.getenv("FINAL_LISTING_ACTION", DEFAULT_FINAL_LISTING_ACTION).strip().lower()
+    if default_final_action_value not in FINAL_LISTING_ACTION_OPTIONS.values():
+        default_final_action_value = DEFAULT_FINAL_LISTING_ACTION
+    default_final_action_label = next(
+        label
+        for label, action_value in FINAL_LISTING_ACTION_OPTIONS.items()
+        if action_value == default_final_action_value
+    )
+    final_action_var = tk.StringVar(value=default_final_action_label)
 
     sidebar = ttk.Frame(page_frame, style="Sidebar.TFrame", padding=(28, 28, 28, 24))
     sidebar.grid(row=0, column=0, rowspan=3, sticky="nsew")
@@ -1888,6 +1905,72 @@ def prompt_for_startup_selection() -> StartupSelection:
             return
         os.startfile(str(insight_workbook_path))
 
+    def prompt_for_final_listing_action() -> str | None:
+        dialog = tk.Toplevel(root)
+        dialog.title("Final Listing Action")
+        dialog.transient(root)
+        dialog.grab_set()
+        dialog.resizable(False, False)
+        dialog.configure(bg="#fffaf2")
+
+        choice_var = tk.StringVar(value=final_action_var.get())
+        result: str | None = None
+
+        container = ttk.Frame(dialog, style="Card.TFrame", padding=(20, 18, 20, 18))
+        container.grid(row=0, column=0, sticky="nsew")
+        container.columnconfigure(0, weight=1)
+
+        ttk.Label(container, text="Choose Final Action", style="SectionTitle.TLabel").grid(
+            row=0, column=0, sticky="w"
+        )
+        ttk.Label(
+            container,
+            text="Pick what the last step should do for this batch.",
+            style="Muted.TLabel",
+            wraplength=320,
+            justify="left",
+        ).grid(row=1, column=0, pady=(4, 14), sticky="w")
+
+        choices_frame = ttk.Frame(container, style="Card.TFrame")
+        choices_frame.grid(row=2, column=0, sticky="ew")
+        for row_index, label in enumerate(FINAL_LISTING_ACTION_OPTIONS):
+            ttk.Radiobutton(
+                choices_frame,
+                text=label,
+                value=label,
+                variable=choice_var,
+            ).grid(row=row_index, column=0, pady=4, sticky="w")
+
+        button_frame = ttk.Frame(container, style="Card.TFrame")
+        button_frame.grid(row=3, column=0, pady=(16, 0), sticky="e")
+
+        def confirm() -> None:
+            nonlocal result
+            result = FINAL_LISTING_ACTION_OPTIONS[choice_var.get()]
+            final_action_var.set(choice_var.get())
+            dialog.destroy()
+
+        def dismiss() -> None:
+            dialog.destroy()
+
+        ttk.Button(button_frame, text="Cancel", command=dismiss, style="Secondary.TButton").grid(
+            row=0, column=0, padx=(0, 10)
+        )
+        ttk.Button(button_frame, text="Start Batch", command=confirm, style="App.TButton").grid(
+            row=0, column=1
+        )
+
+        dialog.protocol("WM_DELETE_WINDOW", dismiss)
+        dialog.bind("<Return>", lambda _event: confirm())
+        dialog.bind("<Escape>", lambda _event: dismiss())
+        dialog.update_idletasks()
+        dialog.geometry(
+            f"+{root.winfo_rootx() + 80}+{root.winfo_rooty() + 80}"
+        )
+        dialog.focus_force()
+        root.wait_window(dialog)
+        return result
+
     def submit() -> None:
         nonlocal selection
         try:
@@ -1909,11 +1992,16 @@ def prompt_for_startup_selection() -> StartupSelection:
             messagebox.showerror("Invalid startup values", str(exc), parent=root)
             return
 
+        final_listing_action = prompt_for_final_listing_action()
+        if final_listing_action is None:
+            return
+
         selection = StartupSelection(
             laptop_name=laptop_var.get(),
             profile_name=resolve_profile_name(profile_var.get()),
             run_count=run_count,
             listing_selection=listing_selection,
+            final_listing_action=final_listing_action,
         )
         root.destroy()
 
@@ -2071,6 +2159,7 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
         f"Surface: {listing_selection.surface}",
         f"Kind: {listing_selection.kind}",
         f"Brand: {listing_selection.brand_name}",
+        f"Final action: {describe_final_listing_action(startup_selection.final_listing_action)}",
         f"Runs: {startup_selection.run_count}",
     ]
 
@@ -3977,8 +4066,42 @@ def click_save_and_go_back_button(driver: webdriver.Firefox) -> None:
             (By.XPATH, "//button[@data-testid='button' and normalize-space()='Save & Go Back']")
         )
     )
-    click_element_via_autogui(driver, save_and_go_back_button, "Save & Go Back button")
-    log_event("DONE", "Clicked Save & Go Back.")
+    click_element_via_autogui(driver, save_and_go_back_button, "Draft button")
+    log_event("DONE", "Clicked Draft (Save & Go Back).")
+
+
+def click_send_to_qc_button(driver: webdriver.Firefox) -> None:
+    send_to_qc_button = WebDriverWait(driver, 15).until(
+        EC.presence_of_element_located(
+            (By.XPATH, "//button[.//span[normalize-space()='Send to QC'] or normalize-space()='Send to QC']")
+        )
+    )
+    click_element_via_autogui(driver, send_to_qc_button, "Send to QC button")
+    log_event("DONE", "Clicked Send to QC.")
+
+
+def resolve_final_listing_action(action_name: str) -> str:
+    normalized_action = action_name.strip().lower()
+    if normalized_action not in FINAL_LISTING_ACTION_OPTIONS.values():
+        allowed_actions = ", ".join(FINAL_LISTING_ACTION_OPTIONS.values())
+        raise ValueError(f"Unsupported final listing action '{action_name}'. Choose one of: {allowed_actions}.")
+    return normalized_action
+
+
+def describe_final_listing_action(action_name: str) -> str:
+    normalized_action = resolve_final_listing_action(action_name)
+    for label, value in FINAL_LISTING_ACTION_OPTIONS.items():
+        if value == normalized_action:
+            return label
+    return normalized_action.replace("_", " ").title()
+
+
+def click_final_listing_action_button(driver: webdriver.Firefox, config: BotConfig) -> None:
+    final_action = resolve_final_listing_action(config.final_listing_action)
+    if final_action == "send_to_qc":
+        click_send_to_qc_button(driver)
+        return
+    click_save_and_go_back_button(driver)
 
 
 def fill_size_qualifier_field(driver: webdriver.Firefox, field_value: str) -> None:
@@ -5260,7 +5383,7 @@ def run_navigation_step(
                 timeout_seconds=int(action.get("timeout_seconds", 5)),
             )
         elif action_type == "click_save_and_go_back":
-            click_save_and_go_back_button(driver)
+            click_final_listing_action_button(driver, config)
             commit_pending_image_folder_exhaustion(flow_state)
         else:
             raise ValueError(
@@ -6064,6 +6187,7 @@ def print_runtime_context(config: BotConfig) -> None:
     log_event("BOOT", f"Additional Description Excel: {config.additional_description_excel}")
     log_event("BOOT", f"Additional Description JSON: {config.additional_description_json}")
     log_event("BOOT", f"Variants Excel: {config.variants_excel}")
+    log_event("BOOT", f"Final listing action: {describe_final_listing_action(config.final_listing_action)}")
     log_event("BOOT", f"Snapshot directory: {config.snapshot_directory}")
     log_event("BOOT", "Pause control: press Space in this terminal to pause at the next safe step.")
 
@@ -6094,6 +6218,7 @@ def build_bot_config(startup_selection: StartupSelection) -> tuple[BotConfig, Fl
             listing_selection.product_type,
             listing_selection.surface,
         ),
+        final_listing_action=resolve_final_listing_action(startup_selection.final_listing_action),
     )
     return config, json_flow_definition
 
@@ -6167,9 +6292,9 @@ def run_single_listing_session(
 
         flow_state = run_listing_page_flow(driver, pause_controller, config, listing_selection)
         if flow_definition_saves_and_exits(json_flow_definition):
-            log_event("DONE", "JSON flow already clicked Save & Go Back; skipping legacy final save click.")
+            log_event("DONE", "JSON flow already handled the final listing action; skipping legacy final action click.")
         else:
-            click_save_and_go_back_button(driver)
+            click_final_listing_action_button(driver, config)
             commit_pending_image_folder_exhaustion(flow_state)
         log_event("DONE", f"{listing_selection.product_type.title()} flow completed for run {run_index}/{total_runs}.")
         log_event("BOOT", f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds before closing browser.")
@@ -6314,6 +6439,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
 
 

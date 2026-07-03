@@ -2,11 +2,11 @@
   "order": 7,
   "step_name": "save_and_exit",
   "handler": "navigation_step",
-  "page_name": "Save listing and exit",
+  "page_name": "Final listing action",
   "actions": [
     {
       "type": "click_save_and_go_back",
-      "checkpoint_label": "Save & Go Back clicked"
+      "checkpoint_label": "Final listing action clicked"
     }
   ]
 }

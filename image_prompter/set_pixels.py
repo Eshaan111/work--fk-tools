@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pyautogui
 
-PIXELS_FILE = Path(__file__).resolve().parent / "pixels-VAIO.json"
+PIXELS_FILE = Path(__file__).resolve().parent / "pixels-ASUS.json"
 
 STEPS = [
     {
