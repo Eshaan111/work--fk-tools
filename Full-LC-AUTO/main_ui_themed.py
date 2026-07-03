@@ -16,6 +16,7 @@ from datetime import datetime
 from dataclasses import dataclass, field
 from pathlib import Path
 from time import sleep
+from typing import Callable
 
 import msvcrt
 from openpyxl import Workbook, load_workbook
@@ -2135,10 +2136,20 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
 
     run_control = RunControl()
     log_messages: queue.Queue[str] = queue.Queue()
-    result_state: dict[str, object] = {"done": False, "error": None, "job_result": None}
+    progress_messages: queue.Queue[JobSessionResult] = queue.Queue()
+    result_state: dict[str, object] = {
+        "done": False,
+        "error": None,
+        "job_result": None,
+        "successful_runs": 0,
+        "failed_runs": 0,
+    }
 
     def enqueue_log(log_line: str) -> None:
         log_messages.put(log_line)
+
+    def enqueue_progress(session_result: JobSessionResult) -> None:
+        progress_messages.put(session_result)
 
     add_log_listener(enqueue_log)
 
@@ -2164,20 +2175,52 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
     ]
 
     ttk.Label(header_card, text="Batch Monitor", style="MonitorTitle.TLabel").grid(row=0, column=0, sticky="w")
+
+    counts_frame = ttk.Frame(header_card, style="MonitorCard.TFrame")
+    counts_frame.grid(row=1, column=0, pady=(8, 6), sticky="w")
+    tk.Label(
+        counts_frame,
+        text="0",
+        bg="#fffaf2",
+        fg="#1f7a36",
+        font=("Segoe UI Semibold", 34),
+    ).grid(row=0, column=0, sticky="w")
+    success_count_label = counts_frame.grid_slaves(row=0, column=0)[0]
+    tk.Label(
+        counts_frame,
+        text="/",
+        bg="#fffaf2",
+        fg="#17352d",
+        font=("Segoe UI Semibold", 34),
+    ).grid(row=0, column=1, padx=(8, 8), sticky="w")
+    tk.Label(
+        counts_frame,
+        text="0",
+        bg="#fffaf2",
+        fg="#c0392b",
+        font=("Segoe UI Semibold", 34),
+    ).grid(row=0, column=2, sticky="w")
+    failed_count_label = counts_frame.grid_slaves(row=0, column=2)[0]
+    ttk.Label(
+        counts_frame,
+        text="Successful / Failed",
+        style="MonitorMuted.TLabel",
+    ).grid(row=1, column=0, columnspan=3, sticky="w")
+
     ttk.Label(
         header_card,
         text=" | ".join(summary_lines),
         style="MonitorBody.TLabel",
         wraplength=940,
         justify="left",
-    ).grid(row=1, column=0, pady=(8, 12), sticky="w")
+    ).grid(row=2, column=0, pady=(4, 12), sticky="w")
 
     status_var = tk.StringVar(value="Starting batch...")
     status_label = ttk.Label(header_card, textvariable=status_var, style="MonitorMuted.TLabel")
-    status_label.grid(row=2, column=0, sticky="w")
+    status_label.grid(row=3, column=0, sticky="w")
 
     button_frame = ttk.Frame(header_card, style="MonitorCard.TFrame")
-    button_frame.grid(row=0, column=1, rowspan=3, padx=(16, 0), sticky="ne")
+    button_frame.grid(row=0, column=1, rowspan=4, padx=(16, 0), sticky="ne")
 
     abort_current_button = ttk.Button(button_frame, text="Abort Current Run", style="Secondary.TButton")
     abort_batch_button = ttk.Button(button_frame, text="Abort Batch", style="App.TButton")
@@ -2214,6 +2257,10 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
     poll_after_id: str | None = None
     max_log_lines = 600
 
+    def refresh_run_summary() -> None:
+        success_count_label.configure(text=str(result_state["successful_runs"]))
+        failed_count_label.configure(text=str(result_state["failed_runs"]))
+
     def append_log_lines(log_lines: list[str]) -> None:
         if not log_lines:
             return
@@ -2244,7 +2291,11 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
 
     def worker() -> None:
         try:
-            result_state["job_result"] = run_job(startup_selection, run_control=run_control)
+            result_state["job_result"] = run_job(
+                startup_selection,
+                run_control=run_control,
+                progress_callback=enqueue_progress,
+            )
         except Exception:
             result_state["error"] = traceback.format_exc()
             write_latest_error(result_state["error"])
@@ -2265,6 +2316,17 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
             except queue.Empty:
                 break
         append_log_lines(drained_lines)
+
+        while True:
+            try:
+                session_result = progress_messages.get_nowait()
+            except queue.Empty:
+                break
+            if session_result.succeeded:
+                result_state["successful_runs"] += 1
+            else:
+                result_state["failed_runs"] += 1
+        refresh_run_summary()
 
         if result_state["done"] and not monitor_finished:
             monitor_finished = True
@@ -6341,7 +6403,11 @@ def run_single_listing_session(
         log_event("BOOT", f"Closed browser for run {run_index}/{total_runs}.")
 
 
-def run_job(startup_selection: StartupSelection, run_control: RunControl | None = None) -> JobRunResult:
+def run_job(
+    startup_selection: StartupSelection,
+    run_control: RunControl | None = None,
+    progress_callback: Callable[[JobSessionResult], None] | None = None,
+) -> JobRunResult:
     selected_profile = startup_selection.profile_name
     run_count = startup_selection.run_count
     listing_selection = startup_selection.listing_selection
@@ -6391,6 +6457,8 @@ def run_job(startup_selection: StartupSelection, run_control: RunControl | None 
         else:
             failed_runs += 1
         session_results.append(session_result)
+        if progress_callback is not None:
+            progress_callback(session_result)
         if run_control is not None:
             if run_control.should_abort_batch():
                 log_event("RUN", "Stopping remaining runs because batch abort was requested.")
