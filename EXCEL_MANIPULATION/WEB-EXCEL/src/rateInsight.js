@@ -5,6 +5,7 @@ const SIZE_OVERRIDE_KEY = "rate_insight_size_overrides_v1";
 const TITLE_FLAGS = ["Dark Blue"];
 const SKU_FLAGS = [];
 const FALLBACK_SIZE_VALUES = ["26", "28", "30", "32", "34", "36"];
+const ORDER_CSV_VALUE_COLUMNS = ["Price inc. FKMP Contribution & Subsidy", "Invoice Amount", "Selling Price Per Item"];
 const FALLBACK_KIND_DEFINITIONS = [
   { key: "ICE", label: "ICE final price floor", defaultThreshold: "469", rules: [{ skuIncludesAny: ["ice", "blue"] }] },
   { key: "BEIGE", label: "BEIGE final price floor", defaultThreshold: "459", rules: [{ skuIncludesAny: ["beige", "cream"] }] },
@@ -94,9 +95,33 @@ function matchesDefinition(definition, context) {
 }
 
 function getModeColumns(mode) {
+  if (mode === "orderCsv") {
+    return { sku: "SKU", title: "Product", settlement: ORDER_CSV_VALUE_COLUMNS[0] };
+  }
   return mode === "offer"
     ? { sku: "SKU ID", title: "FSN", settlement: "Selling Price(Rs)" }
     : { sku: "Seller SKU Id", title: "Product Title", settlement: "Bank Settlement" };
+}
+
+function resolveModeColumns(datasetOrMode, selectedValueColumn) {
+  const mode = typeof datasetOrMode === "string" ? datasetOrMode : datasetOrMode?.mode;
+  const base = getModeColumns(mode);
+  if (mode !== "orderCsv") return base;
+  const candidate = typeof datasetOrMode === "string"
+    ? selectedValueColumn
+    : datasetOrMode?.selectedValueColumn;
+  return {
+    ...base,
+    settlement: ORDER_CSV_VALUE_COLUMNS.includes(candidate) ? candidate : ORDER_CSV_VALUE_COLUMNS[0],
+  };
+}
+
+function valueColumnOptionsForMode(mode) {
+  return mode === "orderCsv" ? [...ORDER_CSV_VALUE_COLUMNS] : [];
+}
+
+function defaultValueColumnForMode(mode) {
+  return valueColumnOptionsForMode(mode)[0] || null;
 }
 
 function cleanNumeric(value) {
@@ -209,7 +234,7 @@ function syncStock(rows) {
 }
 
 function rebuildRows(rows, mode, overrides) {
-  const columns = getModeColumns(mode);
+  const columns = resolveModeColumns(mode);
   const base = cloneRows(rows).map((row) => {
     const next = { ...row };
     next[columns.settlement] = cleanNumeric(next[columns.settlement]);
@@ -267,7 +292,7 @@ function normalizeFilters(dataset, raw) {
 
 function filteredRows(dataset, rawFilters, includeSelection) {
   const filters = normalizeFilters(dataset, rawFilters);
-  const columns = getModeColumns(dataset.mode);
+  const columns = resolveModeColumns(dataset);
   let rows = dataset.rows.filter((row) => !row.__locked && row[columns.settlement] != null && Number(row[columns.settlement]) <= filters.settlementMax);
 
   if (filters.search) {
@@ -289,7 +314,7 @@ function filteredRows(dataset, rawFilters, includeSelection) {
 }
 
 function buildOptions(dataset) {
-  const columns = getModeColumns(dataset.mode);
+  const columns = resolveModeColumns(dataset);
   const settlementValues = dataset.rows.map((row) => Number(row[columns.settlement])).filter((value) => Number.isFinite(value));
   const sizeSet = new Set(dataset.rows.map((row) => String(row.Size || "")).filter(Boolean));
   const statusSet = new Set(dataset.rows.map((row) => String(row["Listing Status"] || "").toUpperCase()).filter(Boolean));
@@ -377,11 +402,12 @@ export async function loadWorkbook(file) {
   const availableModes = {
     offer: ["SKU ID", "FSN", "Selling Price(Rs)"].every((key) => columns.includes(key)),
     normal: ["Seller SKU Id", "Product Title", "Bank Settlement"].every((key) => columns.includes(key)),
+    orderCsv: ["SKU", "Product", ...ORDER_CSV_VALUE_COLUMNS].every((key) => columns.includes(key)),
   };
-  if (!availableModes.offer && !availableModes.normal) {
+  if (!availableModes.offer && !availableModes.normal && !availableModes.orderCsv) {
     throw new Error("Unknown file format. Required settlement columns were not found.");
   }
-  const mode = availableModes.normal ? "normal" : "offer";
+  const mode = availableModes.normal ? "normal" : availableModes.offer ? "offer" : "orderCsv";
   const sizeOverrides = loadSizeOverrides();
   const preparedRows = rows.map((row, index) => ({ ...row, __orig_index: index, __locked: false }));
   return {
@@ -390,6 +416,7 @@ export async function loadWorkbook(file) {
     accountName: detectAccount(file.name),
     availableModes,
     mode,
+    selectedValueColumn: defaultValueColumnForMode(mode),
     rows: rebuildRows(preparedRows, mode, sizeOverrides),
     sizeOverrides,
     undoRows: null,
@@ -399,14 +426,14 @@ export async function loadWorkbook(file) {
 
 export function defaultFiltersForDataset(dataset) {
   if (!dataset) return { search: "", listing: "All", jeans: "All", size: "All", status: "All", settlementMax: 0, selectedRange: null };
-  const columns = getModeColumns(dataset.mode);
+  const columns = resolveModeColumns(dataset);
   const max = Math.max(0, ...dataset.rows.map((row) => Number(row[columns.settlement]) || 0));
   return { search: "", listing: "All", jeans: "All", size: "All", status: "All", settlementMax: max, selectedRange: null };
 }
 
 export function createSnapshot(dataset, rawFilters) {
   const filters = normalizeFilters(dataset, rawFilters);
-  const columns = getModeColumns(dataset.mode);
+  const columns = resolveModeColumns(dataset);
   const visible = filteredRows(dataset, filters, false);
   const exported = filteredRows(dataset, filters, true);
   const values = visible.map((row) => Number(row[columns.settlement])).filter((value) => Number.isFinite(value));
@@ -438,6 +465,8 @@ export function createSnapshot(dataset, rawFilters) {
     accountName: dataset.accountName,
     mode: dataset.mode,
     availableModes: dataset.availableModes,
+    selectedValueColumn: dataset.selectedValueColumn,
+    availableValueColumns: valueColumnOptionsForMode(dataset.mode),
     filters,
     filterOptions: buildOptions(dataset),
     columns: rowColumns,
@@ -469,11 +498,20 @@ export function createSnapshot(dataset, rawFilters) {
 
 export function setMode(dataset, mode) {
   if (!dataset.availableModes[mode]) throw new Error(`${mode} mode is not available for this file.`);
-  return { ...dataset, mode, rows: rebuildRows(dataset.rows, mode, dataset.sizeOverrides) };
+  const nextValueColumn = valueColumnOptionsForMode(mode).includes(dataset.selectedValueColumn)
+    ? dataset.selectedValueColumn
+    : defaultValueColumnForMode(mode);
+  return { ...dataset, mode, selectedValueColumn: nextValueColumn, rows: rebuildRows(dataset.rows, mode, dataset.sizeOverrides) };
+}
+
+export function setValueColumn(dataset, valueColumn) {
+  if (dataset.mode !== "orderCsv") return dataset;
+  if (!ORDER_CSV_VALUE_COLUMNS.includes(valueColumn)) throw new Error("Invalid value column");
+  return { ...dataset, selectedValueColumn: valueColumn };
 }
 
 export function bulkEdit(dataset, filters, modeName, value, capMode, capValue) {
-  const columns = getModeColumns(dataset.mode);
+  const columns = resolveModeColumns(dataset);
   const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
   if (!rowIndexes.length) throw new Error("No visible unlocked rows selected");
@@ -498,7 +536,7 @@ export function setStatus(dataset, filters, status) {
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
   if (!rowIndexes.length) throw new Error("No visible unlocked rows to update");
   let next = withUndo(dataset);
-  const columns = getModeColumns(next.mode);
+  const columns = resolveModeColumns(next);
   const before = rowIndexes.map((index) => Number(next.rows[index][columns.settlement]));
   next.rows = syncStock(updateRows(next, rowIndexes, (row) => {
     row["Listing Status"] = status;
@@ -509,7 +547,7 @@ export function setStatus(dataset, filters, status) {
 }
 
 export function computeDiscount(dataset, filters, yPct, xPct, cap) {
-  const columns = getModeColumns(dataset.mode);
+  const columns = resolveModeColumns(dataset);
   const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
   if (!rowIndexes.length) throw new Error("No visible unlocked rows selected");
@@ -532,7 +570,7 @@ export function applyDecision(dataset, filters, thresholds) {
   const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
   if (!rowIndexes.length) throw new Error("No visible unlocked rows selected");
-  const columns = getModeColumns(dataset.mode);
+  const columns = resolveModeColumns(dataset);
   const before = rowIndexes.map((index) => Number(dataset.rows[index][columns.settlement]));
   let next = withUndo(dataset);
   next.rows = updateRows(next, rowIndexes, (row) => {
@@ -553,7 +591,7 @@ export function saveSizeOverride(dataset, filters, sku, size) {
   let next = withUndo(dataset);
   next.sizeOverrides = nextOverrides;
   next.rows = rebuildRows(next.rows, next.mode, nextOverrides);
-  const columns = getModeColumns(next.mode);
+  const columns = resolveModeColumns(next);
   const selected = filteredRows(next, filters, true).filter((row) => String(row[columns.sku] || "").trim() === trimmedSku);
   const values = selected.map((row) => Number(row[columns.settlement])).filter((value) => Number.isFinite(value));
   return appendLog(next, "Save Size", values, values, selected.length, `SKU: ${trimmedSku} -> ${size}`);
@@ -586,4 +624,6 @@ export function exportDataset(dataset) {
     blob: new Blob([output], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
   };
 }
+
+
 

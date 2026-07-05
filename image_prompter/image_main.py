@@ -1530,6 +1530,8 @@ def run_generation_prompt_for_image(
         "submit the image generation prompt",
         require_prompt_box=False,
     )
+    focus_chatgpt_prompt_box("post_injection")
+    time.sleep(0.2)
     pyautogui.press("enter")
     print("Pressed Enter to submit the image generation prompt.")
     wait_for_prompt_submission_dispatch(
@@ -1674,6 +1676,8 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
         "submit the initial ChatGPT prompt",
         require_prompt_box=False,
     )
+    focus_chatgpt_prompt_box("post_injection")
+    time.sleep(0.2)
     pyautogui.press("enter")
     prompt_submitted_at = time.time()
     print("Pressed Enter to submit the prompt")

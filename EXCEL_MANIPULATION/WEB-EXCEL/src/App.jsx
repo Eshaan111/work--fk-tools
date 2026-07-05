@@ -16,6 +16,7 @@ import {
   saveSizeOverride,
   setMode,
   setStatus,
+  setValueColumn,
   undoDataset,
 } from "./rateInsight";
 
@@ -24,15 +25,15 @@ const defaultFilters = { search: "", listing: "All", jeans: "All", size: "All", 
 const LISTING_COLUMN_VIEWS = {
   overview: {
     label: "Overview",
-    columns: ["Product Title", "FSN", "Seller SKU Id", "SKU ID", "Bank Settlement", "Selling Price(Rs)", "Listing Status", "Size", "Jeans Type", "Listing Type", "Auto Flag"],
+    columns: ["Product Title", "Product", "FSN", "Seller SKU Id", "SKU ID", "SKU", "Bank Settlement", "Selling Price(Rs)", "Price inc. FKMP Contribution & Subsidy", "Invoice Amount", "Selling Price Per Item", "Listing Status", "Size", "Jeans Type", "Listing Type", "Auto Flag"],
   },
   pricing: {
     label: "Pricing",
-    columns: ["Product Title", "FSN", "Seller SKU Id", "SKU ID", "Bank Settlement", "Selling Price(Rs)", "Discount", "Final Price", "Decision", "MRP (?)", "Your Selling Price (Rs)"],
+    columns: ["Product Title", "Product", "FSN", "Seller SKU Id", "SKU ID", "SKU", "Bank Settlement", "Selling Price(Rs)", "Price inc. FKMP Contribution & Subsidy", "Invoice Amount", "Selling Price Per Item", "Discount", "Final Price", "Decision", "MRP (?)", "Your Selling Price (Rs)"],
   },
   status: {
     label: "Status & Flags",
-    columns: ["Product Title", "FSN", "Seller SKU Id", "SKU ID", "Listing Status", "Your Stock Count", "Size", "Jeans Type", "Listing Type", "Auto Flag"],
+    columns: ["Product Title", "Product", "FSN", "Seller SKU Id", "SKU ID", "SKU", "Listing Status", "Your Stock Count", "Size", "Jeans Type", "Listing Type", "Auto Flag"],
   },
   all: {
     label: "All Columns",
@@ -75,12 +76,21 @@ function metricCards(metrics) {
   ];
 }
 
-function modeMeta(mode) {
+function modeMeta(mode, selectedValueColumn) {
   if (mode === "offer") {
     return {
       modeLabel: "Offer File",
       valueLabel: "Selling Price(Rs)",
       valueShort: "selling price",
+      thresholdBasis: "Final Price",
+    };
+  }
+  if (mode === "orderCsv") {
+    const label = selectedValueColumn || "Price inc. FKMP Contribution & Subsidy";
+    return {
+      modeLabel: "Order CSV",
+      valueLabel: label,
+      valueShort: label.toLowerCase(),
       thresholdBasis: "Final Price",
     };
   }
@@ -331,7 +341,7 @@ function App() {
   const columns = dashboard?.columns || [];
   const displayedColumns = useMemo(() => visibleListingColumns(columns, listingView), [columns, listingView]);
   const chartData = dashboard?.chart || [];
-  const activeMode = modeMeta(dashboard?.mode);
+  const activeMode = modeMeta(dashboard?.mode, dashboard?.selectedValueColumn);
 
   async function handleUpload(event) {
     const file = event.target.files?.[0];
@@ -388,9 +398,24 @@ function App() {
     setFilters((current) => ({ ...current, selectedRange: nextRange ? [Math.min(nextRange[0], nextRange[1]), Math.max(nextRange[0], nextRange[1])] : null }));
   }
 
+  function handleValueColumnChange(valueColumn) {
+    if (!dataset) return;
+    runAction(() => {
+      const nextDataset = setValueColumn(dataset, valueColumn);
+      const nextDefaults = defaultFiltersForDataset(nextDataset);
+      setFilters((current) => ({
+        ...current,
+        settlementMax: nextDefaults.settlementMax,
+        selectedRange: null,
+      }));
+      return nextDataset;
+    });
+  }
+
   function renderFilterPanel() {
     return (
       <section className="panel filter-panel">
+        {dashboard?.availableValueColumns?.length ? <div className="toggle-row" style={{ marginBottom: 14 }}>{dashboard.availableValueColumns.map((column) => <button key={column} className={dashboard.selectedValueColumn === column ? "toggle-button toggle-button-active" : "toggle-button"} onClick={() => handleValueColumnChange(column)}>{column}</button>)}</div> : null}
         <div className="filter-grid">
           <label className="field-block field-span-2"><LabelWithHelp label="Search rows" help="Searches the visible workbook rows by SKU and title at the same time." /><div className="search-field"><input value={filters.search} onChange={(e) => setFilters((c) => ({ ...c, search: e.target.value }))} placeholder="Try SKU, title, or keyword" /></div></label>
           {[ ["Listing type", "listing", filterOptions.listing, "Filters owner vs latched listing rows."], ["Jeans family", "jeans", filterOptions.jeans, "Filters the classified jeans bucket used by offer mode thresholds."], ["Detected size", "size", filterOptions.size, "Uses SKU-based size detection plus any saved overrides."], ["Listing status", "status", filterOptions.status, "Shows only ACTIVE or INACTIVE rows when needed."] ].map(([label, key, options, help]) => (
@@ -465,6 +490,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
