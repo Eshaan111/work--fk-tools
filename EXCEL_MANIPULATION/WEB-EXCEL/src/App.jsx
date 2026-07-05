@@ -1,6 +1,7 @@
 import "./styles.css";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import HisaabPage from "./HisaabPage";
 import {
   THRESHOLD_DEFAULTS,
   THRESHOLD_KEYS,
@@ -468,7 +469,7 @@ function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">Rate Insight</div>
-        <nav className="sidebar-nav">{["Dashboard", "Listings", "Insights"].map((item) => <button key={item} className={page === item ? "nav-item nav-item-active" : "nav-item"} onClick={() => setPage(item)}>{item}</button>)}</nav>
+        <nav className="sidebar-nav">{["Dashboard", "Listings", "Insights", "Hisaab"].map((item) => <button key={item} className={page === item ? "nav-item nav-item-active" : "nav-item"} onClick={() => setPage(item)}>{item}</button>)}</nav>
         <div className="sidebar-user"><div className="avatar">RI</div><div><div className="user-name">Local Operator</div><div className="user-role">React Workbook Flow</div></div></div>
       </aside>
       <main className="main-shell">
@@ -479,10 +480,11 @@ function App() {
         <div className="page-scroll">
           <section className="hero-panel"><div><div className="eyebrow">Standalone React App</div><h2>Unified settlement review across dashboard, listing management, and decision insights.</h2><p>Review settlement trends, refine listings, apply pricing actions, and export results from one streamlined workspace.</p></div><div className="hero-statuses"><div className="hero-pill">{dashboard?.accountName || "No file loaded"}</div><div className="hero-pill">Mode: {activeMode.modeLabel}</div><div className="hero-pill">Value Source: {activeMode.valueLabel}</div><div className="hero-pill">Threshold Basis: {activeMode.thresholdBasis}</div>{loading ? <div className="hero-pill hero-pill-accent">Working…</div> : null}</div></section>
           {error ? <div className="error-banner">{error}</div> : null}
-          {!dataset ? <section className="panel empty-upload-state"><div className="empty-upload-art"><div className="empty-upload-icon">RI</div><div className="empty-upload-lines"><span></span><span></span><span></span></div></div><div className="empty-upload-copy"><div className="eyebrow">Get Started</div><h3>Load your settlement workbook</h3><p>Start with an Excel or CSV export to unlock dashboard metrics, listing review, offer calculations, and final export.</p><div className="empty-upload-tags"><span>.xlsx</span><span>.xls</span><span>.csv</span></div><button className="primary-button empty-upload-button" onClick={() => fileInputRef.current?.click()}><span className="load-button-mark">+</span>Select Workbook</button></div></section> : null}
+          {!dataset && page !== "Hisaab" ? <section className="panel empty-upload-state"><div className="empty-upload-art"><div className="empty-upload-icon">RI</div><div className="empty-upload-lines"><span></span><span></span><span></span></div></div><div className="empty-upload-copy"><div className="eyebrow">Get Started</div><h3>Load your settlement workbook</h3><p>Start with an Excel or CSV export to unlock dashboard metrics, listing review, offer calculations, and final export.</p><div className="empty-upload-tags"><span>.xlsx</span><span>.xls</span><span>.csv</span></div><button className="primary-button empty-upload-button" onClick={() => fileInputRef.current?.click()}><span className="load-button-mark">+</span>Select Workbook</button></div></section> : null}
           {dataset && page === "Dashboard" ? renderDashboardPage() : null}
           {dataset && page === "Listings" ? renderListingsPage() : null}
           {dataset && page === "Insights" ? renderInsightsPage() : null}
+          {page === "Hisaab" ? <HisaabPage /> : null}
         </div>
       </main>
     </div>
@@ -490,6 +492,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 
