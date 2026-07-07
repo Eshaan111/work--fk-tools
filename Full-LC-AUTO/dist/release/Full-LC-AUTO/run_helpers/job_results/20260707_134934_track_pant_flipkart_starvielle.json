@@ -1,0 +1,58 @@
+{
+  "saved_at": "2026-07-07T13:49:34",
+  "summary": {
+    "completed_runs": 0,
+    "failed_runs": 1,
+    "total_runs": 1,
+    "result_path": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\run_helpers\\job_results\\20260707_134934_track_pant_flipkart_starvielle.json"
+  },
+  "listing_selection": {
+    "product_type": "track_pant",
+    "surface": "flipkart",
+    "kind": "Track Pant",
+    "size": "M",
+    "brand_name": "STARVIELLE",
+    "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\Trouser"
+  },
+  "config": {
+    "profile_name": "prabhu",
+    "listing_url": "https://seller.flipkart.com/index.html#dashboard/addListings/single?vertical=jean&vid=667",
+    "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\Trouser",
+    "snapshot_directory": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\snapshots",
+    "price_stock_shipping_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\common\\Price-Stock-Shipping-inputs.xlsx",
+    "price_stock_shipping_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\assets\\Price-Stock-Shipping-inputs.json",
+    "product_description_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\track_pant\\Product-Description-inputs.xlsx",
+    "product_description_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\json_LC_creation\\track_pant_flipkart\\02_product_description.json",
+    "additional_description_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\track_pant\\Additional-Description-inputs.xlsx",
+    "additional_description_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\json_LC_creation\\track_pant_flipkart\\01_additional_description.json",
+    "variants_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\common\\Variants-excel.xlsx",
+    "firefox_profile_path": "C:\\Users\\ESHAAN\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\kw3a25lf.default-release",
+    "headless": false
+  },
+  "flow": {
+    "enabled": true,
+    "flow_name": "listing_creation",
+    "product_type": "track_pant",
+    "surface": "flipkart",
+    "step_ids": [
+      "open_listing",
+      "additional_description",
+      "product_description",
+      "price_stock_shipping",
+      "images",
+      "variants",
+      "save_and_exit"
+    ]
+  },
+  "sessions": [
+    {
+      "run_index": 1,
+      "total_runs": 5,
+      "succeeded": false,
+      "error_message": "Run 1/5 failed before browser launch: Message: Process (pid=35212) unexpectedly closed with status 0\n | Firefox profile appears locked: C:\\Users\\ESHAAN\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\kw3a25lf.default-release\\parent.lock | Geckodriver log tail:\n1783087128096\tSync.Browser\tERROR\tRefreshing device list failed.: {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\n1783087128096\tSync.Browser\tERROR\tRefreshing device list failed.: {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\n1783087128096\tFirefoxAccounts\tERROR\terror GETing /account/attached_clients: {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\n1783087128096\tFirefoxAccounts\tERROR\tCould not update attached clients list : {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\n1783087128136\tFirefoxAccounts\tERROR\terror GETing /account/attached_clients: {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\n1783087128136\tFirefoxAccounts\tERROR\tCould not update attached clients list : {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\n1783087128136\tFirefoxAccounts\tERROR\terror GETing /account/devices?filterIdleDevicesTimestamp=1781272728133: {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\n1783087128136\tSync.Browser\tERROR\tRefreshing device list failed.: {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\nconsole.error: \"Sync encountered an error - see about:sync-log for the log file.\"\nRead port: 49231\n1783087128817\tRemoteAgent\tWARN\tTLS certificate errors will be ignored for this session\n1783087129027\tFirefoxAccounts\tERROR\terror GETing /account/attached_clients: {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\n1783087129028\tFirefoxAccounts\tERROR\tCould not update attached clients list : {\"error\":{},\"errorString\":\"[Exception... \\\"NS_ERROR_UNKNOWN_HOST\\\"  nsresult: \\\"0x804b001e (NS_ERROR_UNKNOWN_HOST)\\\"  location: \\\"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\\\"  data: no]\",\"message\":null,\"code\":null,\"errno\":null}\nExiting due to channel error.\nExiting due to channel error.\n1783087129246\twebdriver::server\tINFO\tShutting down\nExiting due to channel error.\n1783412366721\tgeckodriver\tINFO\tListening on 127.0.0.1:62667\n1783412369847\tmozrunner::runner\tINFO\tRunning command: \"C:\\\\Program Files\\\\Mozilla Firefox\\\\firefox.exe\" \"--marionette\" \"-profile\" \"C:\\\\Users\\\\ESHAAN\\\\AppData\\\\Roa ... irefox\\\\Profiles\\\\kw3a25lf.default-release\" \"--remote-debugging-port\" \"62668\" \"--remote-allow-hosts\" \"localhost\" \"-no-remote\"\nRead port: 49231",
+      "snapshot_path": null,
+      "success_record_path": null,
+      "success_record_error": null
+    }
+  ]
+}

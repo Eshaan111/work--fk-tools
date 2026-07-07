@@ -11,3 +11,5 @@ execute@chrome://remote/content/marionette/server.sys.mjs:289:16
 onPacket/<@chrome://remote/content/marionette/server.sys.mjs:262:20
 onPacket@chrome://remote/content/marionette/server.sys.mjs:263:9
 _onJSONObjectReady/<@chrome://remote/content/marionette/transport.sys.mjs:494:20
+ssi_onQuitApplicationGranted@resource:///modules/sessionstore/SessionStore.sys.mjs:2910:19
+ssi_observe@resource:///modules/sessionstore/SessionStore.sys.mjs:1607:14
