@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import atexit
 import ctypes
+import gc
 import json
 import os
 import queue
@@ -2474,6 +2475,7 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
                 pass
         if overlay_window.winfo_exists():
             overlay_window.destroy()
+        gc.collect()
 
     return start_new_batch_requested
 
@@ -6723,6 +6725,8 @@ def run_single_listing_session(
             untrack_webdriver(driver)
             if run_control is not None:
                 run_control.clear_active_driver(driver)
+        driver = None
+        gc.collect()
         log_event("BOOT", f"Closed browser for run {run_index}/{total_runs}.")
 
 

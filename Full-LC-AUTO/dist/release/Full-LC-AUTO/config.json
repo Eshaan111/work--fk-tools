@@ -41,7 +41,10 @@
                                                       ],
                                    "image_upload_verify_timeout_seconds":  60,
                                    "image_upload_retry_passes":  2,
-                                   "success_close_delay_seconds":  5
+                                   "success_close_delay_seconds":  5,
+                                   "monitor_poll_interval_ms":  250,
+                                   "overlay_reinforce_interval_ms":  1500,
+                                   "firefox_reduced_resource_mode":  true
                                },
                    "success_run_record":  {
                                               "accounts":  [
