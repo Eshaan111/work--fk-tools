@@ -1,5 +1,13 @@
 import * as XLSX from "xlsx";
 import detectionConfig from "./rateInsightDetections.json";
+import {
+  buildSettlementRecommendationRows,
+  decorateSettlementRecommendationRow,
+  extractSettlementRecommendationRows,
+  SETTLEMENT_RECOMMENDATION_COLUMNS,
+  SETTLEMENT_RECOMMENDATION_EXPORT_COLUMNS,
+  SETTLEMENT_RECOMMENDATION_MODE,
+} from "./settlementRecommendations";
 
 const SIZE_OVERRIDE_KEY = "rate_insight_size_overrides_v1";
 const TITLE_FLAGS = ["Dark Blue"];
@@ -97,6 +105,13 @@ function matchesDefinition(definition, context) {
 function getModeColumns(mode) {
   if (mode === "orderCsv") {
     return { sku: "SKU", title: "Product", settlement: ORDER_CSV_VALUE_COLUMNS[0] };
+  }
+  if (mode === SETTLEMENT_RECOMMENDATION_MODE) {
+    return {
+      sku: SETTLEMENT_RECOMMENDATION_COLUMNS.sku,
+      title: SETTLEMENT_RECOMMENDATION_COLUMNS.title,
+      settlement: SETTLEMENT_RECOMMENDATION_COLUMNS.currentSettlement,
+    };
   }
   return mode === "offer"
     ? { sku: "SKU ID", title: "FSN", settlement: "Selling Price(Rs)" }
@@ -396,6 +411,35 @@ function updateRows(dataset, rowIndexes, updater) {
 
 export async function loadWorkbook(file) {
   const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+  const sizeOverrides = loadSizeOverrides();
+  const settlementRecommendationRows = extractSettlementRecommendationRows(workbook);
+
+  if (settlementRecommendationRows?.length) {
+    const preparedRows = buildSettlementRecommendationRows(
+      settlementRecommendationRows.map((row, index) => ({ ...row, __orig_index: index })),
+      {
+        cleanNumeric,
+        detectSize,
+        jeansType,
+        listingType,
+        overrides: sizeOverrides,
+        thresholds: THRESHOLD_DEFAULTS,
+      }
+    );
+    return {
+      fileName: file.name,
+      fileType: getFileType(file.name),
+      accountName: detectAccount(file.name),
+      availableModes: { offer: false, normal: false, orderCsv: false, settlementRecommendations: true },
+      mode: SETTLEMENT_RECOMMENDATION_MODE,
+      selectedValueColumn: null,
+      rows: preparedRows,
+      sizeOverrides,
+      undoRows: null,
+      changeLog: [],
+    };
+  }
+
   const sheetName = workbook.SheetNames[0];
   const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
   const columns = rows[0] ? Object.keys(rows[0]) : [];
@@ -403,12 +447,12 @@ export async function loadWorkbook(file) {
     offer: ["SKU ID", "FSN", "Selling Price(Rs)"].every((key) => columns.includes(key)),
     normal: ["Seller SKU Id", "Product Title", "Bank Settlement"].every((key) => columns.includes(key)),
     orderCsv: ["SKU", "Product", ...ORDER_CSV_VALUE_COLUMNS].every((key) => columns.includes(key)),
+    settlementRecommendations: false,
   };
   if (!availableModes.offer && !availableModes.normal && !availableModes.orderCsv) {
     throw new Error("Unknown file format. Required settlement columns were not found.");
   }
   const mode = availableModes.normal ? "normal" : availableModes.offer ? "offer" : "orderCsv";
-  const sizeOverrides = loadSizeOverrides();
   const preparedRows = rows.map((row, index) => ({ ...row, __orig_index: index, __locked: false }));
   return {
     fileName: file.name,
@@ -458,7 +502,7 @@ export function createSnapshot(dataset, rawFilters) {
   const selectionValues = exported.map((row) => Number(row[columns.settlement])).filter((value) => Number.isFinite(value));
   const listingTypeRatio = buildListingTypeRatio(exported);
   const sizeColorStatus = buildSizeColorStatusRatio(exported);
-  const rowColumns = [...new Set(dataset.rows.flatMap((row) => Object.keys(row)))].filter((key) => !["__locked", "__orig_index"].includes(key));
+  const rowColumns = dataset.mode === SETTLEMENT_RECOMMENDATION_MODE ? SETTLEMENT_RECOMMENDATION_EXPORT_COLUMNS : [...new Set(dataset.rows.flatMap((row) => Object.keys(row)))].filter((key) => !["__locked", "__orig_index"].includes(key));
 
   return {
     fileName: dataset.fileName,
@@ -511,6 +555,7 @@ export function setValueColumn(dataset, valueColumn) {
 }
 
 export function bulkEdit(dataset, filters, modeName, value, capMode, capValue) {
+  if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Bulk editing is disabled for settlement recommendations files");
   const columns = resolveModeColumns(dataset);
   const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
@@ -532,6 +577,7 @@ export function bulkEdit(dataset, filters, modeName, value, capMode, capValue) {
 }
 
 export function setStatus(dataset, filters, status) {
+  if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Status changes are disabled for settlement recommendations files");
   const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
   if (!rowIndexes.length) throw new Error("No visible unlocked rows to update");
@@ -547,6 +593,7 @@ export function setStatus(dataset, filters, status) {
 }
 
 export function computeDiscount(dataset, filters, yPct, xPct, cap) {
+  if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Offer calculations are disabled for settlement recommendations files");
   const columns = resolveModeColumns(dataset);
   const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
@@ -566,6 +613,7 @@ export function computeDiscount(dataset, filters, yPct, xPct, cap) {
 }
 
 export function applyDecision(dataset, filters, thresholds) {
+  if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Offer decisions are disabled for settlement recommendations files");
   if (!dataset.rows.some((row) => row["Final Price"] != null && row["Final Price"] !== "")) throw new Error("Compute discount first");
   const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
@@ -583,6 +631,7 @@ export function applyDecision(dataset, filters, thresholds) {
 }
 
 export function saveSizeOverride(dataset, filters, sku, size) {
+  if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Size overrides are disabled for settlement recommendations files");
   const trimmedSku = String(sku || "").trim();
   if (!trimmedSku) throw new Error("Enter a SKU");
   if (!SIZE_VALUES.includes(size)) throw new Error("Invalid size");
@@ -606,7 +655,10 @@ export function exportDataset(dataset) {
   const rows = cloneRows(dataset.rows)
     .sort((a, b) => a.__orig_index - b.__orig_index)
     .map(({ __orig_index, __locked, ...row }) => row);
-  const sheet = XLSX.utils.json_to_sheet(rows);
+  const exportRows = dataset.mode === SETTLEMENT_RECOMMENDATION_MODE
+    ? rows.map((row) => Object.fromEntries(SETTLEMENT_RECOMMENDATION_EXPORT_COLUMNS.map((column) => [column, row[column] ?? ""])))
+    : rows;
+  const sheet = XLSX.utils.json_to_sheet(exportRows);
 
   if (dataset.fileType === "csv") {
     const csv = XLSX.utils.sheet_to_csv(sheet);
@@ -620,10 +672,17 @@ export function exportDataset(dataset) {
   XLSX.utils.book_append_sheet(workbook, sheet, "RateInsight");
   const output = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
   return {
-    fileName: "PROGRAM_OUTPUTTED.xlsx",
+    fileName: dataset.mode === SETTLEMENT_RECOMMENDATION_MODE ? "SETTLEMENT_RECOMMENDATIONS_OUTPUT.xlsx" : "PROGRAM_OUTPUTTED.xlsx",
     blob: new Blob([output], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
   };
 }
+
+
+
+
+
+
+
 
 
 
