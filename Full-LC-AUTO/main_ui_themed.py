@@ -2109,7 +2109,7 @@ def get_firefox_profile_lock_hint(profile_path: Path) -> str:
     return "Firefox profile appears locked: " + ", ".join(active_locks)
 
 
-def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
+def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
     root = tk.Tk()
     root.title("Full LC Auto Batch Monitor")
     root.geometry("1040x760")
@@ -2133,6 +2133,62 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
 
     root.columnconfigure(0, weight=1)
     root.rowconfigure(1, weight=1)
+
+    overlay_window = tk.Toplevel(root)
+    overlay_window.overrideredirect(True)
+    overlay_window.configure(bg="#17352d")
+    overlay_window.attributes("-topmost", True)
+    try:
+        overlay_window.wm_attributes("-toolwindow", True)
+    except tk.TclError:
+        pass
+
+    def place_counter_overlay() -> None:
+        if not overlay_window.winfo_exists():
+            return
+        overlay_width = 148
+        overlay_height = 44
+        screen_width = overlay_window.winfo_screenwidth()
+        x_position = max((screen_width - overlay_width) // 2, 0)
+        y_position = 8
+        overlay_window.geometry(f"{overlay_width}x{overlay_height}+{x_position}+{y_position}")
+        overlay_window.lift()
+
+    overlay_frame = tk.Frame(
+        overlay_window,
+        bg="#17352d",
+        highlightbackground="#d9b36c",
+        highlightcolor="#d9b36c",
+        highlightthickness=1,
+        bd=0,
+    )
+    overlay_frame.pack(fill="both", expand=True)
+    success_overlay_var = tk.StringVar(value="0")
+    failed_overlay_var = tk.StringVar(value="0")
+    tk.Label(
+        overlay_frame,
+        textvariable=success_overlay_var,
+        bg="#17352d",
+        fg="#1fce6d",
+        font=("Segoe UI Semibold", 16),
+        padx=10,
+    ).pack(side="left", pady=8)
+    tk.Label(
+        overlay_frame,
+        text="/",
+        bg="#17352d",
+        fg="#f7f0e4",
+        font=("Segoe UI Semibold", 15),
+    ).pack(side="left", pady=8)
+    tk.Label(
+        overlay_frame,
+        textvariable=failed_overlay_var,
+        bg="#17352d",
+        fg="#ff6b5a",
+        font=("Segoe UI Semibold", 16),
+        padx=10,
+    ).pack(side="left", pady=8)
+    place_counter_overlay()
 
     run_control = RunControl()
     log_messages: queue.Queue[str] = queue.Queue()
@@ -2225,10 +2281,13 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
     abort_current_button = ttk.Button(button_frame, text="Abort Current Run", style="Secondary.TButton")
     abort_batch_button = ttk.Button(button_frame, text="Abort Batch", style="App.TButton")
     close_button = ttk.Button(button_frame, text="Close", style="Secondary.TButton")
+    new_batch_button = ttk.Button(button_frame, text="Start New Batch", style="App.TButton")
     abort_current_button.grid(row=0, column=0, padx=(0, 8))
     abort_batch_button.grid(row=0, column=1, padx=(0, 8))
-    close_button.grid(row=0, column=2)
+    close_button.grid(row=0, column=2, padx=(0, 8))
+    new_batch_button.grid(row=0, column=3)
     close_button.state(["disabled"])
+    new_batch_button.state(["disabled"])
 
     ttk.Label(log_card, text="Live Logs", style="MonitorTitle.TLabel").grid(row=0, column=0, sticky="w")
     ttk.Label(
@@ -2254,12 +2313,18 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
     log_scrollbar.grid(row=2, column=1, sticky="ns")
 
     monitor_finished = False
+    start_new_batch_requested = False
     poll_after_id: str | None = None
     max_log_lines = 600
 
     def refresh_run_summary() -> None:
-        success_count_label.configure(text=str(result_state["successful_runs"]))
-        failed_count_label.configure(text=str(result_state["failed_runs"]))
+        success_value = str(result_state["successful_runs"])
+        failed_value = str(result_state["failed_runs"])
+        success_count_label.configure(text=success_value)
+        failed_count_label.configure(text=failed_value)
+        success_overlay_var.set(success_value)
+        failed_overlay_var.set(failed_value)
+        overlay_window.lift()
 
     def append_log_lines(log_lines: list[str]) -> None:
         if not log_lines:
@@ -2333,12 +2398,19 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
             abort_current_button.state(["disabled"])
             abort_batch_button.state(["disabled"])
             close_button.state(["!disabled"])
-            if result_state["error"] is not None:
+            new_batch_button.state(["!disabled"])
+            if start_new_batch_requested:
+                status_var.set("Batch stop completed. Returning to home screen for a new batch...")
+                root.after(150, close_window)
+            elif result_state["error"] is not None:
                 status_var.set("Batch stopped because of an error. You can review the logs and close this window.")
             elif run_control.should_abort_batch():
                 status_var.set("Batch aborted. You can review the logs and close this window.")
             else:
                 status_var.set("Batch finished. You can review the logs and close this window.")
+
+        if overlay_window.winfo_exists():
+            overlay_window.lift()
 
         if not root.winfo_exists():
             poll_after_id = None
@@ -2347,6 +2419,19 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
             poll_after_id = None
             return
         poll_after_id = root.after(180, poll_log_queue)
+
+    def start_new_batch() -> None:
+        nonlocal start_new_batch_requested
+        start_new_batch_requested = True
+        if not result_state["done"]:
+            status_var.set("Start new batch requested. Aborting the current batch before returning to home screen...")
+            log_event("RUN", "Start new batch requested from UI. Aborting current batch first.")
+            abort_current_button.state(["disabled"])
+            abort_batch_button.state(["disabled"])
+            new_batch_button.state(["disabled"])
+            run_control.request_abort_batch()
+            return
+        close_window()
 
     def close_window() -> None:
         nonlocal poll_after_id
@@ -2361,11 +2446,14 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
             except Exception:
                 pass
             poll_after_id = None
+        if overlay_window.winfo_exists():
+            overlay_window.destroy()
         root.destroy()
 
     abort_current_button.configure(command=abort_current_run)
     abort_batch_button.configure(command=abort_batch)
     close_button.configure(command=close_window)
+    new_batch_button.configure(command=start_new_batch)
     root.protocol("WM_DELETE_WINDOW", close_window)
 
     poll_log_queue()
@@ -2378,6 +2466,10 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> None:
                 root.after_cancel(poll_after_id)
             except Exception:
                 pass
+        if overlay_window.winfo_exists():
+            overlay_window.destroy()
+
+    return start_new_batch_requested
 
 
 def build_firefox_driver(config: BotConfig, geckodriver_log_path: Path | None = None) -> webdriver.Firefox:
@@ -6492,8 +6584,11 @@ def run_job(
 def main() -> None:
     try:
         enforce_runtime_license()
-        startup_selection = prompt_for_startup_selection()
-        show_batch_monitor_and_run(startup_selection)
+        while True:
+            startup_selection = prompt_for_startup_selection()
+            start_new_batch_requested = show_batch_monitor_and_run(startup_selection)
+            if not start_new_batch_requested:
+                break
     except KeyboardInterrupt:
         raise SystemExit("Interrupted by user.") from None
     except SystemExit as exc:
@@ -6508,6 +6603,10 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
+
 
 
 
