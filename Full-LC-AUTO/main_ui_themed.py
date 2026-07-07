@@ -5118,30 +5118,19 @@ def cycle_page_switch_verification_until_toast(
     cycle_label: str = "page",
     tab_sequence: list[tuple[str, str]] | tuple[tuple[str, str], ...] = (),
     timeout_seconds: int = 45,
+    initial_wait_seconds: int = 0,
+    max_cycles: int | None = None,
+    require_success: bool = True,
+    allow_counter_progress: bool = True,
 ) -> None:
     if not tab_sequence:
         raise ValueError("tab_sequence must contain at least one tab label/xpath pair.")
 
-    deadline = datetime.now().timestamp() + timeout_seconds
-    tab_index = 0
-
-    log_event(
-        "VERIFY",
-        f"Starting IN THE PAGE SWITCH VERIFICATION CYCLE for {cycle_label} using "
-        f"{'toast or counter progress' if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else 'counter progress only'}.",
-    )
-    while datetime.now().timestamp() < deadline:
-        checkpoint_pause(
-            pause_controller,
-            f"Cycling {cycle_label} page switches until save toast",
-            driver,
-            config,
-        )
-        # Small test-run mode: keep toast detection disabled and rely only on tab counters.
+    def has_success_signal(tab_index: int) -> bool:
         if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION and has_changes_saved_toast(driver):
             log_event("TOAST", f"Detected success toast during {cycle_label} page-switch verification cycle.")
-            return
-        if tab_index >= 2:
+            return True
+        if allow_counter_progress and tab_index >= 2:
             nonzero_progress = has_nonzero_page_switch_progress(driver, tab_sequence)
             if nonzero_progress is not None:
                 tab_label, progress_text, first_value, second_value = nonzero_progress
@@ -5150,7 +5139,81 @@ def cycle_page_switch_verification_until_toast(
                     f"Detected nonzero tab progress during {cycle_label} page-switch verification cycle: "
                     f"{tab_label} -> {progress_text} ({first_value}/{second_value}). Treating verification as complete.",
                 )
+                return True
+        return False
+
+    tab_index = 0
+    success_mode = "toast or counter progress" if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else "counter progress only"
+    if not allow_counter_progress:
+        success_mode = "toast only" if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else "no active success signal"
+
+    log_event(
+        "VERIFY",
+        f"Starting IN THE PAGE SWITCH VERIFICATION CYCLE for {cycle_label} using {success_mode}.",
+    )
+
+    if initial_wait_seconds > 0:
+        log_event(
+            "VERIFY",
+            f"Waiting up to {initial_wait_seconds}s for UI confirmation before cycling {cycle_label} tabs.",
+        )
+        wait_deadline = datetime.now().timestamp() + initial_wait_seconds
+        while datetime.now().timestamp() < wait_deadline:
+            checkpoint_pause(
+                pause_controller,
+                f"Waiting for {cycle_label} UI confirmation before tab cycle",
+                driver,
+                config,
+            )
+            if has_success_signal(tab_index):
+                log_event(
+                    "VERIFY",
+                    f"UI confirmation appeared early for {cycle_label}. Starting tab cycling immediately.",
+                )
+                break
+            sleep(0.25)
+
+    if max_cycles is not None:
+        for _cycle_index in range(max_cycles):
+            checkpoint_pause(
+                pause_controller,
+                f"Cycling {cycle_label} page switches until save toast",
+                driver,
+                config,
+            )
+            if has_success_signal(tab_index):
                 return
+            current_tab_label, current_tab_xpath = tab_sequence[tab_index % len(tab_sequence)]
+            open_tab_via_autogui(
+                driver,
+                current_tab_label,
+                current_tab_xpath,
+                settle_seconds=1,
+            )
+            tab_index += 1
+            if has_success_signal(tab_index):
+                return
+
+        if require_success:
+            raise TimeoutException(
+                f"Timed out while cycling {cycle_label} page switches waiting for verification progress."
+            )
+        log_event(
+            "VERIFY",
+            f"No verification success signal appeared after {max_cycles} cycles for {cycle_label}. Continuing anyway.",
+        )
+        return
+
+    deadline = datetime.now().timestamp() + timeout_seconds
+    while datetime.now().timestamp() < deadline:
+        checkpoint_pause(
+            pause_controller,
+            f"Cycling {cycle_label} page switches until save toast",
+            driver,
+            config,
+        )
+        if has_success_signal(tab_index):
+            return
 
         current_tab_label, current_tab_xpath = tab_sequence[tab_index % len(tab_sequence)]
         open_tab_via_autogui(
@@ -5668,6 +5731,15 @@ def verify_flow_page_switch(
         config,
         cycle_label=cycle_label,
         tab_sequence=resolved_tab_sequence,
+        timeout_seconds=int(verify_payload.get("timeout_seconds", 45)),
+        initial_wait_seconds=int(verify_payload.get("initial_wait_seconds", 0)),
+        max_cycles=(
+            int(verify_payload["max_cycles"])
+            if verify_payload.get("max_cycles") is not None
+            else None
+        ),
+        require_success=bool(verify_payload.get("require_success", True)),
+        allow_counter_progress=bool(verify_payload.get("allow_counter_progress", True)),
     )
     checkpoint_pause(pause_controller, checkpoint_label, driver, config)
 
@@ -5977,7 +6049,11 @@ def run_images_flow_step(
             "enabled": verify_before_variants,
             "cycle_label": "Images page",
             "tab_labels": ["Image addition", "Variant addition"],
-            "checkpoint_label": "Changes saved detected after Images page click cycle",
+            "checkpoint_label": "Images verification cycle completed before Variant page",
+            "initial_wait_seconds": 60,
+            "max_cycles": 5,
+            "require_success": False,
+            "allow_counter_progress": False,
         },
     )
     open_flow_tab(

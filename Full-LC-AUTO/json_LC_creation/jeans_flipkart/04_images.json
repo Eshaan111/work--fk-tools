@@ -47,6 +47,10 @@
         "value": "Changes saved!"
       }
     ],
-    "checkpoint_label": "Changes saved detected after Images page click cycle"
+    "checkpoint_label": "Images verification cycle completed before Variant page",
+    "initial_wait_seconds": 60,
+    "max_cycles": 5,
+    "require_success": false,
+    "allow_counter_progress": false
   }
 }
