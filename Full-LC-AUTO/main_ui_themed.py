@@ -4208,21 +4208,22 @@ def fill_product_description_fields(
 
     size_qualifier_value = product_input_row.values.get("Size Qualifier", "").strip()
     main_size_value = product_input_row.size.strip()
+    size_field_labels = {"size", "brand size"}
 
     for field in field_definitions:
         raw_value = product_input_row.values.get(field.label, "").strip()
 
-        if field.label == "Size":
+        if field.label.strip().lower() in size_field_labels:
             if size_qualifier_value:
                 fill_size_qualifier_field(driver, size_qualifier_value)
             else:
-                log_event("DESC", "Skipping Size Qualifier: no Excel value provided.")
+                log_event("DESC", f"Skipping {field.label} qualifier: no Excel value provided.")
 
             if not main_size_value:
-                log_event("DESC", "Skipping Size: no row match size value was available.")
+                log_event("DESC", f"Skipping {field.label}: no row match size value was available.")
                 continue
 
-            log_event("DESC", f"Preparing main Size dropdown selection after qualifier -> {main_size_value}")
+            log_event("DESC", f"Preparing main {field.label} dropdown selection after qualifier -> {main_size_value}")
             fill_combobox_field(driver, field.label, main_size_value, timeout_per_scroll=1)
             continue
 
@@ -6507,6 +6508,9 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
 
 
 

@@ -150,6 +150,22 @@
                     "price_stock_shipping",
                     "images"
                 ]
+            },
+            "track_pant": {
+                "default_kind_by_surface": {
+                    "flipkart": "Track Pant"
+                },
+                "default_size_by_surface": {
+                    "flipkart": "M"
+                },
+                "sheet_names": {
+                    "product_description_by_surface": {
+                        "flipkart": "Track Pant Product Inputs"
+                    },
+                    "additional_description_by_surface": {
+                        "flipkart": "Track Pant Addl Desc Inputs"
+                    }
+                }
             }
         },
         "legacy_product_page_flows": {
@@ -249,6 +265,14 @@
                             "image_directory": "C:/work-mom/LISTING IMAGES AUTOMATED/Shorts"
                         }
                     }
+                },
+                "track_pant": {
+                    "kinds": {
+                        "1": {
+                            "kind": "Track Pant",
+                            "image_directory": "C:/work-mom/LISTING IMAGES AUTOMATED/Trouser"
+                        }
+                    }
                 }
             }
         },
@@ -298,6 +322,14 @@
                         "1": {
                             "kind": "Shorts",
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED"
+                        }
+                    }
+                },
+                "track_pant": {
+                    "kinds": {
+                        "1": {
+                            "kind": "Track Pant",
+                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Trouser"
                         }
                     }
                 }
