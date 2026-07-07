@@ -48,9 +48,11 @@
       }
     ],
     "checkpoint_label": "Images verification cycle completed before Variant page",
-    "initial_wait_seconds": 60,
+    "initial_wait_seconds": 5,
     "max_cycles": 5,
-    "require_success": false,
-    "allow_counter_progress": false
+    "require_success": true,
+    "allow_counter_progress": false,
+    "retry_wait_seconds": 45,
+    "retry_max_cycles": 5
   }
 }

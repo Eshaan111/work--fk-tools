@@ -5122,6 +5122,8 @@ def cycle_page_switch_verification_until_toast(
     max_cycles: int | None = None,
     require_success: bool = True,
     allow_counter_progress: bool = True,
+    retry_wait_seconds: int = 0,
+    retry_max_cycles: int | None = None,
 ) -> None:
     if not tab_sequence:
         raise ValueError("tab_sequence must contain at least one tab label/xpath pair.")
@@ -5142,47 +5144,35 @@ def cycle_page_switch_verification_until_toast(
                 return True
         return False
 
-    tab_index = 0
-    success_mode = "toast or counter progress" if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else "counter progress only"
-    if not allow_counter_progress:
-        success_mode = "toast only" if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else "no active success signal"
-
-    log_event(
-        "VERIFY",
-        f"Starting IN THE PAGE SWITCH VERIFICATION CYCLE for {cycle_label} using {success_mode}.",
-    )
-
-    if initial_wait_seconds > 0:
-        log_event(
-            "VERIFY",
-            f"Waiting up to {initial_wait_seconds}s for UI confirmation before cycling {cycle_label} tabs.",
-        )
-        wait_deadline = datetime.now().timestamp() + initial_wait_seconds
+    def wait_before_cycles(wait_seconds: int, label: str) -> bool:
+        if wait_seconds <= 0:
+            return False
+        log_event("VERIFY", f"Waiting {wait_seconds}s before {label} for {cycle_label}.")
+        wait_deadline = datetime.now().timestamp() + wait_seconds
         while datetime.now().timestamp() < wait_deadline:
             checkpoint_pause(
                 pause_controller,
-                f"Waiting for {cycle_label} UI confirmation before tab cycle",
+                f"Waiting before {label} for {cycle_label}",
                 driver,
                 config,
             )
-            if has_success_signal(tab_index):
-                log_event(
-                    "VERIFY",
-                    f"UI confirmation appeared early for {cycle_label}. Starting tab cycling immediately.",
-                )
-                break
             sleep(0.25)
+        return False
 
-    if max_cycles is not None:
-        for _cycle_index in range(max_cycles):
+    def run_cycle_pass(cycle_count: int, label: str, starting_tab_index: int) -> tuple[bool, int]:
+        tab_index = starting_tab_index
+        if cycle_count <= 0:
+            return False, tab_index
+        log_event("VERIFY", f"Starting {label}: up to {cycle_count} tab cycles for {cycle_label}.")
+        for _cycle_index in range(cycle_count):
             checkpoint_pause(
                 pause_controller,
-                f"Cycling {cycle_label} page switches until save toast",
+                f"Cycling {cycle_label} page switches during {label}",
                 driver,
                 config,
             )
             if has_success_signal(tab_index):
-                return
+                return True, tab_index
             current_tab_label, current_tab_xpath = tab_sequence[tab_index % len(tab_sequence)]
             open_tab_via_autogui(
                 driver,
@@ -5192,19 +5182,43 @@ def cycle_page_switch_verification_until_toast(
             )
             tab_index += 1
             if has_success_signal(tab_index):
+                return True, tab_index
+        return False, tab_index
+
+    success_mode = "toast or counter progress" if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else "counter progress only"
+    if not allow_counter_progress:
+        success_mode = "toast only" if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else "no active success signal"
+    log_event(
+        "VERIFY",
+        f"Starting IN THE PAGE SWITCH VERIFICATION CYCLE for {cycle_label} using {success_mode}.",
+    )
+
+    if max_cycles is not None:
+        tab_index = 0
+        wait_before_cycles(initial_wait_seconds, "first cycle pass")
+        first_pass_success, tab_index = run_cycle_pass(max_cycles, "first cycle pass", tab_index)
+        if first_pass_success:
+            return
+
+        if retry_max_cycles is not None:
+            wait_before_cycles(retry_wait_seconds, "second cycle pass")
+            second_pass_success, tab_index = run_cycle_pass(retry_max_cycles, "second cycle pass", tab_index)
+            if second_pass_success:
                 return
 
         if require_success:
             raise TimeoutException(
                 f"Timed out while cycling {cycle_label} page switches waiting for verification progress."
             )
+        total_cycles = max_cycles + (retry_max_cycles or 0)
         log_event(
             "VERIFY",
-            f"No verification success signal appeared after {max_cycles} cycles for {cycle_label}. Continuing anyway.",
+            f"No verification success signal appeared after {total_cycles} cycles for {cycle_label}. Continuing anyway.",
         )
         return
 
     deadline = datetime.now().timestamp() + timeout_seconds
+    tab_index = 0
     while datetime.now().timestamp() < deadline:
         checkpoint_pause(
             pause_controller,
@@ -5720,6 +5734,13 @@ def verify_flow_page_switch(
     tab_labels: tuple[str, str],
     checkpoint_label: str,
     tab_xpaths: tuple[str, str] | None = None,
+    timeout_seconds: int = 45,
+    initial_wait_seconds: int = 0,
+    max_cycles: int | None = None,
+    require_success: bool = True,
+    allow_counter_progress: bool = True,
+    retry_wait_seconds: int = 0,
+    retry_max_cycles: int | None = None,
 ) -> None:
     resolved_tab_sequence = []
     for index, tab_label in enumerate(tab_labels):
@@ -5731,15 +5752,13 @@ def verify_flow_page_switch(
         config,
         cycle_label=cycle_label,
         tab_sequence=resolved_tab_sequence,
-        timeout_seconds=int(verify_payload.get("timeout_seconds", 45)),
-        initial_wait_seconds=int(verify_payload.get("initial_wait_seconds", 0)),
-        max_cycles=(
-            int(verify_payload["max_cycles"])
-            if verify_payload.get("max_cycles") is not None
-            else None
-        ),
-        require_success=bool(verify_payload.get("require_success", True)),
-        allow_counter_progress=bool(verify_payload.get("allow_counter_progress", True)),
+        timeout_seconds=timeout_seconds,
+        initial_wait_seconds=initial_wait_seconds,
+        max_cycles=max_cycles,
+        require_success=require_success,
+        allow_counter_progress=allow_counter_progress,
+        retry_wait_seconds=retry_wait_seconds,
+        retry_max_cycles=retry_max_cycles,
     )
     checkpoint_pause(pause_controller, checkpoint_label, driver, config)
 
@@ -5787,6 +5806,21 @@ def run_page_verification_from_definition(
         (str(tab_labels[0]), str(tab_labels[1])),
         checkpoint_label,
         tab_xpaths=tab_xpaths,
+        timeout_seconds=int(verify_payload.get("timeout_seconds", 45)),
+        initial_wait_seconds=int(verify_payload.get("initial_wait_seconds", 0)),
+        max_cycles=(
+            int(verify_payload["max_cycles"])
+            if verify_payload.get("max_cycles") is not None
+            else None
+        ),
+        require_success=bool(verify_payload.get("require_success", True)),
+        allow_counter_progress=bool(verify_payload.get("allow_counter_progress", True)),
+        retry_wait_seconds=int(verify_payload.get("retry_wait_seconds", 0)),
+        retry_max_cycles=(
+            int(verify_payload["retry_max_cycles"])
+            if verify_payload.get("retry_max_cycles") is not None
+            else None
+        ),
     )
 
 
@@ -6050,9 +6084,11 @@ def run_images_flow_step(
             "cycle_label": "Images page",
             "tab_labels": ["Image addition", "Variant addition"],
             "checkpoint_label": "Images verification cycle completed before Variant page",
-            "initial_wait_seconds": 60,
+            "initial_wait_seconds": 5,
             "max_cycles": 5,
-            "require_success": False,
+            "retry_wait_seconds": 45,
+            "retry_max_cycles": 5,
+            "require_success": True,
             "allow_counter_progress": False,
         },
     )
