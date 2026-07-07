@@ -48,9 +48,9 @@ export function decorateSettlementRecommendationRow(row, helpers) {
   const threshold = Number(thresholds[String(kind)] || 0);
   const recommended = cleanNumeric(row[SETTLEMENT_RECOMMENDATION_COLUMNS.recommendedSettlement]);
   const rangeMax = parseRangeMax(row[SETTLEMENT_RECOMMENDATION_COLUMNS.recommendedRange], cleanNumeric);
-  const acceptedValue = recommended != null && recommended <= threshold
+  const acceptedValue = recommended != null && recommended >= threshold
     ? recommended
-    : rangeMax != null && rangeMax <= threshold
+    : rangeMax != null && rangeMax >= threshold
       ? rangeMax
       : null;
 

@@ -43,6 +43,25 @@ export { SIZE_VALUES };
 export const THRESHOLD_KEYS = (KIND_DEFINITIONS.length ? KIND_DEFINITIONS : FALLBACK_KIND_DEFINITIONS).map((entry) => entry.key);
 export const THRESHOLD_LABELS = Object.fromEntries((KIND_DEFINITIONS.length ? KIND_DEFINITIONS : FALLBACK_KIND_DEFINITIONS).map((entry) => [entry.key, entry.label || `${entry.key} floor`]));
 export const THRESHOLD_DEFAULTS = Object.fromEntries((KIND_DEFINITIONS.length ? KIND_DEFINITIONS : FALLBACK_KIND_DEFINITIONS).map((entry) => [entry.key, entry.defaultThreshold || "0"]));
+export const SETTLEMENT_THRESHOLD_DEFAULTS = {
+  ICE: "360",
+  BEIGE: "369",
+  WHITE: "283",
+  "BLACK-BAGGY": "319",
+  "BLACK-PLAIN": "288",
+  Trouser: "214",
+  Shorts: "0",
+  MIX: "0",
+};
+export const SETTLEMENT_THRESHOLD_LABELS = {
+  ...THRESHOLD_LABELS,
+  ICE: "ICE settlement ceiling",
+  BEIGE: "BEIGE settlement ceiling",
+  WHITE: "White settlement ceiling",
+  Trouser: "Trouser settlement ceiling",
+  "BLACK-BAGGY": "BB settlement ceiling",
+  "BLACK-PLAIN": "NARROW settlement ceiling",
+};
 
 const SIZE_DETECTION_RULES = Array.isArray(detectionConfig.sizeDetectionRules) ? detectionConfig.sizeDetectionRules : [];
 const UNDETECTED_SIZE = String(detectionConfig.undetectedSize || "UNDETECTED").trim() || "UNDETECTED";
@@ -423,7 +442,7 @@ export async function loadWorkbook(file) {
         jeansType,
         listingType,
         overrides: sizeOverrides,
-        thresholds: THRESHOLD_DEFAULTS,
+        thresholds: SETTLEMENT_THRESHOLD_DEFAULTS,
       }
     );
     return {
@@ -612,12 +631,28 @@ export function computeDiscount(dataset, filters, yPct, xPct, cap) {
   return appendLog(next, "Compute Discount", before, after, rowIndexes.length);
 }
 
-export function applyDecision(dataset, filters, thresholds) {
-  if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Offer decisions are disabled for settlement recommendations files");
-  if (!dataset.rows.some((row) => row["Final Price"] != null && row["Final Price"] !== "")) throw new Error("Compute discount first");
+export function applyDecision(dataset, filters, thresholds, thresholdMode = "price") {
   const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
   if (!rowIndexes.length) throw new Error("No visible unlocked rows selected");
+
+  if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) {
+    const before = rowIndexes.map((index) => Number(dataset.rows[index]["Output Settlement"]) || null);
+    let next = withUndo(dataset);
+    next.rows = updateRows(next, rowIndexes, (row) => decorateSettlementRecommendationRow(row, {
+      cleanNumeric,
+      detectSize,
+      jeansType,
+      listingType,
+      overrides: next.sizeOverrides,
+      thresholds,
+    }));
+    const after = rowIndexes.map((index) => Number(next.rows[index]["Output Settlement"]) || null);
+    const modeLabel = thresholdMode === "settlement" ? "Settlement thresholds" : "Price thresholds";
+    return appendLog(next, "Apply Decision", before, after, rowIndexes.length, modeLabel);
+  }
+
+  if (!dataset.rows.some((row) => row["Final Price"] != null && row["Final Price"] !== "")) throw new Error("Compute discount first");
   const columns = resolveModeColumns(dataset);
   const before = rowIndexes.map((index) => Number(dataset.rows[index][columns.settlement]));
   let next = withUndo(dataset);
