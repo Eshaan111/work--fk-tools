@@ -5087,16 +5087,39 @@ def get_tab_progress_text(driver: webdriver.Firefox, tab_xpath: str) -> str:
     return ""
 
 
-def extract_nonzero_tab_progress(progress_text: str) -> tuple[int, int] | None:
+def extract_tab_progress_values(progress_text: str) -> tuple[int, int] | None:
     match = re.search(r"\((\d+)\s*/\s*(\d+)\)", progress_text)
     if not match:
         return None
+    return int(match.group(1)), int(match.group(2))
 
-    first_value = int(match.group(1))
-    second_value = int(match.group(2))
+
+def extract_nonzero_tab_progress(progress_text: str) -> tuple[int, int] | None:
+    progress_values = extract_tab_progress_values(progress_text)
+    if progress_values is None:
+        return None
+
+    first_value, second_value = progress_values
     if first_value == 0:
         return None
     return first_value, second_value
+
+
+def get_tab_progress_threshold_match(
+    driver: webdriver.Firefox,
+    tab_label: str,
+    tab_xpath: str,
+    min_first_value: int,
+) -> tuple[str, int, int] | None:
+    progress_text = get_tab_progress_text(driver, tab_xpath)
+    progress_values = extract_tab_progress_values(progress_text)
+    if progress_values is None:
+        return None
+
+    first_value, second_value = progress_values
+    if first_value < min_first_value:
+        return None
+    return progress_text, first_value, second_value
 
 
 def has_nonzero_page_switch_progress(
@@ -5124,6 +5147,11 @@ def cycle_page_switch_verification_until_toast(
     allow_counter_progress: bool = True,
     retry_wait_seconds: int = 0,
     retry_max_cycles: int | None = None,
+    shortcut_tab_label: str | None = None,
+    shortcut_tab_xpath: str | None = None,
+    shortcut_min_first_value: int | None = None,
+    shortcut_check_before_retry_wait: bool = False,
+    shortcut_check_before_retry_cycles: bool = False,
 ) -> None:
     if not tab_sequence:
         raise ValueError("tab_sequence must contain at least one tab label/xpath pair.")
@@ -5185,6 +5213,42 @@ def cycle_page_switch_verification_until_toast(
                 return True, tab_index
         return False, tab_index
 
+    resolved_shortcut_tab_xpath: str | None = None
+    if shortcut_tab_label is not None and shortcut_tab_label.strip():
+        normalized_shortcut_label = shortcut_tab_label.strip()
+        if shortcut_tab_xpath is not None and shortcut_tab_xpath.strip():
+            resolved_shortcut_tab_xpath = shortcut_tab_xpath.strip()
+        else:
+            for candidate_tab_label, candidate_tab_xpath in tab_sequence:
+                if candidate_tab_label == normalized_shortcut_label:
+                    resolved_shortcut_tab_xpath = candidate_tab_xpath
+                    break
+            if resolved_shortcut_tab_xpath is None and normalized_shortcut_label in TAB_XPATHS:
+                resolved_shortcut_tab_xpath = TAB_XPATHS[normalized_shortcut_label]
+
+    def has_shortcut_tab_progress(checkpoint_name: str) -> bool:
+        if (
+            resolved_shortcut_tab_xpath is None
+            or shortcut_tab_label is None
+            or shortcut_min_first_value is None
+        ):
+            return False
+        threshold_match = get_tab_progress_threshold_match(
+            driver,
+            shortcut_tab_label,
+            resolved_shortcut_tab_xpath,
+            shortcut_min_first_value,
+        )
+        if threshold_match is None:
+            return False
+        progress_text, first_value, second_value = threshold_match
+        log_event(
+            "VERIFY",
+            f"Detected {shortcut_tab_label} tab progress threshold before {checkpoint_name} for {cycle_label}: "
+            f"{progress_text} ({first_value}/{second_value}). Treating verification as complete.",
+        )
+        return True
+
     success_mode = "toast or counter progress" if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else "counter progress only"
     if not allow_counter_progress:
         success_mode = "toast only" if USE_CHANGES_SAVED_TOAST_FOR_VERIFICATION else "no active success signal"
@@ -5200,8 +5264,13 @@ def cycle_page_switch_verification_until_toast(
         if first_pass_success:
             return
 
+        if shortcut_check_before_retry_wait and has_shortcut_tab_progress("retry wait"):
+            return
+
         if retry_max_cycles is not None:
             wait_before_cycles(retry_wait_seconds, "second cycle pass")
+            if shortcut_check_before_retry_cycles and has_shortcut_tab_progress("second cycle pass"):
+                return
             second_pass_success, tab_index = run_cycle_pass(retry_max_cycles, "second cycle pass", tab_index)
             if second_pass_success:
                 return
@@ -5741,6 +5810,11 @@ def verify_flow_page_switch(
     allow_counter_progress: bool = True,
     retry_wait_seconds: int = 0,
     retry_max_cycles: int | None = None,
+    shortcut_tab_label: str | None = None,
+    shortcut_tab_xpath: str | None = None,
+    shortcut_min_first_value: int | None = None,
+    shortcut_check_before_retry_wait: bool = False,
+    shortcut_check_before_retry_cycles: bool = False,
 ) -> None:
     resolved_tab_sequence = []
     for index, tab_label in enumerate(tab_labels):
@@ -5759,6 +5833,11 @@ def verify_flow_page_switch(
         allow_counter_progress=allow_counter_progress,
         retry_wait_seconds=retry_wait_seconds,
         retry_max_cycles=retry_max_cycles,
+        shortcut_tab_label=shortcut_tab_label,
+        shortcut_tab_xpath=shortcut_tab_xpath,
+        shortcut_min_first_value=shortcut_min_first_value,
+        shortcut_check_before_retry_wait=shortcut_check_before_retry_wait,
+        shortcut_check_before_retry_cycles=shortcut_check_before_retry_cycles,
     )
     checkpoint_pause(pause_controller, checkpoint_label, driver, config)
 
@@ -5820,6 +5899,24 @@ def run_page_verification_from_definition(
             int(verify_payload["retry_max_cycles"])
             if verify_payload.get("retry_max_cycles") is not None
             else None
+        ),
+        shortcut_tab_label=(
+            str(verify_payload.get("shortcut_tab_progress", {}).get("tab_label", "")).strip() or None
+        ),
+        shortcut_tab_xpath=(
+            str(verify_payload.get("shortcut_tab_progress", {}).get("tab_xpath", "")).strip() or None
+        ),
+        shortcut_min_first_value=(
+            int(verify_payload["shortcut_tab_progress"]["min_first_value"])
+            if isinstance(verify_payload.get("shortcut_tab_progress"), dict)
+            and verify_payload["shortcut_tab_progress"].get("min_first_value") is not None
+            else None
+        ),
+        shortcut_check_before_retry_wait=bool(
+            verify_payload.get("shortcut_tab_progress", {}).get("check_before_retry_wait", False)
+        ),
+        shortcut_check_before_retry_cycles=bool(
+            verify_payload.get("shortcut_tab_progress", {}).get("check_before_retry_cycles", False)
         ),
     )
 

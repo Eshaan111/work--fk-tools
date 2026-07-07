@@ -53,6 +53,13 @@
     "require_success": true,
     "allow_counter_progress": false,
     "retry_wait_seconds": 45,
-    "retry_max_cycles": 5
+    "retry_max_cycles": 5,
+    "shortcut_tab_progress": {
+      "tab_label": "Image addition",
+      "min_first_value": 4,
+      "check_before_retry_wait": true,
+      "check_before_retry_cycles": true,
+      "notes": "If the Image addition tab counter reaches (4/x) or (5/x), treat image verification as passed and move on to variants without the extra retry path."
+    }
   }
 }
