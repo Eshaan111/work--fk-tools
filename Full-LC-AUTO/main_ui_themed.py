@@ -322,6 +322,9 @@ IMAGE_SLOT_IDS = list(RUNTIME_CONFIG["image_slot_ids"])
 IMAGE_UPLOAD_VERIFY_TIMEOUT_SECONDS = int(RUNTIME_CONFIG["image_upload_verify_timeout_seconds"])
 IMAGE_UPLOAD_RETRY_PASSES = int(RUNTIME_CONFIG["image_upload_retry_passes"])
 SUCCESS_CLOSE_DELAY_SECONDS = int(RUNTIME_CONFIG["success_close_delay_seconds"])
+MONITOR_POLL_INTERVAL_MS = int(RUNTIME_CONFIG.get("monitor_poll_interval_ms", 250))
+OVERLAY_REINFORCE_INTERVAL_MS = int(RUNTIME_CONFIG.get("overlay_reinforce_interval_ms", 1500))
+FIREFOX_REDUCED_RESOURCE_MODE = bool(RUNTIME_CONFIG.get("firefox_reduced_resource_mode", True))
 
 BRAND_CODE_MAP = dict(BRANDS_CONFIG["brand_code_map"])
 PROFILE_BRAND_CODES = {
@@ -2315,6 +2318,7 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
     monitor_finished = False
     start_new_batch_requested = False
     poll_after_id: str | None = None
+    last_overlay_lift_timestamp = 0.0
     max_log_lines = 600
 
     def refresh_run_summary() -> None:
@@ -2324,7 +2328,6 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
         failed_count_label.configure(text=failed_value)
         success_overlay_var.set(success_value)
         failed_overlay_var.set(failed_value)
-        overlay_window.lift()
 
     def append_log_lines(log_lines: list[str]) -> None:
         if not log_lines:
@@ -2373,7 +2376,7 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
     worker_thread.start()
 
     def poll_log_queue() -> None:
-        nonlocal monitor_finished, poll_after_id
+        nonlocal monitor_finished, poll_after_id, last_overlay_lift_timestamp
         drained_lines: list[str] = []
         while True:
             try:
@@ -2410,7 +2413,10 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
                 status_var.set("Batch finished. You can review the logs and close this window.")
 
         if overlay_window.winfo_exists():
-            overlay_window.lift()
+            now_timestamp = datetime.now().timestamp()
+            if (now_timestamp - last_overlay_lift_timestamp) * 1000 >= OVERLAY_REINFORCE_INTERVAL_MS:
+                overlay_window.lift()
+                last_overlay_lift_timestamp = now_timestamp
 
         if not root.winfo_exists():
             poll_after_id = None
@@ -2418,7 +2424,7 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
         if monitor_finished and log_messages.empty():
             poll_after_id = None
             return
-        poll_after_id = root.after(180, poll_log_queue)
+        poll_after_id = root.after(MONITOR_POLL_INTERVAL_MS, poll_log_queue)
 
     def start_new_batch() -> None:
         nonlocal start_new_batch_requested
@@ -2480,6 +2486,21 @@ def build_firefox_driver(config: BotConfig, geckodriver_log_path: Path | None = 
 
     if config.headless:
         options.add_argument("-headless")
+
+    if FIREFOX_REDUCED_RESOURCE_MODE:
+        # Keep browser memory/CPU overhead lower without changing page behavior or automation features.
+        options.set_preference("dom.ipc.processCount", 1)
+        options.set_preference("browser.tabs.unloadOnLowMemory", True)
+        options.set_preference("toolkit.cosmeticAnimations.enabled", False)
+        options.set_preference("ui.prefersReducedMotion", 1)
+        options.set_preference("browser.shell.checkDefaultBrowser", False)
+        options.set_preference("browser.startup.homepage_override.mstone", "ignore")
+        options.set_preference("browser.sessionstore.resume_from_crash", False)
+        options.set_preference("app.update.auto", False)
+        options.set_preference("datareporting.healthreport.uploadEnabled", False)
+        options.set_preference("datareporting.policy.dataSubmissionEnabled", False)
+        options.set_preference("browser.discovery.enabled", False)
+        options.set_preference("extensions.pocket.enabled", False)
 
     # Use the on-disk Firefox profile directly to avoid Selenium/geckodriver
     # cloning it into a temporary profile on every startup.
