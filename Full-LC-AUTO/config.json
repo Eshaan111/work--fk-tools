@@ -156,17 +156,21 @@
             },
             "track_pant": {
                 "default_kind_by_surface": {
-                    "flipkart": "Track Pant"
+                    "flipkart": "Track Pant",
+                    "shopsy": "Track Pant"
                 },
                 "default_size_by_surface": {
-                    "flipkart": "M"
+                    "flipkart": "M",
+                    "shopsy": "M"
                 },
                 "sheet_names": {
                     "product_description_by_surface": {
-                        "flipkart": "Track Pant Product Inputs"
+                        "flipkart": "Track Pant Product Inputs",
+                        "shopsy": "Track Pant Product Inputs"
                     },
                     "additional_description_by_surface": {
-                        "flipkart": "Track Pant Addl Desc Inputs"
+                        "flipkart": "Track Pant Addl Desc Inputs",
+                        "shopsy": "Track Pant Addl Desc Inputs"
                     }
                 }
             }

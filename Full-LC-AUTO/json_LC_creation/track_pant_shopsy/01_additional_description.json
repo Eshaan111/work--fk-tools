@@ -1,0 +1,530 @@
+{
+  "order": 2,
+  "step_name": "additional_description",
+  "handler": "field_fill_page",
+  "field_fill_mode": "additional_description",
+  "page_name": "Additional Description",
+  "tab": {
+    "label": "Additional Description",
+    "locator_candidates": [
+      {
+        "type": "xpath",
+        "value": "//button[@role='tab' and .//span[contains(normalize-space(), 'Additional Description')]]"
+      }
+    ]
+  },
+  "checkpoint_label": "Additional Description tab opened",
+  "data_source": {
+    "type": "excel_row",
+    "workbook_attr": "additional_description_excel",
+    "worksheet": "Track Pant Addl Desc Inputs",
+    "match_by": {
+      "kind": "$listing.kind",
+      "size": "$listing.size"
+    }
+  },
+  "field_json_config_attr": "additional_description_json",
+  "excel_config_attr": "additional_description_excel",
+  "source_snapshot": "Full-LC-AUTO/assets/ADDITIONAL-TRACKPATNNT-SHOPSY.htm",
+  "locator_strategy": "Prefer locating the field label text first, then target the nearest input, single-select combobox, multi-select combobox, textarea, or tag-style field inside the same attribute wrapper. Repeated ids like trigger-single-select and trigger-multi-select must always be scoped to the field label wrapper.",
+  "log_stage": "ADDL",
+  "log_message": "Starting Additional Description field fill from Excel + JSON mapping...",
+  "filled_checkpoint_label": "Additional Description fields filled",
+  "verification": {
+    "enabled": true,
+    "mode": "tab_cycle",
+    "cycle_label": "Additional Description page",
+    "tab_sequence": [
+      "Additional Description",
+      "Product Description"
+    ],
+    "success_conditions": [
+      {
+        "type": "toast",
+        "value": "Changes saved!"
+      },
+      {
+        "type": "tab_progress_nonzero"
+      }
+    ],
+    "checkpoint_label": "Changes saved detected after Additional Description click cycle"
+  },
+  "fields": [
+    {
+      "label": "Pattern",
+      "source_key": "Pattern",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Pattern' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Pattern\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ],
+      "order": 1
+    },
+    {
+      "label": "Trend",
+      "source_key": "Trend",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Trend' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Trend\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ],
+      "order": 2
+    },
+    {
+      "label": "Trend AW 16",
+      "source_key": "Trend AW 16",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Trend AW 16' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Trend AW 16\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ],
+      "order": 3
+    },
+    {
+      "label": "EAN/UPC",
+      "source_key": "EAN/UPC",
+      "required": false,
+      "input_type": "skip",
+      "locator_hint": "skip for now; field has a tag-style value input plus a qualifier dropdown like EAN/UPC",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"EAN/UPC\"]]"
+        }
+      ],
+      "order": 4
+    },
+    {
+      "label": "Secondary Color",
+      "source_key": "Secondary Color",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Secondary Color' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Secondary Color\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ],
+      "order": 5
+    },
+    {
+      "label": "Key Features",
+      "source_key": "Key Features",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Key Features' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Key Features\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ],
+      "order": 6
+    },
+    {
+      "label": "External Identifier",
+      "source_key": "External Identifier",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'External Identifier' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"External Identifier\"]]//input[@type='text']"
+        }
+      ],
+      "order": 7
+    },
+    {
+      "label": "Search Keywords",
+      "source_key": "Search Keywords",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Search Keywords' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Search Keywords\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ],
+      "order": 8
+    },
+    {
+      "label": "Description",
+      "source_key": "Description",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Description' -> nearest textarea",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Description\"]]//textarea"
+        }
+      ],
+      "order": 9
+    },
+    {
+      "label": "Video URL",
+      "source_key": "Video URL",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Video URL' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Video URL\"]]//input[@type='text']"
+        }
+      ],
+      "order": 10
+    },
+    {
+      "label": "Size For Inwarding",
+      "source_key": "Size For Inwarding",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Size For Inwarding' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),\"Size For Inwarding\")]]//div[contains(@class,'rti--container')]//input"
+        }
+      ],
+      "order": 11
+    },
+    {
+      "label": "Pack of",
+      "source_key": "Pack of",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Pack of' -> nearest input[type='number']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Pack of\"]]//input[@type='number']"
+        }
+      ],
+      "order": 12
+    },
+    {
+      "label": "Other Details",
+      "source_key": "Other Details",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Other Details' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Other Details\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ],
+      "order": 13
+    },
+    {
+      "label": "Thigh in inch",
+      "source_key": "Thigh in inch",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Thigh in inch' -> nearest input[type='number']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),\"Thigh in inch\")]]//input[@type='number']"
+        }
+      ],
+      "order": 14
+    },
+    {
+      "label": "Waist in inch",
+      "source_key": "Waist in inch",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Waist in inch' -> nearest input[type='number']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),\"Waist in inch\")]]//input[@type='number']"
+        }
+      ],
+      "order": 15
+    },
+    {
+      "label": "Hip in inch",
+      "source_key": "Hip in inch",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Hip in inch' -> nearest input[type='number']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),\"Hip in inch\")]]//input[@type='number']"
+        }
+      ],
+      "order": 16
+    },
+    {
+      "label": "Other Dimensions",
+      "source_key": "Other Dimensions",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Other Dimensions' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Other Dimensions\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ],
+      "order": 17
+    },
+    {
+      "label": "Inside Leg in inch",
+      "source_key": "Inside Leg in inch",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Inside Leg in inch' -> nearest input[type='number']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),\"Inside Leg in inch\")]]//input[@type='number']"
+        }
+      ],
+      "order": 18
+    },
+    {
+      "label": "Rise in inch",
+      "source_key": "Rise in inch",
+      "required": false,
+      "input_type": "number",
+      "locator_hint": "label text 'Rise in inch' -> nearest input[type='number']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),\"Rise in inch\")]]//input[@type='number']"
+        }
+      ],
+      "order": 19
+    },
+    {
+      "label": "Detail Placement",
+      "source_key": "Detail Placement",
+      "required": false,
+      "input_type": "combobox",
+      "locator_hint": "label text 'Detail Placement' -> nearest single-select combobox",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),\"Detail Placement\")]]//button[@role='combobox' and @data-testid='trigger-single-select']"
+        }
+      ],
+      "order": 20
+    },
+    {
+      "label": "Ornamentation Type",
+      "source_key": "Ornamentation Type",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Ornamentation Type' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[contains(normalize-space(),\"Ornamentation Type\")]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ],
+      "order": 21
+    },
+    {
+      "label": "Pockets",
+      "source_key": "Pockets",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Pockets' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Pockets\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ],
+      "order": 22
+    },
+    {
+      "label": "Fabric Care",
+      "source_key": "Fabric Care",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Fabric Care' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Fabric Care\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ],
+      "order": 23
+    },
+    {
+      "label": "Fly",
+      "source_key": "Fly",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Fly' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Fly\"]]//input[@type='text']"
+        }
+      ],
+      "order": 24
+    },
+    {
+      "label": "Cuff",
+      "source_key": "Cuff",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Cuff' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Cuff\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ],
+      "order": 25
+    },
+    {
+      "label": "Closure",
+      "source_key": "Closure",
+      "required": false,
+      "input_type": "tag_input",
+      "locator_hint": "label text 'Closure' -> nearest multi-select combobox / checkbox-tree selector",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Closure\"]]//button[@role='combobox' and @data-testid='trigger-multi-select']"
+        }
+      ],
+      "order": 26
+    },
+    {
+      "label": "Lining",
+      "source_key": "Lining",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Lining' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Lining\"]]//input[@type='text']"
+        }
+      ],
+      "order": 27
+    },
+    {
+      "label": "Covered in Warranty",
+      "source_key": "Covered in Warranty",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Covered in Warranty' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Covered in Warranty\"]]//input[@type='text']"
+        }
+      ],
+      "order": 28
+    },
+    {
+      "label": "International Warranty",
+      "source_key": "International Warranty",
+      "required": false,
+      "input_type": "skip",
+      "locator_hint": "skip for now; field has a number input plus qualifier dropdown",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"International Warranty\"]]"
+        }
+      ],
+      "order": 29
+    },
+    {
+      "label": "Warranty Summary",
+      "source_key": "Warranty Summary",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Warranty Summary' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Warranty Summary\"]]//input[@type='text']"
+        }
+      ],
+      "order": 30
+    },
+    {
+      "label": "Domestic Warranty",
+      "source_key": "Domestic Warranty",
+      "required": false,
+      "input_type": "skip",
+      "locator_hint": "skip for now; field has a number input plus qualifier dropdown",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Domestic Warranty\"]]"
+        }
+      ],
+      "order": 31
+    },
+    {
+      "label": "Not Covered in Warranty",
+      "source_key": "Not Covered in Warranty",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Not Covered in Warranty' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Not Covered in Warranty\"]]//input[@type='text']"
+        }
+      ],
+      "order": 32
+    },
+    {
+      "label": "Warranty Service Type",
+      "source_key": "Warranty Service Type",
+      "required": false,
+      "input_type": "text",
+      "locator_hint": "label text 'Warranty Service Type' -> nearest input[type='text']",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Warranty Service Type\"]]//input[@type='text']"
+        }
+      ],
+      "order": 33
+    },
+    {
+      "label": "Sales Package",
+      "source_key": "Sales Package",
+      "required": false,
+      "input_type": "tag_input_commit",
+      "locator_hint": "label text 'Sales Package' -> nearest tag-style text input; type one phrase, press Enter, repeat, then press Escape to exit the field",
+      "locator_candidates": [
+        {
+          "type": "xpath",
+          "value": "//div[contains(@class,'styles__EditAttributeItemWrapper')][.//div[normalize-space()=\"Sales Package\"]]//div[contains(@class,'rti--container')]//input"
+        }
+      ],
+      "order": 34
+    }
+  ]
+}
