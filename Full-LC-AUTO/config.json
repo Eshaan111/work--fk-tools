@@ -215,7 +215,7 @@
             "enabled": true,
             "app_version": "1.0.0",
             "public_key_path": "licensing/license_public_key.pem",
-            "customer_license_path": "licensing/customer_license.json",
+            "customer_license_path": "run_helpers/system/.client/session.json",
             "remote_licenses_url": "https://raw.githubusercontent.com/Eshaan111/work--fk-tools/license-based-lc/Full-LC-AUTO/licensing/licenses.json",
             "remote_signature_url": "https://raw.githubusercontent.com/Eshaan111/work--fk-tools/license-based-lc/Full-LC-AUTO/licensing/licenses.sig",
             "allow_local_fallback": false,

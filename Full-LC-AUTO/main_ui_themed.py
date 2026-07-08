@@ -2322,6 +2322,12 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
     last_overlay_lift_timestamp = 0.0
     max_log_lines = 600
 
+    def widget_exists(widget: tk.Misc) -> bool:
+        try:
+            return bool(widget.winfo_exists())
+        except tk.TclError:
+            return False
+
     def refresh_run_summary() -> None:
         success_value = str(result_state["successful_runs"])
         failed_value = str(result_state["failed_runs"])
@@ -2378,6 +2384,9 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
 
     def poll_log_queue() -> None:
         nonlocal monitor_finished, poll_after_id, last_overlay_lift_timestamp
+        if not widget_exists(root):
+            poll_after_id = None
+            return
         drained_lines: list[str] = []
         while True:
             try:
@@ -2405,7 +2414,10 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
             new_batch_button.state(["!disabled"])
             if start_new_batch_requested:
                 status_var.set("Batch stop completed. Returning to home screen for a new batch...")
-                root.after(150, close_window)
+                try:
+                    root.after(150, close_window)
+                except tk.TclError:
+                    poll_after_id = None
             elif result_state["error"] is not None:
                 status_var.set("Batch stopped because of an error. You can review the logs and close this window.")
             elif run_control.should_abort_batch():
@@ -2413,19 +2425,22 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
             else:
                 status_var.set("Batch finished. You can review the logs and close this window.")
 
-        if overlay_window.winfo_exists():
+        if widget_exists(overlay_window):
             now_timestamp = datetime.now().timestamp()
             if (now_timestamp - last_overlay_lift_timestamp) * 1000 >= OVERLAY_REINFORCE_INTERVAL_MS:
-                overlay_window.lift()
-                last_overlay_lift_timestamp = now_timestamp
+                try:
+                    overlay_window.lift()
+                    last_overlay_lift_timestamp = now_timestamp
+                except tk.TclError:
+                    pass
 
-        if not root.winfo_exists():
-            poll_after_id = None
-            return
         if monitor_finished and log_messages.empty():
             poll_after_id = None
             return
-        poll_after_id = root.after(MONITOR_POLL_INTERVAL_MS, poll_log_queue)
+        try:
+            poll_after_id = root.after(MONITOR_POLL_INTERVAL_MS, poll_log_queue)
+        except tk.TclError:
+            poll_after_id = None
 
     def start_new_batch() -> None:
         nonlocal start_new_batch_requested
@@ -2442,6 +2457,9 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
 
     def close_window() -> None:
         nonlocal poll_after_id
+        if not widget_exists(root):
+            poll_after_id = None
+            return
         if not result_state["done"]:
             status_var.set("Close requested while batch is running. Requesting batch abort first...")
             abort_batch()
@@ -2453,9 +2471,15 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
             except Exception:
                 pass
             poll_after_id = None
-        if overlay_window.winfo_exists():
-            overlay_window.destroy()
-        root.destroy()
+        if widget_exists(overlay_window):
+            try:
+                overlay_window.destroy()
+            except tk.TclError:
+                pass
+        try:
+            root.destroy()
+        except tk.TclError:
+            pass
 
     abort_current_button.configure(command=abort_current_run)
     abort_batch_button.configure(command=abort_batch)
@@ -2473,8 +2497,11 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
                 root.after_cancel(poll_after_id)
             except Exception:
                 pass
-        if overlay_window.winfo_exists():
-            overlay_window.destroy()
+        if widget_exists(overlay_window):
+            try:
+                overlay_window.destroy()
+            except tk.TclError:
+                pass
         gc.collect()
 
     return start_new_batch_requested
@@ -6837,18 +6864,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

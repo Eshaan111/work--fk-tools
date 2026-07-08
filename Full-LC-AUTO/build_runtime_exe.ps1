@@ -97,10 +97,10 @@ foreach ($target in @(
     'licenses.json',
     'licenses.sig',
     'customer_license.json',
-    'license_public_key.pem',
     'image_folder_insight.xlsx',
     'licensing\licenses.json',
-    'licensing\licenses.sig'
+    'licensing\licenses.sig',
+    'licensing\customer_license.json'
 )) {
     $stalePath = Join-Path $releaseRoot $target
     if (Test-Path $stalePath) {

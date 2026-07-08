@@ -31,7 +31,7 @@ This will:
 - auto-detect the machine ID unless overridden
 - auto-generate a license key unless provided
 - default expiry to 30 days from today unless overridden
-- write `licensing/customer_license.json`
+- write `run_helpers/system/.client/session.json`
 - print the JSON entry to paste into `licensing/licenses.json`
 
 Copy the printed JSON block.
@@ -123,7 +123,7 @@ From the client release folder:
 
 The app should start if:
 
-- the client `licensing/customer_license.json` matches a hosted license row
+- the client `run_helpers/system/.client/session.json` matches a hosted license row
 - the hosted license row is `active`
 - the machine ID matches
 - the license is not expired
@@ -136,6 +136,6 @@ The app should start if:
 - Always sign after editing `licensing/licenses.json`.
 - Production mode depends on the hosted GitHub files being reachable.
 - The release folder should keep:
-  - `licensing/customer_license.json`
+  - `run_helpers/system/.client/session.json`
   - `licensing/license_public_key.pem`
 - The release folder should not rely on local `licenses.json` or `licenses.sig` in production.

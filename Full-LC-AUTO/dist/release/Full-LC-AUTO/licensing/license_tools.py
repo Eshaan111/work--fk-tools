@@ -32,7 +32,7 @@ DEFAULT_LICENSING_DIRECTORY = (
 DEFAULT_APP_PUBLIC_KEY = DEFAULT_LICENSING_DIRECTORY / 'license_public_key.pem'
 DEFAULT_LICENSES_JSON = DEFAULT_LICENSING_DIRECTORY / 'licenses.json'
 DEFAULT_LICENSES_SIG = DEFAULT_LICENSING_DIRECTORY / 'licenses.sig'
-DEFAULT_CUSTOMER_LICENSE_JSON = DEFAULT_LICENSING_DIRECTORY / 'customer_license.json'
+DEFAULT_CUSTOMER_LICENSE_JSON = RUNTIME_DIRECTORY / 'run_helpers' / 'system' / '.client' / 'session.json'
 DEFAULT_TO_COPY_JSON = DEFAULT_LICENSING_DIRECTORY / 'to copy.json'
 
 
@@ -236,7 +236,7 @@ def run_interactive() -> None:
     print('2. Validate a signed file')
     print('3. Sign a JSON file')
     print('4. Print current machine ID')
-    print('5. Print license JSON entry and write customer_license.json')
+    print('5. Print license JSON entry and write the customer license file')
     choice = input('Choose 1, 2, 3, 4, or 5: ').strip()
 
     if choice == '1':
@@ -280,7 +280,7 @@ def run_interactive() -> None:
     if choice == '5':
         json_path = prompt_path('licenses.json path', DEFAULT_LICENSES_JSON)
         to_copy_path = prompt_path('to copy.json path', DEFAULT_TO_COPY_JSON)
-        customer_license_path = prompt_path('customer_license.json path', DEFAULT_CUSTOMER_LICENSE_JSON)
+        customer_license_path = prompt_path('Customer license file path', DEFAULT_CUSTOMER_LICENSE_JSON)
         license_key = input('License key [auto]: ').strip()
         customer_name = input('Customer name: ').strip()
         machine_id = prompt_machine_id()

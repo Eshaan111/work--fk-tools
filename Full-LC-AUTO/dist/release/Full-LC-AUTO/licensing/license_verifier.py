@@ -142,10 +142,10 @@ def validate_license(project_root: Path, app_config: dict[str, object]) -> Licen
     try:
         customer_payload = json.loads(customer_license_path.read_text(encoding="utf-8"))
     except Exception as exc:
-        raise LicenseValidationError(f"Could not read customer_license.json: {exc}") from exc
+        raise LicenseValidationError(f"Could not read customer license file at {customer_license_path}: {exc}") from exc
     license_key = str(customer_payload.get("license_key", "")).strip()
     if not license_key:
-        raise LicenseValidationError("customer_license.json does not contain a license_key.")
+        raise LicenseValidationError(f"Customer license file at {customer_license_path} does not contain a license_key.")
 
     public_key = load_public_key(public_key_path)
     remote_error: LicenseValidationError | None = None
