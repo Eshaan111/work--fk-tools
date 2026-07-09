@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import base64
 import json
+import time
+import urllib.error
 import urllib.request
 import winreg
 from dataclasses import dataclass
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 from cryptography.exceptions import InvalidSignature
@@ -26,6 +29,10 @@ class LicenseValidationError(RuntimeError):
     pass
 
 
+class RemoteBundleDownloadError(LicenseValidationError):
+    pass
+
+
 def resolve_path(project_root: Path, path_value: str | None) -> Path:
     if not path_value:
         raise LicenseValidationError("Missing required license path configuration.")
@@ -35,14 +42,27 @@ def resolve_path(project_root: Path, path_value: str | None) -> Path:
     return (project_root / candidate).resolve()
 
 
+def fetch_url(url: str) -> tuple[bytes, dict[str, str]]:
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Full-LC-AUTO-LicenseVerifier/1.0",
+            "Accept": "*/*",
+            "Cache-Control": "no-cache",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=15) as response:
+        return response.read(), dict(response.headers.items())
+
+
 def fetch_text(url: str) -> str:
-    with urllib.request.urlopen(url, timeout=15) as response:
-        return response.read().decode("utf-8")
+    payload, _ = fetch_url(url)
+    return payload.decode("utf-8")
 
 
 def fetch_bytes(url: str) -> bytes:
-    with urllib.request.urlopen(url, timeout=15) as response:
-        return response.read()
+    payload, _ = fetch_url(url)
+    return payload
 
 
 def load_public_key(public_key_path: Path):
@@ -80,11 +100,66 @@ def parse_iso_date(value: str) -> datetime:
     return datetime.fromisoformat(normalized)
 
 
-def load_remote_bundle(remote_licenses_url: str, remote_signature_url: str) -> tuple[bytes, str, str]:
+def parse_retry_after_seconds(retry_after_value: str | None) -> float | None:
+    if not retry_after_value:
+        return None
+    normalized = retry_after_value.strip()
+    if not normalized:
+        return None
+    if normalized.isdigit():
+        return max(0.0, float(normalized))
     try:
-        return fetch_bytes(remote_licenses_url), fetch_text(remote_signature_url).strip(), "remote"
+        retry_at = parsedate_to_datetime(normalized)
+    except Exception:
+        return None
+    now = datetime.now(retry_at.tzinfo) if retry_at.tzinfo else datetime.now()
+    return max(0.0, (retry_at - now).total_seconds())
+
+
+def get_cache_paths(project_root: Path, license_config: dict[str, object]) -> tuple[Path, Path]:
+    cache_dir_value = str(license_config.get("cache_directory", "run_helpers/system/.license_cache"))
+    cache_dir = resolve_path(project_root, cache_dir_value)
+    return cache_dir / "licenses.json", cache_dir / "licenses.sig"
+
+
+def write_cached_bundle(
+    project_root: Path,
+    license_config: dict[str, object],
+    licenses_bytes: bytes,
+    signature_text: str,
+) -> None:
+    cache_json_path, cache_sig_path = get_cache_paths(project_root, license_config)
+    cache_json_path.parent.mkdir(parents=True, exist_ok=True)
+    cache_json_path.write_bytes(licenses_bytes)
+    cache_sig_path.write_text(signature_text.strip() + "\n", encoding="utf-8")
+
+
+def load_cached_bundle(project_root: Path, license_config: dict[str, object]) -> tuple[bytes, str, str]:
+    cache_json_path, cache_sig_path = get_cache_paths(project_root, license_config)
+    try:
+        return cache_json_path.read_bytes(), cache_sig_path.read_text(encoding="utf-8").strip(), "cached"
     except Exception as exc:
-        raise LicenseValidationError(f"Could not download hosted license files: {exc}") from exc
+        raise LicenseValidationError(f"Could not load cached hosted license files: {exc}") from exc
+
+
+def load_remote_bundle(remote_licenses_url: str, remote_signature_url: str) -> tuple[bytes, str, str]:
+    last_error: Exception | None = None
+    for attempt in range(2):
+        try:
+            licenses_bytes, _ = fetch_url(remote_licenses_url)
+            signature_bytes, _ = fetch_url(remote_signature_url)
+            return licenses_bytes, signature_bytes.decode("utf-8").strip(), "remote"
+        except urllib.error.HTTPError as exc:
+            last_error = exc
+            if exc.code != 429 or attempt == 1:
+                break
+            retry_after_seconds = parse_retry_after_seconds(exc.headers.get("Retry-After"))
+            sleep_seconds = retry_after_seconds if retry_after_seconds is not None else 2.0
+            time.sleep(min(max(sleep_seconds, 0.0), 5.0))
+        except Exception as exc:
+            last_error = exc
+            break
+    raise RemoteBundleDownloadError(f"Could not download hosted license files: {last_error}")
 
 
 def load_local_bundle(project_root: Path, license_config: dict[str, object]) -> tuple[bytes, str, str]:
@@ -148,16 +223,21 @@ def validate_license(project_root: Path, app_config: dict[str, object]) -> Licen
         raise LicenseValidationError(f"Customer license file at {customer_license_path} does not contain a license_key.")
 
     public_key = load_public_key(public_key_path)
-    remote_error: LicenseValidationError | None = None
     try:
         licenses_bytes, signature_text, source = load_remote_bundle(remote_licenses_url, remote_signature_url)
         license_record = resolve_license_record_from_bundle(licenses_bytes, signature_text, public_key, license_key)
-    except LicenseValidationError as exc:
-        remote_error = exc
-        if not allow_local_fallback:
-            raise
-        licenses_bytes, signature_text, source = load_local_bundle(project_root, license_config)
-        license_record = resolve_license_record_from_bundle(licenses_bytes, signature_text, public_key, license_key)
+        write_cached_bundle(project_root, license_config, licenses_bytes, signature_text)
+    except RemoteBundleDownloadError as exc:
+        try:
+            licenses_bytes, signature_text, source = load_cached_bundle(project_root, license_config)
+            license_record = resolve_license_record_from_bundle(licenses_bytes, signature_text, public_key, license_key)
+        except LicenseValidationError as cached_exc:
+            if not allow_local_fallback:
+                raise LicenseValidationError(f"{exc} | Cache unavailable: {cached_exc}") from exc
+            licenses_bytes, signature_text, source = load_local_bundle(project_root, license_config)
+            license_record = resolve_license_record_from_bundle(licenses_bytes, signature_text, public_key, license_key)
+    except LicenseValidationError:
+        raise
 
     status = str(license_record.get("status", "")).strip().lower()
     if status != "active":
