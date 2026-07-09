@@ -1,0 +1,67 @@
+{
+  "saved_at": "2026-07-09T11:06:08",
+  "summary": {
+    "completed_runs": 0,
+    "failed_runs": 2,
+    "total_runs": 2,
+    "result_path": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\run_helpers\\job_results\\20260709_110608_jeans_shopsy_starvielle.json"
+  },
+  "listing_selection": {
+    "product_type": "jeans",
+    "surface": "shopsy",
+    "kind": "Beige",
+    "size": "28",
+    "brand_name": "STARVIELLE",
+    "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BEIGE"
+  },
+  "config": {
+    "profile_name": "prabhu",
+    "listing_url": "https://seller.flipkart.com/index.html#dashboard/addListings/single?vertical=jean&vid=667",
+    "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BEIGE",
+    "snapshot_directory": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\snapshots",
+    "price_stock_shipping_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\common\\Price-Stock-Shipping-inputs.xlsx",
+    "price_stock_shipping_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\assets\\Price-Stock-Shipping-inputs.json",
+    "product_description_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\jeans\\Product-Description-inputs-Shopsy.xlsx",
+    "product_description_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\json_LC_creation\\jeans_shopsy\\02_product_description.json",
+    "additional_description_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\jeans\\Additional-Description-inputs-Shopsy.xlsx",
+    "additional_description_json": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\json_LC_creation\\jeans_shopsy\\01_additional_description.json",
+    "variants_excel": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\data inputs\\common\\Variants-excel.xlsx",
+    "firefox_profile_path": "C:\\Users\\ESHAAN\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\kw3a25lf.default-release",
+    "headless": false
+  },
+  "flow": {
+    "enabled": true,
+    "flow_name": "listing_creation",
+    "product_type": "trouser",
+    "surface": "shopsy",
+    "step_ids": [
+      "open_listing",
+      "additional_description",
+      "product_description",
+      "price_stock_shipping",
+      "images",
+      "variants",
+      "save_and_exit"
+    ]
+  },
+  "sessions": [
+    {
+      "run_index": 1,
+      "total_runs": 2,
+      "succeeded": false,
+      "error_message": "Run 1/2 failed: Message: Timed out waiting for 2 'Changes saved!' toast appearances after Send to QC.\n",
+      "snapshot_path": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\snapshots\\20260709_110558_run_1_error_before_close.html",
+      "success_record_path": null,
+      "success_record_error": null
+    },
+    {
+      "run_index": 2,
+      "total_runs": 2,
+      "succeeded": false,
+      "error_message": "Run 2/2 failed: Message: WebDriver session does not exist, or is not active; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception\nStacktrace:\nRemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8\nWebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:169:5\nInvalidSessionIDError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:439:5\nassert.that/<@chrome://remote/content/shared/webdriver/Assert.sys.mjs:581:13\nassert.session@chrome://remote/content/shared/webdriver/Assert.sys.mjs:38:4\ndispatch@chrome://remote/content/marionette/server.sys.mjs:311:19\nexecute@chrome://remote/content/marionette/server.sys.mjs:289:16\nonPacket/<@chrome://remote/content/marionette/server.sys.mjs:262:20\nonPacket@chrome://remote/content/marionette/server.sys.mjs:263:9\n_onJSONObjectReady/<@chrome://remote/content/marionette/transport.sys.mjs:494:20\n",
+      "snapshot_path": null,
+      "success_record_path": null,
+      "success_record_error": null
+    }
+  ]
+}

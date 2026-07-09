@@ -5117,6 +5117,47 @@ def wait_for_changes_saved_toast(
     raise TimeoutException("Timed out waiting for 'Changes saved!' toast after opening selling info tab.")
 
 
+def wait_for_changes_saved_toast_appearances(
+    driver: webdriver.Firefox,
+    pause_controller: PauseController,
+    config: BotConfig,
+    required_appearances: int = 2,
+    timeout_seconds: int = 30,
+) -> None:
+    deadline = datetime.now().timestamp() + timeout_seconds
+    while datetime.now().timestamp() < deadline:
+        checkpoint_pause(
+            pause_controller,
+            f"Waiting for {required_appearances} visible success toast(s) after Send to QC",
+            driver,
+            config,
+        )
+        visible_toast_count = get_visible_success_toast_count(driver)
+        if visible_toast_count >= required_appearances:
+            log_event(
+                "TOAST",
+                f"Detected {visible_toast_count} visible success toast(s) after Send to QC.",
+            )
+            return
+        sleep(0.25)
+
+    raise TimeoutException(
+        f"Timed out waiting for {required_appearances} visible success toast(s) after Send to QC."
+    )
+
+
+def get_visible_success_toast_count(driver: webdriver.Firefox) -> int:
+    success_toast_locator = (
+        By.XPATH,
+        "//div[contains(@class,'toast-details-holder') and contains(@class,'success')]",
+    )
+    return len(driver.find_elements(*success_toast_locator))
+
+
+def has_visible_success_toast(driver: webdriver.Firefox) -> bool:
+    return get_visible_success_toast_count(driver) > 0
+
+
 def has_changes_saved_toast(driver: webdriver.Firefox) -> bool:
     success_toast_locator = (
         By.XPATH,
@@ -6711,8 +6752,16 @@ def run_single_listing_session(
             click_final_listing_action_button(driver, config)
             commit_pending_image_folder_exhaustion(flow_state)
         log_event("DONE", f"{listing_selection.product_type.title()} flow completed for run {run_index}/{total_runs}.")
-        log_event("BOOT", f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds before closing browser.")
-        sleep(SUCCESS_CLOSE_DELAY_SECONDS)
+
+        final_action = resolve_final_listing_action(config.final_listing_action)
+        if final_action == "send_to_qc":
+            wait_for_changes_saved_toast_appearances(driver, pause_controller, config, required_appearances=2)
+            log_event("BOOT", "Waiting 4 seconds after the second 'Changes saved!' toast before closing browser.")
+            sleep(4)
+        else:
+            log_event("BOOT", f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds before closing browser.")
+            sleep(SUCCESS_CLOSE_DELAY_SECONDS)
+
         session_result.succeeded = True
         return session_result
     except RunAbortRequested as exc:
