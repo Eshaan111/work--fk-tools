@@ -6755,9 +6755,9 @@ def run_single_listing_session(
 
         final_action = resolve_final_listing_action(config.final_listing_action)
         if final_action == "send_to_qc":
-            wait_for_changes_saved_toast_appearances(driver, pause_controller, config, required_appearances=2)
-            log_event("BOOT", "Waiting 4 seconds after the second 'Changes saved!' toast before closing browser.")
-            sleep(4)
+            wait_for_changes_saved_toast_appearances(driver, pause_controller, config, required_appearances=1)
+            log_event("BOOT", "Waiting 5 seconds after the Send to QC success toast before closing browser.")
+            sleep(5)
         else:
             log_event("BOOT", f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds before closing browser.")
             sleep(SUCCESS_CLOSE_DELAY_SECONDS)
