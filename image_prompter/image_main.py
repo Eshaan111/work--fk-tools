@@ -1016,9 +1016,16 @@ def get_next_images_final_output_dir(product_kind: str) -> Path:
     numeric_folders = [
         int(path.name)
         for path in images_final_kind_dir.iterdir()
-        if path.is_dir() and path.name.isdigit()
+        if path.is_dir() and path.name.isdigit() and path.name != "999"
     ]
     next_folder_number = max(numeric_folders, default=-1) + 1
+
+    # Folder 999 is reserved and must neither affect numbering nor be replaced.
+    while next_folder_number == 999 or (
+        images_final_kind_dir / str(next_folder_number)
+    ).exists():
+        next_folder_number += 1
+
     output_dir = images_final_kind_dir / str(next_folder_number)
     output_dir.mkdir(parents=True, exist_ok=False)
     return output_dir
