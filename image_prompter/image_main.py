@@ -17,8 +17,8 @@ import pyautogui
 from openpyxl import load_workbook
 from pynput import keyboard
 
-LAPTOP_NAME = "VAIO"
-# LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "VAIO"
+LAPTOP_NAME = "ASUS"
 
 PRABHU_FIREFOX_PROFILE_ASUS = Path(
     r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"
@@ -41,6 +41,9 @@ NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
 PIXELS_FILE_ASUS = image_prompter_path("pixels-ASUS.json")
 PIXELS_FILE_VAIO = image_prompter_path("pixels-VAIO.json")
 NO_BG_IMAGES_ROOT_VAIO = Path(r"C:\NO-BG-IMAGES")
+PRODUCT_IMAGE_FOLDER_OVERRIDES = {
+    "WHITE-BAGGY-JEANS": "White-Baggy",
+}
 LAPTOP_CONFIGS = {
     "ASUS": {
         "firefox_profile": PRABHU_FIREFOX_PROFILE_ASUS,
@@ -130,6 +133,7 @@ IDEA_RESPONSE_ABORT_TIMEOUT_SECONDS = 80
 IDEA_RESPONSE_STUCK_PROMPT_RETRY_THRESHOLD = 8
 INITIAL_PROMPT_SUBMISSION_WAIT_SECONDS = 10
 INITIAL_PROMPT_COMPLETION_DETECTION_DELAY_SECONDS = 5
+INITIAL_PROMPT_MIN_WORD_COUNT = 20
 IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
 IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS = 240
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 12
@@ -245,6 +249,9 @@ def load_kind_to_used_phrases() -> dict[str, list[str]]:
         ]
         kind_to_phrases[kind_label.upper()] = phrases
 
+    for configured_kind in PRODUCT_IMAGE_FOLDER_OVERRIDES:
+        kind_to_phrases.setdefault(configured_kind, [])
+
     return kind_to_phrases
 
 
@@ -304,7 +311,11 @@ def resolve_product_image_folder(product_kind: str) -> Path:
             f"NO-BG-IMAGES root folder was not found: {NO_BG_IMAGES_ROOT}"
         )
 
-    normalized_target = product_kind.strip().casefold()
+    configured_folder_name = PRODUCT_IMAGE_FOLDER_OVERRIDES.get(
+        product_kind.strip().upper(),
+        product_kind,
+    )
+    normalized_target = configured_folder_name.strip().casefold()
     for folder in NO_BG_IMAGES_ROOT.iterdir():
         if folder.is_dir() and folder.name.strip().casefold() == normalized_target:
             return folder
@@ -479,6 +490,32 @@ def paste_text_via_clipboard(text: str, field_label: str) -> None:
     time.sleep(0.35)
     print(f"Pasting prompt text into {field_label}...")
     pyautogui.hotkey("ctrl", "v")
+
+
+def verify_initial_prompt_was_pasted() -> bool:
+    print("Verifying that the initial prompt was pasted...")
+    pyautogui.hotkey("ctrl", "a")
+    time.sleep(0.3)
+    pyautogui.hotkey("ctrl", "c")
+    time.sleep(0.3)
+    copied_text = get_clipboard_text()
+    copied_word_count = len(copied_text.split())
+
+    # Ctrl+A leaves the prompt selected. Move the caret to its end so that the
+    # upcoming image paste is added to the prompt instead of replacing it.
+    pyautogui.press("end")
+    time.sleep(0.2)
+
+    print(f"Initial prompt verification copied {copied_word_count} word(s).")
+    if copied_word_count < INITIAL_PROMPT_MIN_WORD_COUNT:
+        print(
+            "Initial prompt paste was not detected: copied text contained fewer "
+            f"than {INITIAL_PROMPT_MIN_WORD_COUNT} words."
+        )
+        return False
+
+    print("Initial prompt paste verified successfully.")
+    return True
 
 
 def paste_image_via_clipboard(image_path: Path, field_label: str) -> None:
@@ -817,7 +854,10 @@ def append_phrase_to_workbook(product_kind: str, phrase_title: str) -> None:
         workbook.save(USED_IMAGE_DESIGNS_WORKBOOK)
         return
 
-    raise ValueError(f"Could not find workbook row for kind '{product_kind}'.")
+    new_row_index = worksheet.max_row + 1
+    worksheet.cell(row=new_row_index, column=1).value = product_kind
+    worksheet.cell(row=new_row_index, column=2).value = phrase_title
+    workbook.save(USED_IMAGE_DESIGNS_WORKBOOK)
 
 
 def save_current_run_idea(idea: BackgroundIdea) -> None:
@@ -1220,7 +1260,7 @@ def run_generation_prompt_for_remaining_images(
     extract_generated_images_from_latest_saved_html(product_kind)
 
 
-def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
+def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> bool:
     print()
     print("Firefox will open as a normal browser window.")
     print("Then manually go to ChatGPT, open the page you want, and keep it visible.")
@@ -1237,6 +1277,8 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
     print("Starting focused-field prompt and image paste flow...")
     paste_text_via_clipboard(context.prompt_text, "focused ChatGPT prompt box")
     time.sleep(0.9)
+    if not verify_initial_prompt_was_pasted():
+        return False
     paste_image_via_clipboard(context.image_paths[0], "focused ChatGPT prompt box")
     print(
         "Waiting "
@@ -1289,6 +1331,8 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
     else:
         print("No new latest output text could be isolated from the copied conversation.")
 
+    return True
+
 
 def wait_for_start_hotkey() -> None:
     print(
@@ -1321,17 +1365,21 @@ def main() -> None:
     selected_kind = prompt_for_kind(kind_to_phrases)
 
     for cycle_index in range(1, loop_count + 1):
-        print()
-        print(f"========== Starting cycle {cycle_index} of {loop_count} ==========")
+        while True:
+            print()
+            print(f"========== Starting cycle {cycle_index} of {loop_count} ==========")
 
-        context = prepare_product_prompt_context(selected_kind)
+            context = prepare_product_prompt_context(selected_kind)
 
-        print(f"Selected kind: {context.product_kind}")
-        print(f"First image ready: {context.image_paths[0]}")
-        print(f"Total images queued for generation: {len(context.image_paths)}")
-        print(f"Prompt preview saved to: {PROMPT_PREVIEW_PATH}")
+            print(f"Selected kind: {context.product_kind}")
+            print(f"First image ready: {context.image_paths[0]}")
+            print(f"Total images queued for generation: {len(context.image_paths)}")
+            print(f"Prompt preview saved to: {PROMPT_PREVIEW_PATH}")
 
-        run_chatgpt_manual_browser_flow(context)
+            if run_chatgpt_manual_browser_flow(context):
+                break
+
+            print("Restarting this cycle as a new run after failed prompt-paste verification.")
 
         print(f"========== Finished cycle {cycle_index} of {loop_count} ==========")
 

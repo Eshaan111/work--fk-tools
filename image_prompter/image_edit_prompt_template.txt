@@ -190,4 +190,4 @@ The ideas should be clearly distinct from:
 
 [USED_PHRASES_CSV]
 
-Generate 15 diverse ideas. Return complete valid JSON only.
+Generate 5 diverse ideas. Return complete valid JSON only.
