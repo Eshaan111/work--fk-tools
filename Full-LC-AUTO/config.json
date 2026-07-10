@@ -254,6 +254,10 @@
                         "5": {
                             "kind": "White-Plain",
                             "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\White"
+                        },
+                        "6": {
+                            "kind": "White-Baggy",
+                            "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\WHITE-BAGGY"
                         }
                     }
                 },
@@ -313,6 +317,10 @@
                         "5": {
                             "kind": "White-Plain",
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White"
+                        },
+                        "6": {
+                            "kind": "White-Baggy",
+                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Baggy"
                         }
                     }
                 },
