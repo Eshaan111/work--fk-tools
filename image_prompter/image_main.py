@@ -17,8 +17,8 @@ import pyautogui
 from openpyxl import load_workbook
 from pynput import keyboard
 
-# LAPTOP_NAME = "VAIO"
-LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "VAIO"
+# LAPTOP_NAME = "ASUS"
 
 PRABHU_FIREFOX_PROFILE_ASUS = Path(
     r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"
@@ -74,9 +74,6 @@ NEW_IDEAS_PATH = RUN_HELPERS_DIR / "new_ideas_not_in_excel.txt"
 CURRENT_RUN_IDEA_PATH = RUN_HELPERS_DIR / "current_run_idea.json"
 CURRENT_GENERATION_PROMPT_PATH = RUN_HELPERS_DIR / "current_generation_prompt.txt"
 IMAGE_GENERATION_FINAL_CHAT_PATH = RUN_HELPERS_DIR / "image_generation_final_chat.txt"
-RUN_LOG_PATH = RUN_HELPERS_DIR / "run_log.txt"
-IDEA_RESPONSE_POLL_HISTORY_PATH = RUN_HELPERS_DIR / "idea_response_poll_history.txt"
-IMAGE_GENERATION_POLL_HISTORY_PATH = RUN_HELPERS_DIR / "image_generation_poll_history.txt"
 RUN_HELPER_PATHS = (
     PROMPT_PREVIEW_PATH,
     LAST_FULL_CHAT_PATH,
@@ -87,9 +84,6 @@ RUN_HELPER_PATHS = (
     CURRENT_RUN_IDEA_PATH,
     CURRENT_GENERATION_PROMPT_PATH,
     IMAGE_GENERATION_FINAL_CHAT_PATH,
-    RUN_LOG_PATH,
-    IDEA_RESPONSE_POLL_HISTORY_PATH,
-    IMAGE_GENERATION_POLL_HISTORY_PATH,
 )
 LEGACY_RUN_HELPER_PATHS = (
     image_prompter_path("generated_prompt_preview.txt"),
@@ -105,9 +99,6 @@ LEGACY_RUN_HELPER_PATHS = (
 CHATGPT_URL = "https://chatgpt.com"
 IDEA_MARKER = "IDEA FOR BACKGROUND :"
 SUPPORTED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
-CHATGPT_WINDOW_HINTS = ("chatgpt", "openai")
-BROWSER_WINDOW_HINTS = ("firefox",)
-PLACEHOLDER_IDEA_VALUES = {"", "...", "n/a", "none", "null", "tbd"}
 
 pyautogui.FAILSAFE = True
 pyautogui.PAUSE = 0.15
@@ -144,13 +135,6 @@ IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS = 240
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 12
 IMAGE_GENERATION_STUCK_PROMPT_RETRY_THRESHOLD = 8
 IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS = 10
-PROMPT_DISPATCH_TIMEOUT_SECONDS = 20
-PROMPT_BOX_RESET_POLL_INTERVAL_SECONDS = 0.5
-PROMPT_DISPATCH_RETRY_THRESHOLD = 4
-PRE_PASTE_FOCUS_SETTLE_SECONDS = 0.35
-POST_TEXT_PASTE_SETTLE_SECONDS = 0.9
-POST_IMAGE_PASTE_SETTLE_SECONDS = 0.5
-INITIAL_TEXT_INJECTION_RETRY_LIMIT = 3
 IMAGE_GENERATION_VERIFICATION_LIMIT = -1
 POST_SAVE_EXTRACTION_WAIT_SECONDS = 5.0 
 IMAGE_GENERATION_IN_PROGRESS_PHRASES = (
@@ -185,38 +169,6 @@ class BackgroundIdea:
     title: str
     visual_concept: str
     background_description: str
-
-
-@dataclass
-class ImageGenerationRunResult:
-    attempted_images: int
-    verified_images: int
-    failed_images: list[str]
-    final_save_completed: bool
-    extracted_output_dir: Path | None
-
-
-class ImagePrompterError(Exception):
-    pass
-
-
-class FocusError(ImagePrompterError):
-    pass
-
-
-class ParseError(ImagePrompterError):
-    pass
-
-
-class VerificationError(ImagePrompterError):
-    pass
-
-
-class AutomationStepError(ImagePrompterError):
-    def __init__(self, step_name: str, original_exception: Exception) -> None:
-        super().__init__(f"{step_name} failed: {original_exception}")
-        self.step_name = step_name
-        self.original_exception = original_exception
 
 
 class GeneratedImageHTMLParser(HTMLParser):
@@ -260,33 +212,6 @@ def initialize_run_helpers() -> None:
     ensure_run_helpers_dir()
     migrate_legacy_run_helper_files()
     reset_run_helper_files()
-
-
-def append_run_log(message: str) -> None:
-    ensure_run_helpers_dir()
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    with RUN_LOG_PATH.open("a", encoding="utf-8") as log_file:
-        log_file.write(f"[{timestamp}] {message}\n")
-
-
-def record_poll_snapshot(path: Path, attempt: int, text: str) -> None:
-    ensure_run_helpers_dir()
-    with path.open("a", encoding="utf-8") as snapshot_file:
-        snapshot_file.write(
-            f"===== Attempt {attempt} @ {time.strftime('%Y-%m-%d %H:%M:%S')} =====\n"
-        )
-        snapshot_file.write(text.strip() + "\n\n")
-
-
-def run_logged_step(step_name: str, callback, *args, **kwargs):
-    append_run_log(f"START {step_name}")
-    try:
-        result = callback(*args, **kwargs)
-    except Exception as exc:
-        append_run_log(f"FAIL {step_name}: {exc}")
-        raise AutomationStepError(step_name, exc) from exc
-    append_run_log(f"OK {step_name}")
-    return result
 
 
 def load_kind_to_used_phrases() -> dict[str, list[str]]:
@@ -549,254 +474,24 @@ $image.Dispose()
     )
 
 
-def get_active_window_title() -> str:
-    try:
-        active_window = pyautogui.getActiveWindow()
-    except Exception:
-        return ""
-    if active_window is None:
-        return ""
-    return (active_window.title or "").strip()
-
-
-def is_chatgpt_window_active(window_title: str) -> bool:
-    normalized_title = window_title.casefold()
-    return (
-        any(hint in normalized_title for hint in CHATGPT_WINDOW_HINTS)
-        and any(hint in normalized_title for hint in BROWSER_WINDOW_HINTS)
-    )
-
-
-def prompt_box_matches_expected_state(
-    expected_prompt_state: str = "initial",
-    tolerance: int = 20,
-) -> bool:
-    target = (
-        CHATGPT_PROMPT_BOX_PIXELS_VAIO
-        if expected_prompt_state == "initial"
-        else CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection
-    )
-    position = target["position"]
-    expected_rgb = target["rgb"]
-    try:
-        current_rgb = pyautogui.pixel(position[0], position[1])
-    except Exception:
-        return False
-    return all(abs(current_rgb[index] - expected_rgb[index]) <= tolerance for index in range(3))
-
-
-def prompt_operator_to_recover(message: str) -> None:
-    print(message)
-    while True:
-        choice = input("Type R to retry after fixing focus, or Q to abort this run: ").strip().upper()
-        if choice == "R":
-            return
-        if choice == "Q":
-            raise FocusError(message)
-        print("Please type R or Q.")
-
-
-def confirm_clean_prompt_box_visually(action_label: str) -> None:
-    print(
-        f"Pixel validation is still uncertain before {action_label}. "
-        "Visually confirm that the ChatGPT prompt box is empty and focused."
-    )
-    while True:
-        choice = input("Type C to continue, R to retry cleanup, or Q to abort this run: ").strip().upper()
-        if choice == "C":
-            append_run_log(
-                f"Operator visually confirmed a clean prompt box before {action_label}."
-            )
-            return
-        if choice == "R":
-            clear_chatgpt_prompt_box()
-            if prompt_box_matches_expected_state("initial"):
-                append_run_log(
-                    f"Prompt box cleanup succeeded after manual retry for {action_label}."
-                )
-                return
-            continue
-        if choice == "Q":
-            raise FocusError(f"Operator aborted while confirming prompt box before {action_label}.")
-        print("Please type C, R, or Q.")
-
-
-def ensure_chatgpt_window_ready(
-    action_label: str,
-    *,
-    require_prompt_box: bool = True,
-    expected_prompt_state: str = "initial",
-) -> None:
-    while True:
-        window_title = get_active_window_title()
-        window_ok = is_chatgpt_window_active(window_title)
-        prompt_ok = True
-        if require_prompt_box:
-            prompt_ok = prompt_box_matches_expected_state(expected_prompt_state)
-
-        if window_ok and prompt_ok:
-            return
-
-        details = [f"Active window: {window_title or '<unknown>'}"]
-        if require_prompt_box:
-            details.append(f"Prompt box pixel check passed: {prompt_ok}")
-        message = (
-            f"Cannot safely {action_label}. "
-            + " | ".join(details)
-            + ". Bring ChatGPT in Firefox to the foreground and restore the prompt area."
-        )
-        append_run_log(message)
-        prompt_operator_to_recover(message)
-
-
-def focus_chatgpt_prompt_box(expected_prompt_state: str = "initial") -> None:
-    ensure_chatgpt_window_ready(
-        "focus the ChatGPT prompt box",
-        require_prompt_box=False,
-    )
-    target = (
-        CHATGPT_PROMPT_BOX_PIXELS_VAIO
-        if expected_prompt_state == "initial"
-        else CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection
-    )
-    pyautogui.click(target["position"])
-
-
-def clear_chatgpt_prompt_box() -> None:
-    focus_chatgpt_prompt_box("initial")
-    time.sleep(0.2)
-    pyautogui.hotkey("ctrl", "a")
-    time.sleep(0.15)
-    pyautogui.press("backspace")
-    time.sleep(0.35)
-    pyautogui.press("esc")
-    time.sleep(0.2)
-
-
-def prepare_prompt_box_for_paste() -> None:
-    ensure_chatgpt_window_ready(
-        "prepare the ChatGPT prompt box for paste",
-        require_prompt_box=False,
-    )
-    focus_chatgpt_prompt_box("initial")
-    time.sleep(PRE_PASTE_FOCUS_SETTLE_SECONDS)
-
-
-def copy_focused_prompt_box_text(expected_prompt_state: str = "post_injection") -> str:
-    focus_chatgpt_prompt_box(expected_prompt_state)
-    time.sleep(0.25)
-    pyautogui.hotkey("ctrl", "a")
-    time.sleep(0.2)
-    pyautogui.hotkey("ctrl", "c")
-    time.sleep(0.25)
-    return get_clipboard_text()
-
-
-def verify_initial_text_injection(prompt_text: str) -> None:
-    normalized_prompt = normalize_phrase(prompt_text)
-
-    for attempt in range(1, INITIAL_TEXT_INJECTION_RETRY_LIMIT + 1):
-        copied_text = copy_focused_prompt_box_text("post_injection")
-        normalized_copied_text = normalize_phrase(copied_text)
-        injection_failed = "chatgpt" in normalized_copied_text
-        injection_confirmed = bool(
-            normalized_prompt
-            and normalized_prompt[:120] in normalized_copied_text
-        )
-
-        if not injection_failed and injection_confirmed:
-            append_run_log(
-                f"Initial text injection confirmed on attempt {attempt}."
-            )
-            return
-
-        append_run_log(
-            "Initial text injection check failed on attempt "
-            f"{attempt}. Copied text preview: {copied_text[:120]!r}"
-        )
-        if attempt < INITIAL_TEXT_INJECTION_RETRY_LIMIT:
-            print("Initial text injection did not look correct. Re-pasting the prompt text...")
-            paste_text_via_clipboard(prompt_text, "focused ChatGPT prompt box")
-            continue
-
-    raise VerificationError(
-        "Initial text injection could not be confirmed. The prompt box copy still looked wrong."
-    )
-
-
-def wait_for_prompt_submission_dispatch(
-    prompt_text: str,
-    action_label: str,
-    timeout_seconds: int = PROMPT_DISPATCH_TIMEOUT_SECONDS,
-) -> None:
-    print(f"Waiting for ChatGPT to accept the submitted {action_label}...")
-    dispatch_started_at = time.time()
-    attempt = 0
-    stuck_counter = 0
-
-    while True:
-        attempt += 1
-        prompt_box_reset = prompt_box_matches_expected_state("initial")
-        current_copy = copy_full_chat_text_once()
-        prompt_visible_in_chat = prompt_text.strip() and prompt_text.strip() in current_copy
-        prompt_still_stuck_in_input = bool(prompt_text.split()[-10:] and current_copy.split()[-10:] == prompt_text.split()[-10:])
-
-        if prompt_box_reset or (prompt_visible_in_chat and not prompt_still_stuck_in_input):
-            append_run_log(
-                f"Prompt dispatch confirmed for {action_label} on attempt {attempt}."
-            )
-            return
-
-        if prompt_still_stuck_in_input:
-            stuck_counter += 1
-            if stuck_counter >= PROMPT_DISPATCH_RETRY_THRESHOLD:
-                append_run_log(
-                    f"Prompt still appears unsent for {action_label}; pressing Enter again."
-                )
-                focus_chatgpt_prompt_box("post_injection")
-                time.sleep(0.3)
-                pyautogui.press("enter")
-                time.sleep(1.5)
-                stuck_counter = 0
-        else:
-            stuck_counter = 0
-
-        if time.time() - dispatch_started_at >= timeout_seconds:
-            raise VerificationError(
-                f"ChatGPT did not accept the submitted {action_label} within {timeout_seconds} seconds."
-            )
-
-        time.sleep(PROMPT_BOX_RESET_POLL_INTERVAL_SECONDS)
-
-
 def paste_text_via_clipboard(text: str, field_label: str) -> None:
-    prepare_prompt_box_for_paste()
     set_clipboard_text(text)
-    time.sleep(PRE_PASTE_FOCUS_SETTLE_SECONDS)
+    time.sleep(0.35)
     print(f"Pasting prompt text into {field_label}...")
     pyautogui.hotkey("ctrl", "v")
-    time.sleep(POST_TEXT_PASTE_SETTLE_SECONDS)
 
 
 def paste_image_via_clipboard(image_path: Path, field_label: str) -> None:
-    ensure_chatgpt_window_ready(
-        f"paste an image into {field_label}",
-        require_prompt_box=False,
-    )
     print(f"Loading image into clipboard: {image_path}")
     set_clipboard_image(image_path)
-    time.sleep(PRE_PASTE_FOCUS_SETTLE_SECONDS)
+    time.sleep(0.5)
     print(f"Pasting image into {field_label}...")
     pyautogui.hotkey("ctrl", "v")
-    time.sleep(POST_IMAGE_PASTE_SETTLE_SECONDS)
+    time.sleep(0.5)
     clear_clipboard()
 
 
 def click_chat_copy_target() -> None:
-    ensure_chatgpt_window_ready(
-        "click the chat copy target",
-        require_prompt_box=False,
-    )
     target_x, target_y = CHAT_CLICK_TARGET
     print(f"Clicking chat copy target at ({target_x}, {target_y}) before copy cycle...")
     pyautogui.moveTo(target_x, target_y, duration=0.2)
@@ -818,10 +513,6 @@ def hold_click_chatgpt_boot_focus_target() -> None:
 
 
 def copy_full_chat_text_once() -> str:
-    ensure_chatgpt_window_ready(
-        "copy the current ChatGPT conversation",
-        require_prompt_box=False,
-    )
     pyautogui.press("esc")
     time.sleep(0.25)
     click_chat_copy_target()
@@ -831,33 +522,6 @@ def copy_full_chat_text_once() -> str:
     pyautogui.hotkey("ctrl", "c")
     time.sleep(0.3)
     return get_clipboard_text()
-
-
-def extract_text_after_prompt(full_chat_text: str, prompt_text: str) -> str:
-    normalized_chat = full_chat_text.replace("\r\n", "\n").strip()
-    normalized_prompt = prompt_text.replace("\r\n", "\n").strip()
-    if not normalized_chat or not normalized_prompt:
-        return normalized_chat
-
-    prompt_index = normalized_chat.rfind(normalized_prompt)
-    if prompt_index == -1:
-        return normalized_chat
-
-    return normalized_chat[prompt_index + len(normalized_prompt):].strip()
-
-
-def has_meaningful_trailing_content(
-    full_chat_text: str,
-    prompt_text: str,
-    minimum_length: int = 20,
-) -> bool:
-    trailing_text = extract_text_after_prompt(full_chat_text, prompt_text)
-    return len(trailing_text) >= minimum_length
-
-
-def is_idea_response_in_progress(full_chat_text: str) -> bool:
-    normalized_text = full_chat_text.casefold()
-    return any(phrase in normalized_text for phrase in IDEA_RESPONSE_IN_PROGRESS_PHRASES)
 
 
 def wait_for_stable_full_chat_text(
@@ -874,16 +538,17 @@ def wait_for_stable_full_chat_text(
     while True:
         attempt += 1
         current_copy = copy_full_chat_text_once()
-        record_poll_snapshot(IDEA_RESPONSE_POLL_HISTORY_PATH, attempt, current_copy)
         print(f"Captured full chat copy attempt {attempt}.")
         is_stable_copy = bool(current_copy and previous_copy == current_copy)
         has_ideas = bool(parse_ideas(current_copy))
-        response_started = has_meaningful_trailing_content(current_copy, prompt_text)
-        still_in_progress = is_idea_response_in_progress(current_copy)
+        lower_copy = current_copy.casefold() if current_copy else ""
+        still_in_progress = any(
+            phrase in lower_copy for phrase in IDEA_RESPONSE_IN_PROGRESS_PHRASES
+        )
 
-        if is_stable_copy and response_started and has_ideas and not still_in_progress:
+        if is_stable_copy and has_ideas and not still_in_progress:
             print(
-                "Detected stable copied chat text with parseable idea output and trailing response content."
+                "Detected stable copied chat text with parseable idea output. Treating output as complete."
             )
             return current_copy
 
@@ -899,7 +564,7 @@ def wait_for_stable_full_chat_text(
             stuck_counter += 1
             if stuck_counter >= IDEA_RESPONSE_STUCK_PROMPT_RETRY_THRESHOLD:
                 print("Detected prompt still in input box (ENTER might have failed). Repressing ENTER...")
-                focus_chatgpt_prompt_box("post_injection")
+                pyautogui.click(CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection["position"])
                 time.sleep(0.5)
                 pyautogui.press("enter")
                 time.sleep(3)
@@ -909,7 +574,7 @@ def wait_for_stable_full_chat_text(
 
         if is_stable_copy and not has_ideas:
             print(
-                "Copied chat text is stable, but no fully parseable idea blocks were found yet. Continuing to wait..."
+                "Copied chat text is stable, but no parseable JSON or fallback idea blocks were found yet. Continuing to wait..."
             )
 
         if (
@@ -919,7 +584,7 @@ def wait_for_stable_full_chat_text(
             print(
                 "Timed out after "
                 f"{IDEA_RESPONSE_ABORT_TIMEOUT_SECONDS} seconds without detecting "
-                "a complete parseable idea response. Aborting this run."
+                "parseable idea JSON. Aborting this run."
             )
             return None
 
@@ -954,27 +619,23 @@ def normalize_phrase(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip().casefold()
 
 
-def normalize_idea_field(value: object) -> str:
-    return re.sub(r"\s+", " ", str(value)).strip()
-
-
-def is_placeholder_idea_value(value: str) -> bool:
-    return normalize_phrase(value) in PLACEHOLDER_IDEA_VALUES
-
-
 def is_valid_ideas_payload(payload: dict[str, object]) -> bool:
     ideas = payload.get("ideas")
     if not isinstance(ideas, list) or not ideas:
         return False
 
-    valid_items = 0
-    for item in ideas:
-        if not isinstance(item, dict):
-            return False
-        if background_idea_from_json_item(item) is not None:
-            valid_items += 1
+    first_item = ideas[0]
+    if not isinstance(first_item, dict):
+        return False
 
-    return valid_items > 0
+    title = str(first_item.get("title", "")).strip()
+    visual_concept = str(first_item.get("visual_concept", "")).strip()
+    background_description = str(first_item.get("background_description", "")).strip()
+    if not title or title == "...":
+        return False
+    if visual_concept == "..." or background_description == "...":
+        return False
+    return True
 
 
 def extract_json_payload(text: str) -> dict[str, object] | None:
@@ -998,35 +659,16 @@ def extract_json_payload(text: str) -> dict[str, object] | None:
 
 
 def background_idea_from_json_item(item: dict[str, object]) -> BackgroundIdea | None:
-    title = normalize_idea_field(item.get("title", ""))
-    visual_concept = normalize_idea_field(item.get("visual_concept", ""))
-    background_description = normalize_idea_field(item.get("background_description", ""))
-    if (
-        not title
-        or not visual_concept
-        or not background_description
-        or is_placeholder_idea_value(title)
-        or is_placeholder_idea_value(visual_concept)
-        or is_placeholder_idea_value(background_description)
-    ):
+    title = str(item.get("title", "")).strip()
+    visual_concept = str(item.get("visual_concept", "")).strip()
+    background_description = str(item.get("background_description", "")).strip()
+    if not title:
         return None
     return BackgroundIdea(
         title=title,
         visual_concept=visual_concept,
         background_description=background_description,
     )
-
-
-def dedupe_ideas_by_title(ideas: list[BackgroundIdea]) -> list[BackgroundIdea]:
-    seen_titles: set[str] = set()
-    deduped_ideas: list[BackgroundIdea] = []
-    for idea in ideas:
-        normalized_title = normalize_phrase(idea.title)
-        if normalized_title in seen_titles:
-            continue
-        seen_titles.add(normalized_title)
-        deduped_ideas.append(idea)
-    return deduped_ideas
 
 
 def background_idea_to_block(idea: BackgroundIdea) -> str:
@@ -1048,23 +690,14 @@ def parse_ideas_from_json(text: str) -> list[BackgroundIdea]:
         return []
 
     parsed_ideas: list[BackgroundIdea] = []
-    rejected_items = 0
     for item in ideas:
         if not isinstance(item, dict):
-            rejected_items += 1
             continue
         parsed_idea = background_idea_from_json_item(item)
-        if parsed_idea is None:
-            rejected_items += 1
-            continue
-        parsed_ideas.append(parsed_idea)
+        if parsed_idea:
+            parsed_ideas.append(parsed_idea)
 
-    if rejected_items:
-        append_run_log(
-            f"Rejected {rejected_items} malformed idea item(s) while parsing JSON response."
-        )
-
-    return dedupe_ideas_by_title(parsed_ideas)
+    return parsed_ideas
 
 
 def parse_ideas_from_marker_blocks(text: str) -> list[BackgroundIdea]:
@@ -1117,8 +750,8 @@ def parse_ideas_from_marker_blocks(text: str) -> list[BackgroundIdea]:
 def parse_ideas(text: str) -> list[BackgroundIdea]:
     json_ideas = parse_ideas_from_json(text)
     if json_ideas:
-        return dedupe_ideas_by_title(json_ideas)
-    return dedupe_ideas_by_title(parse_ideas_from_marker_blocks(text))
+        return json_ideas
+    return parse_ideas_from_marker_blocks(text)
 
 
 def extract_idea_title(idea: BackgroundIdea) -> str:
@@ -1298,10 +931,6 @@ def save_generated_images_to_output_folder() -> None:
             f"Full generated images folder was not found: {output_folder}"
         )
 
-    ensure_chatgpt_window_ready(
-        "open the browser save dialog",
-        require_prompt_box=False,
-    )
     print(f"Saving generated images into: {output_folder}")
     pyautogui.hotkey("ctrl", "s")
     time.sleep(2.0)
@@ -1442,18 +1071,15 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
     while True:
         attempt += 1
         current_copy = copy_full_chat_text_once()
-        record_poll_snapshot(IMAGE_GENERATION_POLL_HISTORY_PATH, attempt, current_copy)
         print(f"Checked image-generation status attempt {attempt}.")
         is_stable_copy = bool(current_copy and previous_copy == current_copy)
         has_generated_confirmation = has_generated_image_confirmation(
             current_copy,
             generation_prompt_text,
         )
-        response_started = has_meaningful_trailing_content(current_copy, generation_prompt_text)
 
         if (
             is_stable_copy
-            and response_started
             and not is_image_generation_in_progress(current_copy)
             and has_generated_confirmation
         ):
@@ -1482,7 +1108,7 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
             stuck_counter += 1
             if stuck_counter >= IMAGE_GENERATION_STUCK_PROMPT_RETRY_THRESHOLD:
                 print("Detected generation prompt still in input box. Repressing ENTER...")
-                focus_chatgpt_prompt_box("post_injection")
+                pyautogui.click(CHATGPT_PROMPT_BOX_PIXELS_VAIO_post_injection["position"])
                 time.sleep(0.5)
                 pyautogui.press("enter")
                 time.sleep(3)
@@ -1510,12 +1136,13 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
         previous_copy = current_copy
         time.sleep(IMAGE_GENERATION_POLL_INTERVAL_SECONDS)
 
+
 def run_generation_prompt_for_image(
     image_path: Path,
     generation_prompt_text: str,
 ) -> str | None:
     print("Starting follow-up image generation prompt and image paste flow...")
-    focus_chatgpt_prompt_box("initial")
+    pyautogui.press("w")
     time.sleep(0.8)
     paste_text_via_clipboard(generation_prompt_text, "focused ChatGPT prompt box")
     time.sleep(1.5)
@@ -1526,18 +1153,8 @@ def run_generation_prompt_for_image(
         "the image generation prompt..."
     )
     time.sleep(IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS)
-    ensure_chatgpt_window_ready(
-        "submit the image generation prompt",
-        require_prompt_box=False,
-    )
-    focus_chatgpt_prompt_box("post_injection")
-    time.sleep(0.2)
     pyautogui.press("enter")
     print("Pressed Enter to submit the image generation prompt.")
-    wait_for_prompt_submission_dispatch(
-        generation_prompt_text,
-        "image generation prompt",
-    )
     return wait_for_image_generation_completion(generation_prompt_text)
 
 
@@ -1545,7 +1162,7 @@ def run_generation_prompt_for_remaining_images(
     image_paths: list[Path],
     generation_prompt_text: str,
     product_kind: str,
-) -> ImageGenerationRunResult:
+) -> None:
     if IMAGE_GENERATION_VERIFICATION_LIMIT == -1:
         target_verification_count = len(image_paths)
     elif IMAGE_GENERATION_VERIFICATION_LIMIT < -1:
@@ -1562,24 +1179,15 @@ def run_generation_prompt_for_remaining_images(
         print(
             "IMAGE_GENERATION_VERIFICATION_LIMIT is 0, so skipping image verification and moving directly to the final save flow."
         )
+        beep_all_images_generation_complete()
         save_generated_images_to_output_folder()
         time.sleep(POST_SAVE_EXTRACTION_WAIT_SECONDS)
-        extracted_output_dir = extract_generated_images_from_latest_saved_html(product_kind)
-        beep_all_images_generation_complete()
-        return ImageGenerationRunResult(
-            attempted_images=0,
-            verified_images=0,
-            failed_images=[],
-            final_save_completed=True,
-            extracted_output_dir=extracted_output_dir,
-        )
+        extract_generated_images_from_latest_saved_html(product_kind)
+        return
 
     print(
-        f"Will verify {target_verification_count} generated image(s) before the final save flow."
+        f"Will verify {target_verification_count} generated image(s) before the final beep/save flow."
     )
-
-    verified_images = 0
-    failed_images: list[str] = []
 
     for image_index, image_path in enumerate(
         image_paths[:target_verification_count],
@@ -1591,49 +1199,26 @@ def run_generation_prompt_for_remaining_images(
         )
         final_chat_text = run_generation_prompt_for_image(image_path, generation_prompt_text)
         if final_chat_text is None:
-            failure_message = (
-                f"Image {image_index} could not be verified. Skipping final save flow for this cycle."
+            print(
+                f"Could not verify generated image for image {image_index} of "
+                f"{target_verification_count}. Continuing with the next image."
             )
-            print(failure_message)
-            append_run_log(failure_message)
-            failed_images.append(str(image_path))
             continue
-
-        verified_images += 1
         print(
             f"Confirmed generated image for image {image_index} of {target_verification_count}."
-        )
-
-    if verified_images != target_verification_count:
-        print(
-            "Not every required image was verified, so the script will not claim completion or trigger the final save flow."
-        )
-        return ImageGenerationRunResult(
-            attempted_images=target_verification_count,
-            verified_images=verified_images,
-            failed_images=failed_images,
-            final_save_completed=False,
-            extracted_output_dir=None,
         )
 
     if target_verification_count == len(image_paths):
         print("Confirmed generated images for every image in the folder.")
     else:
         print(
-            "Reached the configured image-generation verification limit. Moving to the final save flow."
+            "Reached the configured image-generation verification limit. Moving to the final beep/save flow."
         )
-
+    beep_all_images_generation_complete()
     save_generated_images_to_output_folder()
     time.sleep(POST_SAVE_EXTRACTION_WAIT_SECONDS)
-    extracted_output_dir = extract_generated_images_from_latest_saved_html(product_kind)
-    beep_all_images_generation_complete()
-    return ImageGenerationRunResult(
-        attempted_images=target_verification_count,
-        verified_images=verified_images,
-        failed_images=failed_images,
-        final_save_completed=True,
-        extracted_output_dir=extracted_output_dir,
-    )
+    extract_generated_images_from_latest_saved_html(product_kind)
+
 
 def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
     print()
@@ -1642,112 +1227,68 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> None:
     print("Keep the ChatGPT prompt box focused before pressing the Right Arrow key.")
     print()
 
-    run_logged_step("open Firefox", open_firefox_normal_window)
+    open_firefox_normal_window()
     time.sleep(2)
-    run_logged_step("focus ChatGPT boot target", hold_click_chatgpt_boot_focus_target)
+
+    # wait_for_start_hotkey()
+    hold_click_chatgpt_boot_focus_target()
 
     print()
     print("Starting focused-field prompt and image paste flow...")
-    run_logged_step(
-        "paste initial text prompt",
-        paste_text_via_clipboard,
-        context.prompt_text,
-        "focused ChatGPT prompt box",
-    )
-    run_logged_step(
-        "verify initial text injection",
-        verify_initial_text_injection,
-        context.prompt_text,
-    )
+    paste_text_via_clipboard(context.prompt_text, "focused ChatGPT prompt box")
     time.sleep(0.9)
-    run_logged_step(
-        "paste initial reference image",
-        paste_image_via_clipboard,
-        context.image_paths[0],
-        "focused ChatGPT prompt box",
-    )
+    paste_image_via_clipboard(context.image_paths[0], "focused ChatGPT prompt box")
     print(
         "Waiting "
         f"{INITIAL_PROMPT_SUBMISSION_WAIT_SECONDS} seconds before submitting "
         "the ChatGPT prompt..."
     )
     time.sleep(INITIAL_PROMPT_SUBMISSION_WAIT_SECONDS)
-    ensure_chatgpt_window_ready(
-        "submit the initial ChatGPT prompt",
-        require_prompt_box=False,
-    )
-    focus_chatgpt_prompt_box("post_injection")
-    time.sleep(0.2)
     pyautogui.press("enter")
     prompt_submitted_at = time.time()
     print("Pressed Enter to submit the prompt")
-    wait_for_prompt_submission_dispatch(
-        context.prompt_text,
-        "initial idea prompt",
-    )
     print(
         "Waiting "
         f"{INITIAL_PROMPT_COMPLETION_DETECTION_DELAY_SECONDS} seconds before "
         "starting output-completion detection..."
     )
     time.sleep(INITIAL_PROMPT_COMPLETION_DETECTION_DELAY_SECONDS)
-    latest_output = run_logged_step(
-        "capture latest idea response",
-        capture_and_store_latest_output,
+    latest_output = capture_and_store_latest_output(
         context.prompt_text,
         prompt_submitted_at,
     )
-    if not latest_output:
-        raise VerificationError(
-            "No new latest output text could be isolated from the copied conversation."
-        )
+    if latest_output:
+        ideas = save_parsed_idea_results(latest_output, context.existing_phrases)
+        print("Captured latest output successfully.")
+        if ideas:
+            new_titles = [idea.title for idea in get_new_ideas(ideas, context.existing_phrases)]
+            if new_titles:
+                print("Ideas not found in Excel:")
+                for title in new_titles:
+                    print(f"- {title}")
 
-    ideas = run_logged_step(
-        "parse latest idea response",
-        save_parsed_idea_results,
-        latest_output,
-        context.existing_phrases,
-    )
-    print("Captured latest output successfully.")
-    if not ideas:
-        raise ParseError("No parsed ideas were found in the latest output.")
+            current_idea = choose_current_idea(ideas, context.existing_phrases)
+            generation_prompt_text = prepare_current_generation_prompt(current_idea)
+            # beep_ready_for_generation_prompt()
 
-    new_titles = [idea.title for idea in get_new_ideas(ideas, context.existing_phrases)]
-    if new_titles:
-        print("Ideas not found in Excel:")
-        for title in new_titles:
-            print(f"- {title}")
+            print(f"Selected CURRENT IDEA: {current_idea.title}")
+            # print(
+            #     "Image generation prompt is ready. Press the Right Arrow key to paste the generation prompt and image."
+            # )
+            # wait_for_start_hotkey()
+            append_phrase_to_workbook(context.product_kind, current_idea.title)
+            save_current_run_idea(current_idea)
+            print(f"Saved current run idea JSON to: {CURRENT_RUN_IDEA_PATH}")
+            run_generation_prompt_for_remaining_images(
+                context.image_paths,
+                generation_prompt_text,
+                context.product_kind,
+            )
+        else:
+            print("No parsed ideas were found in the latest output.")
+    else:
+        print("No new latest output text could be isolated from the copied conversation.")
 
-    current_idea = choose_current_idea(ideas, context.existing_phrases)
-    generation_prompt_text = run_logged_step(
-        "prepare current generation prompt",
-        prepare_current_generation_prompt,
-        current_idea,
-    )
-
-    print(f"Selected CURRENT IDEA: {current_idea.title}")
-    save_current_run_idea(current_idea)
-    print(f"Saved current run idea JSON to: {CURRENT_RUN_IDEA_PATH}")
-    generation_result = run_logged_step(
-        "generate images for remaining product files",
-        run_generation_prompt_for_remaining_images,
-        context.image_paths,
-        generation_prompt_text,
-        context.product_kind,
-    )
-
-    if not generation_result.final_save_completed:
-        raise VerificationError(
-            f"Generation finished with only {generation_result.verified_images}/"
-            f"{generation_result.attempted_images} verified image(s)."
-        )
-
-    run_logged_step(
-        "record successful idea in workbook",
-        append_phrase_to_workbook,
-        context.product_kind,
-        current_idea.title,
-    )
 
 def wait_for_start_hotkey() -> None:
     print(
@@ -1779,43 +1320,20 @@ def main() -> None:
     ensure_images_final_kind_folders(sorted(kind_to_phrases.keys()))
     selected_kind = prompt_for_kind(kind_to_phrases)
 
-    append_run_log("Starting image_prompter run.")
-
     for cycle_index in range(1, loop_count + 1):
         print()
         print(f"========== Starting cycle {cycle_index} of {loop_count} ==========")
-        append_run_log(f"Starting cycle {cycle_index} of {loop_count}.")
 
-        try:
-            context = run_logged_step(
-                "prepare product prompt context",
-                prepare_product_prompt_context,
-                selected_kind,
-            )
+        context = prepare_product_prompt_context(selected_kind)
 
-            print(f"Selected kind: {context.product_kind}")
-            print(f"First image ready: {context.image_paths[0]}")
-            print(f"Total images queued for generation: {len(context.image_paths)}")
-            print(f"Prompt preview saved to: {PROMPT_PREVIEW_PATH}")
+        print(f"Selected kind: {context.product_kind}")
+        print(f"First image ready: {context.image_paths[0]}")
+        print(f"Total images queued for generation: {len(context.image_paths)}")
+        print(f"Prompt preview saved to: {PROMPT_PREVIEW_PATH}")
 
-            run_chatgpt_manual_browser_flow(context)
-        except AutomationStepError as exc:
-            print(f"Cycle {cycle_index} failed during {exc.step_name}: {exc.original_exception}")
-            append_run_log(
-                f"Cycle {cycle_index} failed during {exc.step_name}: {exc.original_exception}"
-            )
-            continue
-        except ImagePrompterError as exc:
-            print(f"Cycle {cycle_index} aborted: {exc}")
-            append_run_log(f"Cycle {cycle_index} aborted: {exc}")
-            continue
-        except Exception as exc:
-            print(f"Cycle {cycle_index} crashed unexpectedly: {exc}")
-            append_run_log(f"Cycle {cycle_index} crashed unexpectedly: {exc}")
-            continue
+        run_chatgpt_manual_browser_flow(context)
 
         print(f"========== Finished cycle {cycle_index} of {loop_count} ==========")
-        append_run_log(f"Finished cycle {cycle_index} of {loop_count}.")
 
 
 if __name__ == "__main__":

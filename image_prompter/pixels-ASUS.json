@@ -1,14 +1,14 @@
 {
   "chat_neutral_click": {
-    "x": 1074,
-    "y": 423
+    "x": 1051,
+    "y": 338
   },
   "prompt_box_initial": {
-    "x": 1066,
-    "y": 573
+    "x": 746,
+    "y": 398
   },
   "prompt_box_post_injection": {
-    "x": 1243,
-    "y": 758
+    "x": 797,
+    "y": 616
   }
 }
