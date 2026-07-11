@@ -18,13 +18,17 @@ from openpyxl import load_workbook
 from pynput import keyboard
 
 # LAPTOP_NAME = "VAIO"
-LAPTOP_NAME = "ASUS"
+# LAPTOP_NAME = "ASUS"
+LAPTOP_NAME = "HP"
 
 PRABHU_FIREFOX_PROFILE_ASUS = Path(
     r"C:\Users\ESHAAN\Documents\Firefox-Profiles\0xe7h0bx.prabhu"
 )
 PRABHU_FIREFOX_PROFILE_VAIO = Path(
     r"C:\Users\SONY\AppData\Roaming\Mozilla\Firefox\Profiles\gm1pmawk.default-release"
+)
+PRABHU_FIREFOX_PROFILE_hp = Path(
+    r"C:\Users\HP\AppData\Roaming\Mozilla\Firefox\Profiles\y6d16t5c.default-release"
 )
 IMAGE_PROMPTER_ROOT = Path(__file__).resolve().parent
 ROOT_PATH = IMAGE_PROMPTER_ROOT
@@ -37,10 +41,14 @@ def image_prompter_path(*relative_parts: str) -> Path:
 RUN_HELPERS_DIR = image_prompter_path("run-helpers")
 FULL_GENERATED_IMAGES_DIR = image_prompter_path("FULL GENERATED IMAGES")
 IMAGES_FINAL_DIR = image_prompter_path("IMAGES-FINAL")
-NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
+
 PIXELS_FILE_ASUS = image_prompter_path("pixels-ASUS.json")
 PIXELS_FILE_VAIO = image_prompter_path("pixels-VAIO.json")
+PIXELS_FILE_HP = image_prompter_path("pixels-HP.json")
+NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
 NO_BG_IMAGES_ROOT_VAIO = Path(r"C:\NO-BG-IMAGES")
+NO_BG_IMAGES_ROOT_HP = Path(r"G:\Other computers\My Laptop\work-mom\NO-BG-IMAGES")
+
 PRODUCT_IMAGE_FOLDER_OVERRIDES = {
     "WHITE-BAGGY-JEANS": "White-Baggy",
 }
@@ -55,6 +63,11 @@ LAPTOP_CONFIGS = {
         "no_bg_images_root": NO_BG_IMAGES_ROOT_VAIO,
         "pixel_json" : PIXELS_FILE_VAIO
     },
+    "HP" : {
+        "firefox_profile": PRABHU_FIREFOX_PROFILE_hp,
+        "no_bg_images_root": NO_BG_IMAGES_ROOT_HP,
+        "pixel_json" : PIXELS_FILE_HP
+    }
 }
 ACTIVE_LAPTOP_CONFIG = LAPTOP_CONFIGS[LAPTOP_NAME.upper()]
 PRABHU_FIREFOX_PROFILE = ACTIVE_LAPTOP_CONFIG["firefox_profile"]
