@@ -17,6 +17,7 @@ import pyautogui
 from openpyxl import load_workbook
 from pynput import keyboard
 
+
 # LAPTOP_NAME = "VAIO"
 # LAPTOP_NAME = "ASUS"
 LAPTOP_NAME = "HP"
@@ -76,6 +77,9 @@ PIXELS_FILE = ACTIVE_LAPTOP_CONFIG["pixel_json"]
 USED_IMAGE_DESIGNS_WORKBOOK = image_prompter_path("USED-IMAGE-DESIGNS.xlsx")
 PROMPT_TEMPLATE_PATH = image_prompter_path("image_edit_prompt_template.txt")
 IMAGE_GENERATION_PROMPT_TEMPLATE_PATH = image_prompter_path("image_generation_prompt")
+IMAGE_GENERATION_ABORT_PHRASES_PATH = image_prompter_path(
+    "image_generation_abort_phrases.json"
+)
 DEFAULT_FIREFOX_BINARY = Path(r"C:\Program Files\Mozilla Firefox\firefox.exe")
 FALLBACK_FIREFOX_BINARIES = [
     Path(r"C:\Program Files\Mozilla Firefox\firefox.exe"),
@@ -171,9 +175,40 @@ IDEA_RESPONSE_IN_PROGRESS_PHRASES = (
 )
 
 
+class ImageGenerationBatchAbort(RuntimeError):
+    """Raised when ChatGPT reports a terminal image-generation limit/error."""
+
+
+def load_image_generation_abort_phrases() -> tuple[str, ...]:
+    if not IMAGE_GENERATION_ABORT_PHRASES_PATH.exists():
+        raise FileNotFoundError(
+            "Image-generation abort phrase file was not found: "
+            f"{IMAGE_GENERATION_ABORT_PHRASES_PATH}"
+        )
+
+    raw = json.loads(
+        IMAGE_GENERATION_ABORT_PHRASES_PATH.read_text(encoding="utf-8")
+    )
+    if not isinstance(raw, list) or not all(isinstance(item, str) for item in raw):
+        raise ValueError(
+            f"{IMAGE_GENERATION_ABORT_PHRASES_PATH.name} must contain a JSON array of strings."
+        )
+
+    phrases = tuple(phrase.strip().casefold() for phrase in raw if phrase.strip())
+    if not phrases:
+        raise ValueError(
+            f"{IMAGE_GENERATION_ABORT_PHRASES_PATH.name} must contain at least one non-empty phrase."
+        )
+    return phrases
+
+
+IMAGE_GENERATION_ABORT_PHRASES = load_image_generation_abort_phrases()
+
+
 @dataclass
 class ProductPromptContext:
     product_kind: str
+    product_color: str
     image_folder: Path
     image_paths: list[Path]
     used_phrases_csv: str
@@ -290,6 +325,16 @@ def prompt_for_kind(kind_to_phrases: dict[str, list[str]]) -> str:
         print("Please choose one of the listed options.")
 
 
+def prompt_for_product_color(product_kind: str) -> str:
+    while True:
+        product_color = input(
+            f"What is the product color for {product_kind}? "
+        ).strip()
+        if product_color:
+            return product_color
+        print("Please enter the product color.")
+
+
 def get_images_final_kind_dir(product_kind: str) -> Path:
     kind_folder_name = re.sub(r'[<>:"/\\|?*]+', "-", product_kind.strip()).strip(" .")
     if not kind_folder_name:
@@ -371,7 +416,7 @@ def build_prompt_text(product_kind: str, used_phrases_csv: str) -> str:
     )
 
 
-def build_image_generation_prompt(idea: BackgroundIdea) -> str:
+def build_image_generation_prompt(idea: BackgroundIdea, product_color: str) -> str:
     if not IMAGE_GENERATION_PROMPT_TEMPLATE_PATH.exists():
         raise FileNotFoundError(
             "Image generation prompt template was not found: "
@@ -387,14 +432,19 @@ def build_image_generation_prompt(idea: BackgroundIdea) -> str:
     return (
         template.replace("[INSERT BACKGROUND DESCRIPTION HERE]", background_description)
         .replace("[BACKGROUND DESCRIPTION]", background_description)
+        .replace("[PRODUCT_COLOR]", product_color.strip())
         .strip()
     )
 
 
-def prepare_product_prompt_context(product_kind: str | None = None) -> ProductPromptContext:
+def prepare_product_prompt_context(
+    product_kind: str | None = None,
+    product_color: str | None = None,
+) -> ProductPromptContext:
     initialize_run_helpers()
     kind_to_phrases = load_kind_to_used_phrases()
     selected_kind = product_kind or prompt_for_kind(kind_to_phrases)
+    selected_color = product_color or prompt_for_product_color(selected_kind)
     image_folder = resolve_product_image_folder(selected_kind)
     image_paths = get_images_from_folder(image_folder)
     used_phrases_csv = build_used_phrases_csv(kind_to_phrases.get(selected_kind, []))
@@ -404,6 +454,7 @@ def prepare_product_prompt_context(product_kind: str | None = None) -> ProductPr
 
     return ProductPromptContext(
         product_kind=selected_kind,
+        product_color=selected_color,
         image_folder=image_folder,
         image_paths=image_paths,
         used_phrases_csv=used_phrases_csv,
@@ -946,8 +997,11 @@ def save_parsed_idea_results(latest_output: str, existing_phrases: list[str]) ->
     return ideas
 
 
-def prepare_current_generation_prompt(idea: BackgroundIdea) -> str:
-    prompt_text = build_image_generation_prompt(idea)
+def prepare_current_generation_prompt(
+    idea: BackgroundIdea,
+    product_color: str,
+) -> str:
+    prompt_text = build_image_generation_prompt(idea, product_color)
     CURRENT_GENERATION_PROMPT_PATH.write_text(prompt_text + "\n", encoding="utf-8")
     print(f"Saved current generation prompt to: {CURRENT_GENERATION_PROMPT_PATH}")
     return prompt_text
@@ -1100,6 +1154,14 @@ def is_image_generation_in_progress(full_chat_text: str) -> bool:
     )
 
 
+def find_image_generation_abort_phrase(full_chat_text: str) -> str | None:
+    copied_text_tail = full_chat_text[-4000:].casefold()
+    return next(
+        (phrase for phrase in IMAGE_GENERATION_ABORT_PHRASES if phrase in copied_text_tail),
+        None,
+    )
+
+
 def has_generated_image_confirmation(
     full_chat_text: str,
     generation_prompt_text: str,
@@ -1132,6 +1194,16 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
         attempt += 1
         current_copy = copy_full_chat_text_once()
         print(f"Checked image-generation status attempt {attempt}.")
+        abort_phrase = find_image_generation_abort_phrase(current_copy)
+        if abort_phrase:
+            IMAGE_GENERATION_FINAL_CHAT_PATH.write_text(
+                current_copy + "\n",
+                encoding="utf-8",
+            )
+            raise ImageGenerationBatchAbort(
+                "Aborting the batch because the copied ChatGPT response matched "
+                f"the configured terminal phrase: {abort_phrase!r}"
+            )
         is_stable_copy = bool(current_copy and previous_copy == current_copy)
         has_generated_confirmation = has_generated_image_confirmation(
             current_copy,
@@ -1330,7 +1402,10 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> bool:
                     print(f"- {title}")
 
             current_idea = choose_current_idea(ideas, context.existing_phrases)
-            generation_prompt_text = prepare_current_generation_prompt(current_idea)
+            generation_prompt_text = prepare_current_generation_prompt(
+                current_idea,
+                context.product_color,
+            )
             # beep_ready_for_generation_prompt()
 
             print(f"Selected CURRENT IDEA: {current_idea.title}")
@@ -1383,15 +1458,17 @@ def main() -> None:
     kind_to_phrases = load_kind_to_used_phrases()
     ensure_images_final_kind_folders(sorted(kind_to_phrases.keys()))
     selected_kind = prompt_for_kind(kind_to_phrases)
+    selected_color = prompt_for_product_color(selected_kind)
 
     for cycle_index in range(1, loop_count + 1):
         while True:
             print()
             print(f"========== Starting cycle {cycle_index} of {loop_count} ==========")
 
-            context = prepare_product_prompt_context(selected_kind)
+            context = prepare_product_prompt_context(selected_kind, selected_color)
 
             print(f"Selected kind: {context.product_kind}")
+            print(f"Product color: {context.product_color}")
             print(f"First image ready: {context.image_paths[0]}")
             print(f"Total images queued for generation: {len(context.image_paths)}")
             print(f"Prompt preview saved to: {PROMPT_PREVIEW_PATH}")
