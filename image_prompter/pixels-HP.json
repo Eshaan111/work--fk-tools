@@ -1,26 +1,26 @@
 {
-  "chat_neutral_click": {
-    "x": 1264,
-    "y": 521
-  },
-  "prompt_box_initial": {
-    "x": 872,
-    "y": 398
-  },
-  "prompt_box_post_injection": {
-    "x": 857,
-    "y": 453
-  },
-  "generation_complete": {
-    "position": [
-      1170,
-      666
-    ],
-    "rgb": [
-      255,
-      255,
-      255
-    ],
-    "tolerance": 0
-  }
+    "chat_neutral_click":  {
+                               "x":  1264,
+                               "y":  521
+                           },
+    "prompt_box_initial":  {
+                               "x":  872,
+                               "y":  398
+                           },
+    "prompt_box_post_injection":  {
+                                      "x":  857,
+                                      "y":  453
+                                  },
+    "generation_complete":  {
+                                "position":  [
+                                                 452,
+                                                 317
+                                             ],
+                                "rgb":  [
+                                            246,
+                                            246,
+                                            246
+                                        ],
+                                "tolerance":  8
+                            }
 }
