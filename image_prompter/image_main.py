@@ -1476,7 +1476,12 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ImageGenerationBatchAbort as exc:
+        print()
+        print("Image-generation batch stopped cleanly.")
+        print(exc)
 
 
 

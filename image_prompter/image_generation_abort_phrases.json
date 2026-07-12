@@ -6,7 +6,7 @@
   "image generation failed",
   "failiure",
   "hit the plus plan limit",
-  "limit resets",
-  "unable to invoke",
+  "out of image creations for now",
+  "unable to invoke the image-generation tool",
   "You can create more images when the limit resets in 5 hours"
 ]
