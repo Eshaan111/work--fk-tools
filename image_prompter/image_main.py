@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import time
+import tkinter as tk
 import urllib.request
 import winsound
 from dataclasses import dataclass
@@ -173,6 +174,90 @@ IDEA_RESPONSE_IN_PROGRESS_PHRASES = (
     "thinking",
     "working on it",
 )
+
+
+class GenerationStatusOverlay:
+    """Small always-on-top window showing live batch generation progress."""
+
+    def __init__(self) -> None:
+        self.root = tk.Tk()
+        self.root.title("Image Generation Status")
+        self.root.attributes("-topmost", True)
+        self.root.resizable(False, False)
+        self.root.configure(bg="#17352d")
+
+        width, height = 560, 142
+        screen_width = self.root.winfo_screenwidth()
+        self.root.geometry(f"{width}x{height}+{max(0, (screen_width - width) // 2)}+10")
+
+        self.run_var = tk.StringVar(value="Run: preparing...")
+        self.image_var = tk.StringVar(value="Waiting for: preparing images...")
+        self.success_var = tk.StringVar(value="Successfully detected: 0")
+
+        label_options = {
+            "bg": "#17352d",
+            "fg": "#ffffff",
+            "anchor": "w",
+            "padx": 18,
+        }
+        tk.Label(
+            self.root,
+            textvariable=self.run_var,
+            font=("Segoe UI Semibold", 14),
+            pady=10,
+            **label_options,
+        ).pack(fill="x")
+        tk.Label(
+            self.root,
+            textvariable=self.image_var,
+            font=("Segoe UI", 11),
+            wraplength=524,
+            justify="left",
+            **label_options,
+        ).pack(fill="x")
+        tk.Label(
+            self.root,
+            textvariable=self.success_var,
+            font=("Segoe UI Semibold", 11),
+            fg="#78e6ad",
+            **{key: value for key, value in label_options.items() if key != "fg"},
+        ).pack(fill="x", pady=(8, 10))
+        self.refresh()
+
+    def refresh(self) -> None:
+        self.root.update_idletasks()
+        self.root.update()
+
+    def set_run(self, current_run: int, total_runs: int) -> None:
+        self.run_var.set(f"Run: {current_run} of {total_runs}")
+        self.image_var.set("Waiting for: preparing images...")
+        self.success_var.set("Successfully detected: 0")
+        self.refresh()
+
+    def set_waiting_image(self, image_index: int, total_images: int, image_path: Path) -> None:
+        self.image_var.set(
+            f"Waiting for image: {image_index} of {total_images} — {image_path.name}"
+        )
+        self.refresh()
+
+    def set_success_count(self, successful_count: int, total_images: int) -> None:
+        self.success_var.set(
+            f"Successfully detected: {successful_count} of {total_images}"
+        )
+        self.refresh()
+
+    def set_complete(self) -> None:
+        self.image_var.set("Waiting for: run complete")
+        self.refresh()
+
+    def close(self) -> None:
+        try:
+            self.root.destroy()
+        except tk.TclError:
+            pass
+
+
+STATUS_OVERLAY: GenerationStatusOverlay | None = None
 
 
 class ImageGenerationBatchAbort(RuntimeError):
@@ -1329,7 +1414,15 @@ def run_generation_prompt_for_remaining_images(
         print(
             f"Running image generation for image {image_index} of {target_verification_count}: {image_path}"
         )
+        if STATUS_OVERLAY is not None:
+            STATUS_OVERLAY.set_waiting_image(
+                image_index,
+                target_verification_count,
+                image_path,
+            )
         final_chat_text = run_generation_prompt_for_image(image_path, generation_prompt_text)
+        if STATUS_OVERLAY is not None:
+            STATUS_OVERLAY.set_success_count(image_index, target_verification_count)
         print(
             f"Confirmed generated image for image {image_index} of {target_verification_count}."
         )
@@ -1448,13 +1541,17 @@ def wait_for_start_hotkey() -> None:
 
 
 def main() -> None:
+    global STATUS_OVERLAY
+
     loop_count = prompt_for_loop_count()
     kind_to_phrases = load_kind_to_used_phrases()
     ensure_images_final_kind_folders(sorted(kind_to_phrases.keys()))
     selected_kind = prompt_for_kind(kind_to_phrases)
     selected_color = prompt_for_product_color(selected_kind)
+    STATUS_OVERLAY = GenerationStatusOverlay()
 
     for cycle_index in range(1, loop_count + 1):
+        STATUS_OVERLAY.set_run(cycle_index, loop_count)
         while True:
             print()
             print(f"========== Starting cycle {cycle_index} of {loop_count} ==========")
@@ -1473,6 +1570,7 @@ def main() -> None:
             print("Restarting this cycle as a new run after failed prompt-paste verification.")
 
         print(f"========== Finished cycle {cycle_index} of {loop_count} ==========")
+        STATUS_OVERLAY.set_complete()
 
 
 if __name__ == "__main__":
