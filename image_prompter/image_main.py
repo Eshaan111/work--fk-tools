@@ -1155,7 +1155,7 @@ def is_image_generation_in_progress(full_chat_text: str) -> bool:
 
 
 def find_image_generation_abort_phrase(full_chat_text: str) -> str | None:
-    copied_text_tail = full_chat_text[-4000:].casefold()
+    copied_text_tail = " ".join(full_chat_text.split()[-100:]).casefold()
     return next(
         (phrase for phrase in IMAGE_GENERATION_ABORT_PHRASES if phrase in copied_text_tail),
         None,
