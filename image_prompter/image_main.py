@@ -126,17 +126,55 @@ pyautogui.PAUSE = 0.15
 START_HOTKEY_KEY = keyboard.Key.right
 
 
-def load_pixels() -> dict[str, tuple[int, int]]:
+def load_pixel_config() -> dict[str, object]:
     if not PIXELS_FILE.exists():
         raise FileNotFoundError(
             f"pixels.json not found at: {PIXELS_FILE}\n"
             "Run set_pixels.py first to capture your screen coordinates."
         )
     raw = json.loads(PIXELS_FILE.read_text(encoding="utf-8"))
-    return {key: (int(val["x"]), int(val["y"])) for key, val in raw.items()}
+    if not isinstance(raw, dict):
+        raise ValueError(f"{PIXELS_FILE.name} must contain a JSON object.")
+    return raw
 
 
-_PIXELS = load_pixels()
+def load_pixels(raw: dict[str, object]) -> dict[str, tuple[int, int]]:
+    return {
+        key: (int(value["x"]), int(value["y"]))
+        for key, value in raw.items()
+        if isinstance(value, dict) and "x" in value and "y" in value
+    }
+
+
+def load_generation_complete_pixel(
+    raw: dict[str, object],
+) -> tuple[tuple[int, int], tuple[int, int, int], int] | None:
+    value = raw.get("generation_complete")
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("generation_complete must be a JSON object.")
+
+    position = value.get("position")
+    rgb = value.get("rgb")
+    tolerance = int(value.get("tolerance", 0))
+    if not isinstance(position, list) or len(position) != 2:
+        raise ValueError("generation_complete.position must be [x, y].")
+    if not isinstance(rgb, list) or len(rgb) != 3:
+        raise ValueError("generation_complete.rgb must be [red, green, blue].")
+    if tolerance < 0:
+        raise ValueError("generation_complete.tolerance cannot be negative.")
+
+    return (
+        (int(position[0]), int(position[1])),
+        (int(rgb[0]), int(rgb[1]), int(rgb[2])),
+        tolerance,
+    )
+
+
+_PIXEL_CONFIG = load_pixel_config()
+_PIXELS = load_pixels(_PIXEL_CONFIG)
+GENERATION_COMPLETE_PIXEL = load_generation_complete_pixel(_PIXEL_CONFIG)
 CHAT_CLICK_TARGET: tuple[int, int] = _PIXELS["chat_neutral_click"]
 CHATGPT_PROMPT_BOX_PIXELS_VAIO = {
     "position": _PIXELS["prompt_box_initial"],
@@ -156,6 +194,7 @@ IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
 IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS = 240
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 12
 IMAGE_GENERATION_STUCK_PROMPT_RETRY_THRESHOLD = 8
+IMAGE_GENERATION_PIXEL_CHECK_FAILURE_INTERVAL = 10
 IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS = 10
 IMAGE_GENERATION_VERIFICATION_LIMIT = -1
 POST_SAVE_EXTRACTION_WAIT_SECONDS = 5.0 
@@ -262,6 +301,10 @@ STATUS_OVERLAY: GenerationStatusOverlay | None = None
 
 class ImageGenerationBatchAbort(RuntimeError):
     """Raised when ChatGPT reports a terminal image-generation limit/error."""
+
+
+class ImageGenerationReprompt(RuntimeError):
+    """Raised when fallback pixel verification says to resubmit the same image."""
 
 
 def load_image_generation_abort_phrases() -> tuple[str, ...]:
@@ -1264,6 +1307,23 @@ def has_generated_image_confirmation(
     return "generated image:" in trailing_text.casefold()
 
 
+def generation_complete_pixel_matches() -> tuple[bool, tuple[int, int, int]]:
+    if GENERATION_COMPLETE_PIXEL is None:
+        raise RuntimeError("Generation-complete pixel is not configured.")
+
+    position, expected_rgb, tolerance = GENERATION_COMPLETE_PIXEL
+    actual_rgb = tuple(int(channel) for channel in pyautogui.pixel(*position))
+    matches = all(
+        abs(actual - expected) <= tolerance
+        for actual, expected in zip(actual_rgb, expected_rgb)
+    )
+    print(
+        f"Generation pixel check at {position}: actual={actual_rgb}, "
+        f"expected={expected_rgb}, tolerance={tolerance}, matched={matches}."
+    )
+    return matches, actual_rgb
+
+
 def wait_for_image_generation_completion(generation_prompt_text: str) -> str | None:
     print(
         "Waiting for image-generation mode to end by polling copied chat text for generating-state phrases..."
@@ -1274,6 +1334,7 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
     previous_copy: str | None = None
     attempt = 0
     stuck_counter = 0
+    failed_copy_checks = 0
 
     while True:
         attempt += 1
@@ -1333,10 +1394,27 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
         else:
             stuck_counter = 0
 
-        if is_stable_copy and not has_generated_confirmation:
+        if not has_generated_confirmation:
+            failed_copy_checks += 1
             print(
-                "Copied chat text is stable, but 'Generated image:' was not found after the injected prompt yet. Continuing to wait..."
+                "Copied chat text did not confirm 'Generated image:' "
+                f"(failed check {failed_copy_checks}). Continuing to wait..."
             )
+            if (
+                failed_copy_checks % IMAGE_GENERATION_PIXEL_CHECK_FAILURE_INTERVAL == 0
+                and GENERATION_COMPLETE_PIXEL is not None
+            ):
+                pixel_matched, _actual_rgb = generation_complete_pixel_matches()
+                if pixel_matched:
+                    print(
+                        "Generation pixel matched; continuing copied-text detection "
+                        "until the existing 'Generated image:' confirmation succeeds."
+                    )
+                else:
+                    raise ImageGenerationReprompt(
+                        "Copied-chat verification failed 10 times and the generation "
+                        "pixel did not match; resubmitting the same prompt and image."
+                    )
 
         if time.time() - start_time >= IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS:
             print(
@@ -1358,21 +1436,31 @@ def run_generation_prompt_for_image(
     image_path: Path,
     generation_prompt_text: str,
 ) -> str | None:
-    print("Starting follow-up image generation prompt and image paste flow...")
-    pyautogui.press("w")
-    time.sleep(0.8)
-    paste_text_via_clipboard(generation_prompt_text, "focused ChatGPT prompt box")
-    time.sleep(1.5)
-    paste_image_via_clipboard(image_path, "focused ChatGPT prompt box")
-    print(
-        "Waiting "
-        f"{IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS} seconds before submitting "
-        "the image generation prompt..."
-    )
-    time.sleep(IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS)
-    pyautogui.press("enter")
-    print("Pressed Enter to submit the image generation prompt.")
-    return wait_for_image_generation_completion(generation_prompt_text)
+    submission_attempt = 0
+    while True:
+        submission_attempt += 1
+        print(
+            "Starting follow-up image generation prompt and image paste flow "
+            f"(submission attempt {submission_attempt})..."
+        )
+        pyautogui.press("w")
+        time.sleep(0.8)
+        paste_text_via_clipboard(generation_prompt_text, "focused ChatGPT prompt box")
+        time.sleep(1.5)
+        paste_image_via_clipboard(image_path, "focused ChatGPT prompt box")
+        print(
+            "Waiting "
+            f"{IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS} seconds before submitting "
+            "the image generation prompt..."
+        )
+        time.sleep(IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS)
+        pyautogui.press("enter")
+        print("Pressed Enter to submit the image generation prompt.")
+        try:
+            return wait_for_image_generation_completion(generation_prompt_text)
+        except ImageGenerationReprompt as exc:
+            print(exc)
+            print(f"Reprompting the same image: {image_path}")
 
 
 def run_generation_prompt_for_remaining_images(

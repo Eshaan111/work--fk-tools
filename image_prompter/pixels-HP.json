@@ -10,5 +10,17 @@
   "prompt_box_post_injection": {
     "x": 857,
     "y": 453
+  },
+  "generation_complete": {
+    "position": [
+      1170,
+      666
+    ],
+    "rgb": [
+      255,
+      255,
+      255
+    ],
+    "tolerance": 0
   }
 }
