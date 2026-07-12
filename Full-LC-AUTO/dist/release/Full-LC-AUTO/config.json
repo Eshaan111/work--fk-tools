@@ -256,6 +256,10 @@
                                                                                "5":  {
                                                                                          "kind":  "White-Plain",
                                                                                          "image_directory":  "C:\\work-mom\\LISTING IMAGES AUTOMATED\\White"
+                                                                                     },
+                                                                               "6":  {
+                                                                                         "kind":  "White-Baggy",
+                                                                                         "image_directory":  "C:\\work-mom\\LISTING IMAGES AUTOMATED\\WHITE-BAGGY"
                                                                                      }
                                                                            }
                                                              },
@@ -285,6 +289,69 @@
                                                                   }
                                                }
                              },
+                    "HP":  {
+                               "firefox_profiles":  {
+                                                        "seema":  "C:/Users/HP/AppData/Roaming/Mozilla/Firefox/Profiles/nYFEhIIx.Profile 1",
+                                                        "prabhu":  "C:/Users/HP/AppData/Roaming/Mozilla/Firefox/Profiles/y6d16t5c.default-release"
+                                                    },
+                               "paths":  {
+                                             "snapshot_directory":  "snapshots"
+                                         },
+                               "verticals":  {
+                                                 "jeans":  {
+                                                               "kinds":  {
+                                                                             "1":  {
+                                                                                       "kind":  "Beige",
+                                                                                       "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/BEIGE"
+                                                                                   },
+                                                                             "2":  {
+                                                                                       "kind":  "Ice",
+                                                                                       "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/ICE"
+                                                                                   },
+                                                                             "3":  {
+                                                                                       "kind":  "Black-baggy",
+                                                                                       "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-baggy"
+                                                                                   },
+                                                                             "4":  {
+                                                                                       "kind":  "Black-Plain",
+                                                                                       "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-Plain"
+                                                                                   },
+                                                                             "5":  {
+                                                                                       "kind":  "White-Plain",
+                                                                                       "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White"
+                                                                                   },
+                                                                             "6":  {
+                                                                                       "kind":  "White-Baggy",
+                                                                                       "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Baggy"
+                                                                                   }
+                                                                         }
+                                                           },
+                                                 "trouser":  {
+                                                                 "kinds":  {
+                                                                               "1":  {
+                                                                                         "kind":  "Trouser",
+                                                                                         "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Trouser"
+                                                                                     }
+                                                                           }
+                                                             },
+                                                 "shorts":  {
+                                                                "kinds":  {
+                                                                              "1":  {
+                                                                                        "kind":  "Shorts",
+                                                                                        "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED"
+                                                                                    }
+                                                                          }
+                                                            },
+                                                 "track_pant":  {
+                                                                    "kinds":  {
+                                                                                  "1":  {
+                                                                                            "kind":  "Track Pant",
+                                                                                            "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Trouser"
+                                                                                        }
+                                                                              }
+                                                                }
+                                             }
+                           },
                     "VAIO":  {
                                  "firefox_profiles":  {
                                                           "seema":  "C:/Users/SONY/AppData/Roaming/Mozilla/Firefox/Profiles/S2AIZkXx.Profile 1",
@@ -315,6 +382,10 @@
                                                                                "5":  {
                                                                                          "kind":  "White-Plain",
                                                                                          "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White"
+                                                                                     },
+                                                                               "6":  {
+                                                                                         "kind":  "White-Baggy",
+                                                                                         "image_directory":  "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Baggy"
                                                                                      }
                                                                            }
                                                              },
