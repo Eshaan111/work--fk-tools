@@ -4,5 +4,9 @@
   "you're out of image generation messages for now",
   "you are out of image generation messages for now",
   "image generation failed",
-  "failiure"
+  "failiure",
+  "hit the plus plan limit",
+  "limit resets",
+  "unable to invoke",
+  "You can create more images when the limit resets in 5 hours"
 ]
