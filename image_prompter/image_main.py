@@ -1255,15 +1255,15 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
 
         if time.time() - start_time >= IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS:
             print(
-                "Timed out after "
+                "Still could not verify a generated image after "
                 f"{IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS} seconds without verifying a generated image. "
-                "Aborting this image run and continuing."
+                "Continuing to wait for this image; the next image will not be submitted until this one is confirmed."
             )
             IMAGE_GENERATION_FINAL_CHAT_PATH.write_text(
                 current_copy + "\n",
                 encoding="utf-8",
             )
-            return None
+            start_time = time.time()
 
         previous_copy = current_copy
         time.sleep(IMAGE_GENERATION_POLL_INTERVAL_SECONDS)
@@ -1330,12 +1330,6 @@ def run_generation_prompt_for_remaining_images(
             f"Running image generation for image {image_index} of {target_verification_count}: {image_path}"
         )
         final_chat_text = run_generation_prompt_for_image(image_path, generation_prompt_text)
-        if final_chat_text is None:
-            print(
-                f"Could not verify generated image for image {image_index} of "
-                f"{target_verification_count}. Continuing with the next image."
-            )
-            continue
         print(
             f"Confirmed generated image for image {image_index} of {target_verification_count}."
         )
