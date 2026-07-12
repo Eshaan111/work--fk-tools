@@ -1,4 +1,5 @@
 # Third-party packages to install with pip
+cryptography
 matplotlib
 numpy
 openpyxl
@@ -6,6 +7,7 @@ pandas
 pyautogui
 pynput
 PyQt5
+pyinstaller
 selenium
 
 # Standard-library imports used by the scripts; these come with Python.
