@@ -193,6 +193,8 @@ IDEA_RESPONSE_STUCK_PROMPT_RETRY_THRESHOLD = 8
 INITIAL_PROMPT_SUBMISSION_WAIT_SECONDS = 10
 INITIAL_PROMPT_COMPLETION_DETECTION_DELAY_SECONDS = 5
 INITIAL_PROMPT_MIN_WORD_COUNT = 20
+PROMPT_TEXT_PASTE_CHUNK_SIZE = 1200
+PROMPT_TEXT_PASTE_CHUNK_DELAY_SECONDS = 0.25
 IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
 IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS = 240
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 20
@@ -730,11 +732,28 @@ $image.Dispose()
     )
 
 
+def split_text_for_composer_paste(text: str) -> list[str]:
+    """Split large text so ChatGPT keeps it in the composer instead of an attachment."""
+    if len(text) <= PROMPT_TEXT_PASTE_CHUNK_SIZE:
+        return [text]
+    return [
+        text[start:start + PROMPT_TEXT_PASTE_CHUNK_SIZE]
+        for start in range(0, len(text), PROMPT_TEXT_PASTE_CHUNK_SIZE)
+    ]
+
+
 def paste_text_via_clipboard(text: str, field_label: str) -> None:
-    set_clipboard_text(text)
-    time.sleep(0.35)
-    print(f"Pasting prompt text into {field_label}...")
-    pyautogui.hotkey("ctrl", "v")
+    chunks = split_text_for_composer_paste(text)
+    print(
+        f"Pasting prompt text into {field_label} in {len(chunks)} "
+        f"composer-safe chunk(s)..."
+    )
+    for chunk_index, chunk in enumerate(chunks, start=1):
+        set_clipboard_text(chunk)
+        time.sleep(0.35)
+        pyautogui.hotkey("ctrl", "v")
+        if chunk_index < len(chunks):
+            time.sleep(PROMPT_TEXT_PASTE_CHUNK_DELAY_SECONDS)
 
 
 def verify_initial_prompt_was_pasted() -> bool:
