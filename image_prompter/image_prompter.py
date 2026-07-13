@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import os
 import re
@@ -10,6 +11,7 @@ import tkinter as tk
 import urllib.request
 import winsound
 from dataclasses import dataclass
+from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -95,6 +97,7 @@ NEW_IDEAS_PATH = RUN_HELPERS_DIR / "new_ideas_not_in_excel.txt"
 CURRENT_RUN_IDEA_PATH = RUN_HELPERS_DIR / "current_run_idea.json"
 CURRENT_GENERATION_PROMPT_PATH = RUN_HELPERS_DIR / "current_generation_prompt.txt"
 IMAGE_GENERATION_FINAL_CHAT_PATH = RUN_HELPERS_DIR / "image_generation_final_chat.txt"
+IMAGE_GENERATION_TIMES_CSV_PATH = RUN_HELPERS_DIR / "image_generation_times.csv"
 RUN_HELPER_PATHS = (
     PROMPT_PREVIEW_PATH,
     LAST_FULL_CHAT_PATH,
@@ -326,6 +329,35 @@ class ImageGenerationBatchAbort(RuntimeError):
 
 class ImageGenerationReprompt(RuntimeError):
     """Raised when fallback pixel verification says to resubmit the same image."""
+
+
+class ImageGenerationSkip(RuntimeError):
+    """Raised when one image exceeds its overall generation wait limit."""
+
+
+def append_image_generation_times(durations: list[float | None]) -> None:
+    """Append one run's image-generation wait times to the persistent CSV."""
+    IMAGE_GENERATION_TIMES_CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
+    file_exists = IMAGE_GENERATION_TIMES_CSV_PATH.exists()
+    normalized_durations = list(durations[:5])
+    normalized_durations.extend([None] * (5 - len(normalized_durations)))
+
+    with IMAGE_GENERATION_TIMES_CSV_PATH.open(
+        "a",
+        newline="",
+        encoding="utf-8",
+    ) as csv_file:
+        writer = csv.writer(csv_file)
+        if not file_exists or IMAGE_GENERATION_TIMES_CSV_PATH.stat().st_size == 0:
+            writer.writerow(
+                ["run_time", "image_1", "image_2", "image_3", "image_4", "image_5"]
+            )
+        writer.writerow(
+            [datetime.now().isoformat(timespec="seconds")]
+            + [f"{duration:.2f}" if duration is not None else "" for duration in normalized_durations]
+        )
+
+    print(f"Saved image generation timings to: {IMAGE_GENERATION_TIMES_CSV_PATH}")
 
 
 def load_image_generation_abort_phrases() -> tuple[str, ...]:
@@ -1345,11 +1377,13 @@ def chatgpt_answering_pixel_matches() -> tuple[bool, tuple[int, int, int]]:
     return matches, actual_rgb
 
 
-def wait_for_image_generation_completion(generation_prompt_text: str) -> str | None:
+def wait_for_image_generation_completion(
+    generation_prompt_text: str,
+    image_wait_started_at: float,
+) -> str | None:
     print(
         "Waiting for image-generation mode to end by polling copied chat text for generating-state phrases..."
     )
-    start_time = time.time()
     time.sleep(IMAGE_GENERATION_MIN_WAIT_SECONDS)
 
     previous_copy: str | None = None
@@ -1455,17 +1489,16 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
                         "resubmitting the same prompt and image."
                     )
 
-        if time.time() - start_time >= IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS:
-            print(
-                "Still could not verify a generated image after "
-                f"{IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS} seconds without verifying a generated image. "
-                "Continuing to wait for this image; the next image will not be submitted until this one is confirmed."
-            )
+        if time.time() - image_wait_started_at >= IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS:
             IMAGE_GENERATION_FINAL_CHAT_PATH.write_text(
                 current_copy + "\n",
                 encoding="utf-8",
             )
-            start_time = time.time()
+            raise ImageGenerationSkip(
+                "Skipping this image after waiting "
+                f"{IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS} seconds without a "
+                "verified generated-image response."
+            )
 
         previous_copy = current_copy
         time.sleep(IMAGE_GENERATION_POLL_INTERVAL_SECONDS)
@@ -1474,8 +1507,9 @@ def wait_for_image_generation_completion(generation_prompt_text: str) -> str | N
 def run_generation_prompt_for_image(
     image_path: Path,
     generation_prompt_text: str,
-) -> str | None:
+) -> float:
     submission_attempt = 0
+    image_wait_started_at: float | None = None
     while True:
         submission_attempt += 1
         print(
@@ -1494,9 +1528,15 @@ def run_generation_prompt_for_image(
         )
         time.sleep(IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS)
         pyautogui.press("enter")
+        if image_wait_started_at is None:
+            image_wait_started_at = time.time()
         print("Pressed Enter to submit the image generation prompt.")
         try:
-            return wait_for_image_generation_completion(generation_prompt_text)
+            wait_for_image_generation_completion(
+                generation_prompt_text,
+                image_wait_started_at,
+            )
+            return time.time() - image_wait_started_at
         except ImageGenerationReprompt as exc:
             print(exc)
             print(f"Reprompting the same image: {image_path}")
@@ -1533,6 +1573,10 @@ def run_generation_prompt_for_remaining_images(
         f"Will verify {target_verification_count} generated image(s) before the final beep/save flow."
     )
 
+    successful_count = 0
+    skipped_count = 0
+    image_durations: list[float | None] = [None] * target_verification_count
+
     for image_index, image_path in enumerate(
         image_paths[:target_verification_count],
         start=1,
@@ -1547,14 +1591,33 @@ def run_generation_prompt_for_remaining_images(
                 target_verification_count,
                 image_path,
             )
-        final_chat_text = run_generation_prompt_for_image(image_path, generation_prompt_text)
+        try:
+            image_durations[image_index - 1] = run_generation_prompt_for_image(
+                image_path,
+                generation_prompt_text,
+            )
+        except ImageGenerationSkip as exc:
+            skipped_count += 1
+            print(exc)
+            print(
+                f"Skipped image {image_index} of {target_verification_count}: {image_path}"
+            )
+            continue
+
+        successful_count += 1
         if STATUS_OVERLAY is not None:
-            STATUS_OVERLAY.set_success_count(image_index, target_verification_count)
+            STATUS_OVERLAY.set_success_count(successful_count, target_verification_count)
         print(
             f"Confirmed generated image for image {image_index} of {target_verification_count}."
         )
 
-    if target_verification_count == len(image_paths):
+    append_image_generation_times(image_durations)
+
+    print(
+        f"Image generation finished with {successful_count} confirmed and "
+        f"{skipped_count} skipped image(s)."
+    )
+    if skipped_count == 0 and target_verification_count == len(image_paths):
         print("Confirmed generated images for every image in the folder.")
     else:
         print(
