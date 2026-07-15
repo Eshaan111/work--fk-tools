@@ -177,16 +177,82 @@ class CopyUtilityApp:
             self.path_var.set("No destination configured.")
 
     def _add_folders(self) -> None:
-        while True:
-            selected = filedialog.askdirectory(title="Select a source folder (Cancel when finished)", mustexist=True)
-            if not selected:
-                break
-            path = Path(selected)
-            if path not in self.sources:
-                self.sources.append(path)
-                self.source_list.insert("end", str(path))
-            if not messagebox.askyesno("Add another?", "Do you want to select another source folder?"):
-                break
+        selected_parent = filedialog.askdirectory(
+            title="Select the parent folder containing source folders",
+            mustexist=True,
+        )
+        if not selected_parent:
+            return
+
+        parent = Path(selected_parent)
+        available_folders = sorted(
+            (path for path in parent.iterdir() if path.is_dir()),
+            key=lambda path: path.name.casefold(),
+        )
+        if not available_folders:
+            messagebox.showerror(
+                "No folders found",
+                f"No child folders were found inside:\n\n{parent}",
+                parent=self.root,
+            )
+            return
+
+        picker = tk.Toplevel(self.root)
+        picker.title("Select source folders")
+        picker.minsize(620, 430)
+        picker.transient(self.root)
+        picker.grab_set()
+
+        frame = ttk.Frame(picker, padding=16)
+        frame.pack(fill="both", expand=True)
+        ttk.Label(
+            frame,
+            text=f"Select folders inside: {parent}",
+            wraplength=580,
+        ).pack(anchor="w")
+        ttk.Label(
+            frame,
+            text="Use Ctrl/Shift to select multiple folders.",
+            foreground="#555555",
+        ).pack(anchor="w", pady=(3, 10))
+
+        folder_list = tk.Listbox(frame, selectmode="extended", exportselection=False)
+        folder_list.pack(fill="both", expand=True)
+        for folder in available_folders:
+            folder_list.insert("end", folder.name)
+
+        buttons = ttk.Frame(frame)
+        buttons.pack(fill="x", pady=(12, 0))
+
+        def select_all() -> None:
+            folder_list.selection_set(0, "end")
+
+        def add_selected() -> None:
+            selected_indexes = folder_list.curselection()
+            if not selected_indexes:
+                messagebox.showerror(
+                    "No selection",
+                    "Select at least one source folder.",
+                    parent=picker,
+                )
+                return
+            for index in selected_indexes:
+                path = available_folders[index]
+                if path not in self.sources:
+                    self.sources.append(path)
+                    self.source_list.insert("end", str(path))
+            picker.destroy()
+
+        ttk.Button(buttons, text="Select all", command=select_all).pack(side="left")
+        ttk.Button(buttons, text="Cancel", command=picker.destroy).pack(side="right")
+        ttk.Button(buttons, text="Add selected", command=add_selected).pack(
+            side="right",
+            padx=(0, 8),
+        )
+
+        folder_list.bind("<Double-Button-1>", lambda _event: add_selected())
+        picker.protocol("WM_DELETE_WINDOW", picker.destroy)
+        picker.wait_window()
         self.status_var.set(f"{len(self.sources)} source folder(s) selected.")
 
     def _remove_selected(self) -> None:
