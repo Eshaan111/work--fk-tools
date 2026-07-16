@@ -51,7 +51,7 @@ PIXELS_FILE_VAIO = image_prompter_path("pixels-VAIO.json")
 PIXELS_FILE_HP = image_prompter_path("pixels-HP.json")
 NO_BG_IMAGES_ROOT_ASUS = Path(r"C:\work-mom\NO-BG-IMAGES")
 NO_BG_IMAGES_ROOT_VAIO = Path(r"C:\NO-BG-IMAGES")
-NO_BG_IMAGES_ROOT_HP = Path(r"G:\Other computers\My Laptop\work-mom\NO-BG-IMAGES")
+NO_BG_IMAGES_ROOT_HP = Path(r"C:\NO-BG-IMAGES")
 
 PRODUCT_IMAGE_FOLDER_OVERRIDES = {
     "WHITE-BAGGY-JEANS": "White-Baggy",
@@ -199,7 +199,7 @@ IMAGE_GENERATION_POLL_INTERVAL_SECONDS = 2.0
 IMAGE_GENERATION_ABORT_TIMEOUT_SECONDS = 240
 IMAGE_GENERATION_MIN_WAIT_SECONDS = 20
 IMAGE_GENERATION_STUCK_PROMPT_RETRY_THRESHOLD = 8
-IMAGE_GENERATION_NOT_ANSWERING_FAILURE_LIMIT = 6
+IMAGE_GENERATION_NOT_ANSWERING_FAILURE_LIMIT = 10
 IMAGE_GENERATION_SUBMISSION_WAIT_SECONDS = 10
 IMAGE_GENERATION_VERIFICATION_LIMIT = -1
 POST_SAVE_EXTRACTION_WAIT_SECONDS = 5.0 
@@ -1366,8 +1366,8 @@ def has_generated_image_confirmation(
     full_chat_text: str,
     generation_prompt_text: str,
 ) -> bool:
-    normalized_chat = full_chat_text.replace("\r\n", "\n").strip()
-    normalized_prompt = generation_prompt_text.replace("\r\n", "\n").strip()
+    normalized_chat = " ".join(full_chat_text.split())
+    normalized_prompt = " ".join(generation_prompt_text.split())
     if not normalized_chat or not normalized_prompt:
         return False
 
