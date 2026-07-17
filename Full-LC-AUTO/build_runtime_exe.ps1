@@ -28,7 +28,7 @@ $buildArgs = @(
     '--hidden-import', 'selenium.webdriver.firefox.webdriver',
     '--hidden-import', 'selenium.webdriver.firefox.service',
     '--hidden-import', 'selenium.webdriver.firefox.options',
-    (Join-Path $projectRoot 'main_ui_themed.py')
+    (Join-Path $projectRoot 'main_tab_based.py')
 )
 
 $licenseToolBuildArgs = @(

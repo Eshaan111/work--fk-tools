@@ -10,7 +10,7 @@ hiddenimports += collect_submodules('trio_websocket')
 
 
 a = Analysis(
-    ['C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\main_ui_themed.py'],
+    ['C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\main_tab_based.py'],
     pathex=[],
     binaries=[],
     datas=[],
