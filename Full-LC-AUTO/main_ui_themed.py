@@ -1596,7 +1596,7 @@ def prompt_for_listing_selection(profile_name: str) -> ListingSelection:
 
 
 
-def prompt_for_startup_selection() -> StartupSelection:
+def prompt_for_startup_selection() -> list[StartupSelection]:
     available_flow_targets = discover_flow_target_options()
     if not available_flow_targets:
         raise ValueError(f"No flow folders with flow.json were found in {FLOW_CONFIG_ROOT}")
@@ -1740,7 +1740,8 @@ def prompt_for_startup_selection() -> StartupSelection:
     page_frame.columnconfigure(1, weight=3)
     page_frame.rowconfigure(1, weight=1)
 
-    selection: StartupSelection | None = None
+    selection: list[StartupSelection] | None = None
+    queued_selections: list[StartupSelection] = []
     insight_workbook_path: Path | None = None
     insight_laptop_name: str | None = None
 
@@ -1770,7 +1771,7 @@ def prompt_for_startup_selection() -> StartupSelection:
     content = ttk.Frame(page_frame, style="App.TFrame", padding=(24, 20, 24, 20))
     content.grid(row=0, column=1, rowspan=3, sticky="nsew")
     content.columnconfigure(0, weight=1)
-    content.rowconfigure(1, weight=1)
+    content.rowconfigure(2, weight=1)
 
     ttk.Label(sidebar, text="Full LC Auto", style="Hero.TLabel").grid(row=0, column=0, sticky="w")
     ttk.Label(
@@ -1812,8 +1813,12 @@ def prompt_for_startup_selection() -> StartupSelection:
     setup_card.grid(row=0, column=0, sticky="ew")
     setup_card.columnconfigure(1, weight=1)
 
+    queue_card = ttk.Frame(content, style="Card.TFrame", padding=(22, 18, 22, 18))
+    queue_card.grid(row=1, column=0, pady=(18, 0), sticky="ew")
+    queue_card.columnconfigure(0, weight=1)
+
     insight_card = ttk.Frame(content, style="Card.TFrame", padding=(22, 18, 22, 18))
-    insight_card.grid(row=1, column=0, pady=(18, 0), sticky="nsew")
+    insight_card.grid(row=2, column=0, pady=(18, 0), sticky="nsew")
     insight_card.columnconfigure(0, weight=1)
     insight_card.rowconfigure(2, weight=1)
 
@@ -1835,6 +1840,33 @@ def prompt_for_startup_selection() -> StartupSelection:
     size_entry = ttk.Entry(setup_card, textvariable=size_var, width=20, style="App.TEntry")
     run_count_entry = ttk.Entry(setup_card, textvariable=run_count_var, width=20, style="App.TEntry")
     image_dir_entry = ttk.Entry(setup_card, textvariable=image_directory_var, width=20, style="App.TEntry")
+    final_action_combo = ttk.Combobox(
+        setup_card,
+        textvariable=final_action_var,
+        state="readonly",
+        values=list(FINAL_LISTING_ACTION_OPTIONS),
+        style="App.TCombobox",
+    )
+
+    ttk.Label(queue_card, text="Run Queue", style="SectionTitle.TLabel").grid(row=0, column=0, sticky="w")
+    ttk.Label(
+        queue_card,
+        text="Each item keeps its own laptop, account, vertical, surface, kind, size, brand, run count, and final action.",
+        style="Muted.TLabel",
+        wraplength=620,
+        justify="left",
+    ).grid(row=1, column=0, pady=(4, 10), sticky="w")
+    queue_list = tk.Listbox(
+        queue_card,
+        height=6,
+        selectmode="extended",
+        exportselection=False,
+        font=("Segoe UI", 9),
+        bg="#fbf7ef",
+        fg="#17352d",
+        relief="flat",
+    )
+    queue_list.grid(row=2, column=0, sticky="ew")
 
     insight_text = tk.Text(
         insight_card,
@@ -2041,38 +2073,73 @@ def prompt_for_startup_selection() -> StartupSelection:
         root.wait_window(dialog)
         return result
 
-    def submit() -> None:
-        nonlocal selection
-        try:
-            set_active_laptop(laptop_var.get())
-            run_count = int(run_count_var.get().strip())
-            if run_count < 1:
-                raise ValueError("Run count must be at least 1.")
-            selected_flow = get_selected_flow()
-            listing_selection = build_listing_selection(
-                profile_var.get(),
-                selected_flow.product_type,
-                selected_flow.surface,
-                kind_var.get(),
-                size_var.get(),
-                brand_var.get(),
-                image_directory_override=image_directory_var.get(),
-            )
-        except Exception as exc:
-            messagebox.showerror("Invalid startup values", str(exc), parent=root)
-            return
-
-        final_listing_action = prompt_for_final_listing_action()
-        if final_listing_action is None:
-            return
-
-        selection = StartupSelection(
+    def build_current_queue_selection() -> StartupSelection:
+        set_active_laptop(laptop_var.get())
+        run_count = int(run_count_var.get().strip())
+        if run_count < 1:
+            raise ValueError("Run count must be at least 1.")
+        selected_flow = get_selected_flow()
+        listing_selection = build_listing_selection(
+            profile_var.get(),
+            selected_flow.product_type,
+            selected_flow.surface,
+            kind_var.get(),
+            size_var.get(),
+            brand_var.get(),
+            image_directory_override=image_directory_var.get(),
+        )
+        return StartupSelection(
             laptop_name=laptop_var.get(),
             profile_name=resolve_profile_name(profile_var.get()),
             run_count=run_count,
             listing_selection=listing_selection,
-            final_listing_action=final_listing_action,
+            final_listing_action=FINAL_LISTING_ACTION_OPTIONS[final_action_var.get()],
         )
+
+    def refresh_queue_list() -> None:
+        queue_list.delete(0, "end")
+        for index, queue_selection in enumerate(queued_selections, start=1):
+            queued_listing = queue_selection.listing_selection
+            queue_list.insert(
+                "end",
+                f"{index}. {queue_selection.laptop_name} | {queue_selection.profile_name.title()} | "
+                f"{queued_listing.product_type.title()} / {queued_listing.surface.title()} | "
+                f"{queued_listing.kind} | Size {queued_listing.size} | {queued_listing.brand_name} | "
+                f"{queue_selection.run_count} run(s) | "
+                f"{describe_final_listing_action(queue_selection.final_listing_action)}",
+            )
+
+    def add_to_queue() -> None:
+        try:
+            queue_selection = build_current_queue_selection()
+        except Exception as exc:
+            messagebox.showerror("Invalid queue item", str(exc), parent=root)
+            return
+        queued_selections.append(queue_selection)
+        refresh_queue_list()
+        queue_list.selection_clear(0, "end")
+        queue_list.selection_set("end")
+        queue_list.see("end")
+
+    def remove_selected_queue_items() -> None:
+        selected_indexes = list(queue_list.curselection())
+        if not selected_indexes:
+            messagebox.showerror("No queue selection", "Select one or more queue items to remove.", parent=root)
+            return
+        for index in reversed(selected_indexes):
+            del queued_selections[index]
+        refresh_queue_list()
+
+    def submit() -> None:
+        nonlocal selection
+        if not queued_selections:
+            messagebox.showerror(
+                "Queue is empty",
+                "Add at least one run configuration to the queue before executing it.",
+                parent=root,
+            )
+            return
+        selection = list(queued_selections)
         root.destroy()
 
     def cancel() -> None:
@@ -2087,6 +2154,7 @@ def prompt_for_startup_selection() -> StartupSelection:
         ("Listing Size", size_entry),
         ("Brand", brand_combo),
         ("Batch Runs", run_count_entry),
+        ("Final Action", final_action_combo),
         ("Image Override", image_dir_entry),
     ]
 
@@ -2124,10 +2192,12 @@ def prompt_for_startup_selection() -> StartupSelection:
     open_insight_button.grid(row=0, column=1)
 
     action_frame = ttk.Frame(content, style="App.TFrame")
-    action_frame.grid(row=2, column=0, pady=(18, 0), sticky="ew")
+    action_frame.grid(row=3, column=0, pady=(18, 0), sticky="ew")
     action_frame.columnconfigure(0, weight=1)
-    ttk.Button(action_frame, text="Cancel", command=cancel, style="Secondary.TButton").grid(row=0, column=1, padx=(0, 10))
-    ttk.Button(action_frame, text="Start Batch", command=submit, style="App.TButton").grid(row=0, column=2)
+    ttk.Button(action_frame, text="Add to Queue", command=add_to_queue, style="Secondary.TButton").grid(row=0, column=1, padx=(0, 10))
+    ttk.Button(action_frame, text="Remove Selected", command=remove_selected_queue_items, style="Secondary.TButton").grid(row=0, column=2, padx=(0, 10))
+    ttk.Button(action_frame, text="Cancel", command=cancel, style="Secondary.TButton").grid(row=0, column=3, padx=(0, 10))
+    ttk.Button(action_frame, text="Execute Queue", command=submit, style="App.TButton").grid(row=0, column=4)
 
     laptop_var.trace_add("write", refresh_profile_options)
     profile_var.trace_add("write", refresh_brand_options)
@@ -2139,7 +2209,7 @@ def prompt_for_startup_selection() -> StartupSelection:
     refresh_profile_options()
 
     root.protocol("WM_DELETE_WINDOW", cancel)
-    root.bind("<Return>", lambda _event: submit())
+    root.bind("<Return>", lambda _event: add_to_queue())
     try:
         root.mainloop()
     except KeyboardInterrupt:
@@ -2178,7 +2248,10 @@ def get_firefox_profile_lock_hint(profile_path: Path) -> str:
     return "Firefox profile appears locked: " + ", ".join(active_locks)
 
 
-def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
+def show_batch_monitor_and_run(startup_selections: list[StartupSelection]) -> bool:
+    if not startup_selections:
+        raise ValueError("The run queue is empty.")
+
     root = tk.Tk()
     root.title("Full LC Auto Batch Monitor")
     root.geometry("1040x760")
@@ -2287,16 +2360,14 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
     log_card.columnconfigure(0, weight=1)
     log_card.rowconfigure(2, weight=1)
 
-    listing_selection = startup_selection.listing_selection
+    first_selection = startup_selections[0]
+    listing_selection = first_selection.listing_selection
+    total_queued_runs = sum(item.run_count for item in startup_selections)
     summary_lines = [
-        f"Laptop: {startup_selection.laptop_name}",
-        f"Profile: {startup_selection.profile_name}",
-        f"Vertical: {listing_selection.product_type}",
-        f"Surface: {listing_selection.surface}",
-        f"Kind: {listing_selection.kind}",
-        f"Brand: {listing_selection.brand_name}",
-        f"Final action: {describe_final_listing_action(startup_selection.final_listing_action)}",
-        f"Runs: {startup_selection.run_count}",
+        f"Queued items: {len(startup_selections)}",
+        f"Total planned runs: {total_queued_runs}",
+        f"First: {first_selection.profile_name.title()} / {listing_selection.product_type.title()} / "
+        f"{listing_selection.surface.title()} / {listing_selection.kind}",
     ]
 
     ttk.Label(header_card, text="Batch Monitor", style="MonitorTitle.TLabel").grid(row=0, column=0, sticky="w")
@@ -2340,7 +2411,7 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
         justify="left",
     ).grid(row=2, column=0, pady=(4, 12), sticky="w")
 
-    status_var = tk.StringVar(value="Starting batch...")
+    status_var = tk.StringVar(value="Starting queued runs...")
     status_label = ttk.Label(header_card, textvariable=status_var, style="MonitorMuted.TLabel")
     status_label.grid(row=3, column=0, sticky="w")
 
@@ -2431,8 +2502,8 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
 
     def worker() -> None:
         try:
-            result_state["job_result"] = run_job(
-                startup_selection,
+            result_state["job_result"] = run_queued_jobs(
+                startup_selections,
                 run_control=run_control,
                 progress_callback=enqueue_progress,
             )
@@ -2484,11 +2555,11 @@ def show_batch_monitor_and_run(startup_selection: StartupSelection) -> bool:
                 except tk.TclError:
                     poll_after_id = None
             elif result_state["error"] is not None:
-                status_var.set("Batch stopped because of an error. You can review the logs and close this window.")
+                status_var.set("Queue stopped because of an error. You can review the logs and close this window.")
             elif run_control.should_abort_batch():
-                status_var.set("Batch aborted. You can review the logs and close this window.")
+                status_var.set("Queue aborted. You can review the logs and close this window.")
             else:
-                status_var.set("Batch finished. You can review the logs and close this window.")
+                status_var.set("Queue finished. You can review the logs and close this window.")
 
         if widget_exists(overlay_window):
             now_timestamp = datetime.now().timestamp()
@@ -6998,12 +7069,81 @@ def run_job(
     return job_run_result
 
 
+def run_queued_jobs(
+    startup_selections: list[StartupSelection],
+    run_control: RunControl | None = None,
+    progress_callback: Callable[[JobSessionResult], None] | None = None,
+) -> list[JobRunResult]:
+    queue_results: list[JobRunResult] = []
+    total_queue_items = len(startup_selections)
+
+    for queue_index, startup_selection in enumerate(startup_selections, start=1):
+        if run_control is not None and run_control.should_abort_batch():
+            log_event("QUEUE", "Queue abort requested before starting the next item.")
+            break
+
+        listing_selection = startup_selection.listing_selection
+        set_current_run_label(f"queue {queue_index}/{total_queue_items}")
+        log_event(
+            "QUEUE",
+            f"Starting item {queue_index}/{total_queue_items}: "
+            f"laptop={startup_selection.laptop_name}, "
+            f"account={startup_selection.profile_name}, "
+            f"vertical={listing_selection.product_type}, "
+            f"surface={listing_selection.surface}, kind={listing_selection.kind}, "
+            f"size={listing_selection.size}, brand={listing_selection.brand_name}, "
+            f"runs={startup_selection.run_count}, "
+            f"final_action={startup_selection.final_listing_action}.",
+        )
+
+        try:
+            set_active_laptop(startup_selection.laptop_name)
+            queue_results.append(
+                run_job(
+                    startup_selection,
+                    run_control=run_control,
+                    progress_callback=progress_callback,
+                )
+            )
+        except Exception as exc:
+            error_message = (
+                f"Queue item {queue_index}/{total_queue_items} failed before it could finish: {exc}"
+            )
+            write_latest_error(error_message)
+            log_event("ERROR", error_message)
+            log_event("QUEUE", "Continuing with the next queued item.")
+            if progress_callback is not None:
+                for planned_run_index in range(1, startup_selection.run_count + 1):
+                    progress_callback(
+                        JobSessionResult(
+                            run_index=planned_run_index,
+                            total_runs=startup_selection.run_count,
+                            succeeded=False,
+                            error_message=error_message,
+                        )
+                    )
+
+        if run_control is not None and run_control.should_abort_batch():
+            log_event("QUEUE", "Stopping the queue because an abort was requested.")
+            break
+
+        log_event("QUEUE", f"Finished item {queue_index}/{total_queue_items}.")
+
+    set_current_run_label("queue summary")
+    log_event(
+        "QUEUE",
+        f"Queue execution finished. Completed batch result(s): {len(queue_results)} "
+        f"of {total_queue_items} queued item(s).",
+    )
+    return queue_results
+
+
 def main() -> None:
     try:
         enforce_runtime_license()
         while True:
-            startup_selection = prompt_for_startup_selection()
-            start_new_batch_requested = show_batch_monitor_and_run(startup_selection)
+            startup_selections = prompt_for_startup_selection()
+            start_new_batch_requested = show_batch_monitor_and_run(startup_selections)
             if not start_new_batch_requested:
                 break
     except KeyboardInterrupt:
