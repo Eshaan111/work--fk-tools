@@ -39,7 +39,7 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait as SeleniumWebDriverWait
 
 from licensing.license_verifier import LicenseValidationError, validate_license
 from app_paths import get_app_root
@@ -49,6 +49,9 @@ PROJECT_ROOT = get_app_root()
 CONFIG_PATH = PROJECT_ROOT / "config.json"
 WINDOWS_JOB_OBJECTS: list[object] = []
 ACTIVE_WEBDRIVERS: list[webdriver.Firefox] = []
+WEBDRIVER_SHUTDOWN_LOCK = threading.Lock()
+WEBDRIVER_SHUTDOWN_EVENTS: dict[int, threading.Event] = {}
+WEBDRIVER_SHUTDOWN_COMPLETED: set[int] = set()
 
 
 def register_windows_job_kill_on_close(process_id: int) -> object | None:
@@ -131,6 +134,8 @@ def register_windows_job_kill_on_close(process_id: int) -> object | None:
 
 
 def track_webdriver_for_shutdown(driver: webdriver.Firefox) -> None:
+    with WEBDRIVER_SHUTDOWN_LOCK:
+        WEBDRIVER_SHUTDOWN_COMPLETED.discard(id(driver))
     ACTIVE_WEBDRIVERS.append(driver)
     service_process = getattr(getattr(driver, "service", None), "process", None)
     service_pid = getattr(service_process, "pid", None)
@@ -149,6 +154,24 @@ def quit_webdriver_safely(
     driver: webdriver.Firefox,
     timeout_seconds: float = 5.0,
 ) -> None:
+    driver_identity = id(driver)
+    with WEBDRIVER_SHUTDOWN_LOCK:
+        if driver_identity in WEBDRIVER_SHUTDOWN_COMPLETED:
+            return
+        existing_shutdown_event = WEBDRIVER_SHUTDOWN_EVENTS.get(driver_identity)
+        if existing_shutdown_event is None:
+            shutdown_event = threading.Event()
+            WEBDRIVER_SHUTDOWN_EVENTS[driver_identity] = shutdown_event
+            owns_shutdown = True
+        else:
+            shutdown_event = existing_shutdown_event
+            owns_shutdown = False
+
+    if not owns_shutdown:
+        shutdown_event.wait(timeout_seconds + 2.5)
+        return
+
+    log_event("BOOT", "WebDriver shutdown started.")
     quit_finished = threading.Event()
 
     def quit_driver() -> None:
@@ -159,27 +182,31 @@ def quit_webdriver_safely(
         finally:
             quit_finished.set()
 
-    quit_thread = threading.Thread(target=quit_driver, daemon=True)
-    quit_thread.start()
-    if quit_finished.wait(timeout_seconds):
-        return
-
-    log_event(
-        "BOOT",
-        "WebDriver quit did not return after "
-        f"{timeout_seconds:g} seconds; treating the browser as already closed.",
-    )
-    service_process = getattr(getattr(driver, "service", None), "process", None)
-    if service_process is None or service_process.poll() is not None:
-        return
     try:
-        service_process.terminate()
-        service_process.wait(timeout=2)
-    except Exception:
-        try:
-            service_process.kill()
-        except Exception:
-            pass
+        quit_thread = threading.Thread(target=quit_driver, daemon=True)
+        quit_thread.start()
+        if not quit_finished.wait(timeout_seconds):
+            log_event(
+                "BOOT",
+                "WebDriver quit did not return after "
+                f"{timeout_seconds:g} seconds; terminating the driver service.",
+            )
+            service_process = getattr(getattr(driver, "service", None), "process", None)
+            if service_process is not None and service_process.poll() is None:
+                try:
+                    service_process.terminate()
+                    service_process.wait(timeout=2)
+                except Exception:
+                    try:
+                        service_process.kill()
+                    except Exception:
+                        pass
+        log_event("BOOT", "WebDriver shutdown completed.")
+    finally:
+        with WEBDRIVER_SHUTDOWN_LOCK:
+            WEBDRIVER_SHUTDOWN_COMPLETED.add(driver_identity)
+            WEBDRIVER_SHUTDOWN_EVENTS.pop(driver_identity, None)
+        shutdown_event.set()
 
 
 def wait_before_browser_shutdown(
@@ -433,12 +460,14 @@ class RunControl:
 
     def request_abort_current_run(self) -> None:
         self.abort_current_run_event.set()
-        self._close_active_driver()
+        log_event("RUN", "Current-run cancellation flag set; requesting asynchronous browser shutdown.")
+        self._close_active_driver_async()
 
     def request_abort_batch(self) -> None:
         self.abort_batch_event.set()
         self.abort_current_run_event.set()
-        self._close_active_driver()
+        log_event("RUN", "Queue cancellation flag set; requesting asynchronous browser shutdown.")
+        self._close_active_driver_async()
 
     def finish_current_run(self) -> None:
         if not self.abort_batch_event.is_set():
@@ -456,15 +485,46 @@ class RunControl:
         if self.abort_current_run_event.is_set():
             raise RunAbortRequested("Current run aborted by user.")
 
-    def _close_active_driver(self) -> None:
+    def _close_active_driver_async(self) -> None:
         with self._active_driver_lock:
             active_driver = self._active_driver
         if active_driver is None:
+            log_event("RUN", "No active WebDriver is currently registered for shutdown.")
             return
-        try:
-            quit_webdriver_safely(active_driver)
-        except Exception:
-            pass
+
+        def close_driver() -> None:
+            try:
+                quit_webdriver_safely(active_driver)
+            except Exception as exc:
+                log_event("BOOT", f"Asynchronous WebDriver shutdown reported: {exc}")
+
+        threading.Thread(
+            target=close_driver,
+            name="webdriver-abort-shutdown",
+            daemon=True,
+        ).start()
+
+
+def check_driver_abort(driver: webdriver.Firefox) -> None:
+    run_control = getattr(driver, "_full_lc_run_control", None)
+    if isinstance(run_control, RunControl):
+        run_control.check_abort()
+
+
+class WebDriverWait(SeleniumWebDriverWait):
+    def until(self, method: Callable[[webdriver.Firefox], object], message: str = "") -> object:
+        def abort_aware_method(driver: webdriver.Firefox) -> object:
+            check_driver_abort(driver)
+            return method(driver)
+
+        return super().until(abort_aware_method, message)
+
+    def until_not(self, method: Callable[[webdriver.Firefox], object], message: str = "") -> object:
+        def abort_aware_method(driver: webdriver.Firefox) -> object:
+            check_driver_abort(driver)
+            return method(driver)
+
+        return super().until_not(abort_aware_method, message)
 
 
 def add_log_listener(listener: object) -> None:
@@ -2454,6 +2514,7 @@ def show_batch_monitor_and_run(startup_selections: list[StartupSelection]) -> bo
 
     monitor_finished = False
     start_new_batch_requested = False
+    close_requested = False
     poll_after_id: str | None = None
     last_overlay_lift_timestamp = 0.0
     max_log_lines = 600
@@ -2554,6 +2615,12 @@ def show_batch_monitor_and_run(startup_selections: list[StartupSelection]) -> bo
                     root.after(150, close_window)
                 except tk.TclError:
                     poll_after_id = None
+            elif close_requested:
+                log_event("RUN", "Background abort cleanup completed after the monitor was closed.")
+                try:
+                    root.after(0, close_window)
+                except tk.TclError:
+                    poll_after_id = None
             elif result_state["error"] is not None:
                 status_var.set("Queue stopped because of an error. You can review the logs and close this window.")
             elif run_control.should_abort_batch():
@@ -2592,12 +2659,23 @@ def show_batch_monitor_and_run(startup_selections: list[StartupSelection]) -> bo
         close_window()
 
     def close_window() -> None:
-        nonlocal poll_after_id
+        nonlocal poll_after_id, close_requested
         if not widget_exists(root):
             poll_after_id = None
             return
         if not result_state["done"]:
+            close_requested = True
             status_var.set("Close requested while batch is running. Requesting batch abort first...")
+            log_event("RUN", "Monitor close requested; hiding the window while cleanup continues.")
+            try:
+                root.withdraw()
+            except tk.TclError:
+                pass
+            if widget_exists(overlay_window):
+                try:
+                    overlay_window.destroy()
+                except tk.TclError:
+                    pass
             abort_batch()
             return
         remove_log_listener(enqueue_log)
@@ -6874,6 +6952,7 @@ def run_single_listing_session(
         log_event("BOOT", f"Launching Firefox WebDriver for run {run_index}/{total_runs}...")
         driver = build_firefox_driver(config, geckodriver_log_path=geckodriver_log_path)
         if run_control is not None:
+            setattr(driver, "_full_lc_run_control", run_control)
             run_control.set_active_driver(driver)
         log_event("BOOT", f"Firefox WebDriver launched successfully for run {run_index}/{total_runs}.")
     except WebDriverException as exc:
@@ -6945,7 +7024,7 @@ def run_single_listing_session(
     except RunAbortRequested as exc:
         error_message = str(exc)
         write_latest_error(error_message)
-        log_event("RUN", error_message)
+        log_event("RUN", f"Worker acknowledged cancellation: {error_message}")
         session_result.error_message = error_message
         return session_result
     except Exception as exc:
