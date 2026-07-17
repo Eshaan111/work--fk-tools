@@ -19,6 +19,16 @@ SOURCE_COLUMNS = [
     ("Ready to Make", 36),
 ]
 
+XLS_SOURCE_HEADERS = {
+    "FSN": "Flipkart Serial Number",
+    "SKU": "Seller SKU Id",
+    "Product Title": "Product Title",
+    "Package Length (cm)": "Package Length - Length of the package in cms",
+    "Package Breadth (cm)": "Package Breadth - Breadth of the package in cms",
+    "Package Height (cm)": "Package Height - Height of the package in cms",
+    "Package Weight (kg)": "Package Weight - Weight of the package in Kgs",
+}
+
 DEFAULT_TEMPLATE_NAME = "WEIGHT TEMPLATE.xlsx"
 FLAG_COLUMN_NAME = "WRONG_WEIGHT_FLAG"
 CURRENT_CONTEXT_NAME = "current_context.xlsx"
@@ -53,10 +63,33 @@ def classify_kind_of_jeans(sku: str, product_title: str) -> str:
     return "MIX"
 
 
-def read_selected_columns(csv_path: Path) -> list[list[str]]:
+def read_selected_columns(source_path: Path) -> list[list[str]]:
     template_rows_by_kind = load_template_rows_by_kind(Path(__file__).with_name(DEFAULT_TEMPLATE_NAME))
+    if source_path.suffix.lower() == ".xls":
+        source_rows = read_xls_selected_columns(source_path)
+    elif source_path.suffix.lower() == ".csv":
+        source_rows = read_csv_selected_columns(source_path)
+    else:
+        raise ValueError("Unsupported order file type. Select a .csv or .xls file.")
+
     rows: list[list[str]] = []
 
+    for selected_row in source_rows:
+        kind_of_jeans = classify_kind_of_jeans(selected_row[1], selected_row[2])
+        wrong_weight_flag = get_wrong_weight_flag(
+            kind_of_jeans,
+            selected_row[6],
+            template_rows_by_kind,
+        )
+        selected_row.append(kind_of_jeans)
+        selected_row.append(wrong_weight_flag)
+        rows.append(selected_row)
+
+    return rows
+
+
+def read_csv_selected_columns(csv_path: Path) -> list[list[str]]:
+    rows: list[list[str]] = []
     with csv_path.open("r", encoding="utf-8-sig", newline="") as file:
         reader = csv.reader(file)
         header = next(reader, None)
@@ -68,17 +101,63 @@ def read_selected_columns(csv_path: Path) -> list[list[str]]:
             for _, column_number in SOURCE_COLUMNS:
                 index = column_number - 1
                 selected_row.append(normalized_row[index] if index < len(normalized_row) else "")
-            kind_of_jeans = classify_kind_of_jeans(selected_row[1], selected_row[2])
-            wrong_weight_flag = get_wrong_weight_flag(
-                kind_of_jeans,
-                selected_row[6],
-                template_rows_by_kind,
-            )
-            selected_row.append(kind_of_jeans)
-            selected_row.append(wrong_weight_flag)
             rows.append(selected_row)
 
     return rows
+
+
+def read_xls_selected_columns(xls_path: Path) -> list[list[str]]:
+    try:
+        import xlrd
+    except ImportError as exc:
+        raise RuntimeError(
+            "Legacy .xls support requires xlrd. Install it with: python -m pip install xlrd"
+        ) from exc
+
+    workbook = xlrd.open_workbook(str(xls_path), on_demand=True)
+    try:
+        worksheet = workbook.sheet_by_index(0)
+        if worksheet.nrows == 0:
+            return []
+
+        header_indexes = {
+            str(worksheet.cell_value(0, column_index)).strip(): column_index
+            for column_index in range(worksheet.ncols)
+        }
+        missing_headers = [
+            header
+            for header in XLS_SOURCE_HEADERS.values()
+            if header not in header_indexes
+        ]
+        if missing_headers:
+            raise ValueError(
+                "The selected .xls file is missing required headers: "
+                + ", ".join(missing_headers)
+            )
+
+        rows: list[list[str]] = []
+        for row_index in range(2, worksheet.nrows):
+            selected_row = [
+                xls_cell_to_text(
+                    worksheet.cell_value(row_index, header_indexes[XLS_SOURCE_HEADERS[column_name]])
+                )
+                if column_name in XLS_SOURCE_HEADERS
+                else ""
+                for column_name, _ in SOURCE_COLUMNS
+            ]
+            if any(selected_row):
+                rows.append(selected_row)
+        return rows
+    finally:
+        workbook.release_resources()
+
+
+def xls_cell_to_text(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value).strip()
 
 
 def load_template_workbook_details(template_path: Path) -> tuple[dict[str, str], str, ET.Element, ET.Element]:
@@ -396,7 +475,7 @@ class WeightCorrectorApp:
         self.root.resizable(False, False)
 
         self.selected_file = tk.StringVar()
-        self.status_text = tk.StringVar(value="Choose an Order CSV file to begin.")
+        self.status_text = tk.StringVar(value="Choose an Order CSV or XLS file to begin.")
 
         self.build_ui()
 
@@ -413,7 +492,7 @@ class WeightCorrectorApp:
 
         subtitle = tk.Label(
             container,
-            text="Upload an Order CSV file and the app will automatically create current_context.xlsx and WRONG_WEIGHT_FILE.xlsx next to this script.",
+            text="Upload an Order CSV or legacy XLS file and the app will automatically create current_context.xlsx and WRONG_WEIGHT_FILE.xlsx next to this script.",
             font=("Segoe UI", 10),
             wraplength=580,
             justify="left",
@@ -434,9 +513,9 @@ class WeightCorrectorApp:
 
         browse_button = tk.Button(
             file_row,
-            text="Upload Order CSV",
+            text="Upload Order File",
             font=("Segoe UI", 10, "bold"),
-            command=self.process_order_csv,
+            command=self.process_order_file,
             padx=14,
             pady=8,
         )
@@ -452,10 +531,15 @@ class WeightCorrectorApp:
         )
         status_label.pack(anchor="w")
 
-    def process_order_csv(self) -> None:
+    def process_order_file(self) -> None:
         file_path = filedialog.askopenfilename(
-            title="Select Order CSV",
-            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            title="Select Order File",
+            filetypes=[
+                ("Supported order files", "*.csv *.xls"),
+                ("CSV files", "*.csv"),
+                ("Legacy Excel files", "*.xls"),
+                ("All files", "*.*"),
+            ],
         )
         if not file_path:
             self.status_text.set("No file selected.")

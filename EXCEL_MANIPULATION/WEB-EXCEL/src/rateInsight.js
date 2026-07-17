@@ -419,7 +419,17 @@ function appendLog(dataset, action, beforeValues, afterValues, rowCount, extra =
 }
 
 function withUndo(dataset) {
-  return { ...dataset, undoRows: cloneRows(dataset.rows) };
+  const history = [...(dataset.history || []), cloneRows(dataset.rows)].slice(-10);
+  return { ...dataset, history, undoRows: history[history.length - 1] || null };
+}
+
+function targetRowIndexes(dataset, filters, selectedIds) {
+  const allowed = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
+  const requested = new Set(Array.isArray(selectedIds) ? selectedIds : []);
+  if (!requested.size) return [];
+  return dataset.rows
+    .map((row, index) => (allowed.has(row.__orig_index) && requested.has(row.__orig_index) ? index : -1))
+    .filter((index) => index >= 0);
 }
 
 function updateRows(dataset, rowIndexes, updater) {
@@ -455,6 +465,7 @@ export async function loadWorkbook(file) {
       rows: preparedRows,
       sizeOverrides,
       undoRows: null,
+      history: [],
       changeLog: [],
     };
   }
@@ -483,6 +494,7 @@ export async function loadWorkbook(file) {
     rows: rebuildRows(preparedRows, mode, sizeOverrides),
     sizeOverrides,
     undoRows: null,
+    history: [],
     changeLog: [],
   };
 }
@@ -573,12 +585,11 @@ export function setValueColumn(dataset, valueColumn) {
   return { ...dataset, selectedValueColumn: valueColumn };
 }
 
-export function bulkEdit(dataset, filters, modeName, value, capMode, capValue) {
+export function bulkEdit(dataset, filters, modeName, value, capMode, capValue, selectedIds = []) {
   if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Bulk editing is disabled for settlement recommendations files");
   const columns = resolveModeColumns(dataset);
-  const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
-  const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
-  if (!rowIndexes.length) throw new Error("No visible unlocked rows selected");
+  const rowIndexes = targetRowIndexes(dataset, filters, selectedIds);
+  if (!rowIndexes.length) throw new Error("Select at least one visible row first");
   const before = rowIndexes.map((index) => Number(dataset.rows[index][columns.settlement]));
   let next = withUndo(dataset);
   next.rows = updateRows(next, rowIndexes, (row) => {
@@ -595,11 +606,10 @@ export function bulkEdit(dataset, filters, modeName, value, capMode, capValue) {
   return appendLog(next, "Bulk Edit", before, after, rowIndexes.length, `Mode: ${modeName}, Value: ${value}`);
 }
 
-export function setStatus(dataset, filters, status) {
+export function setStatus(dataset, filters, status, selectedIds = []) {
   if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Status changes are disabled for settlement recommendations files");
-  const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
-  const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
-  if (!rowIndexes.length) throw new Error("No visible unlocked rows to update");
+  const rowIndexes = targetRowIndexes(dataset, filters, selectedIds);
+  if (!rowIndexes.length) throw new Error("Select at least one visible row first");
   let next = withUndo(dataset);
   const columns = resolveModeColumns(next);
   const before = rowIndexes.map((index) => Number(next.rows[index][columns.settlement]));
@@ -611,12 +621,11 @@ export function setStatus(dataset, filters, status) {
   return appendLog(next, "Set Status", before, after, rowIndexes.length, `Status: ${status}`);
 }
 
-export function computeDiscount(dataset, filters, yPct, xPct, cap) {
+export function computeDiscount(dataset, filters, yPct, xPct, cap, selectedIds = []) {
   if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Offer calculations are disabled for settlement recommendations files");
   const columns = resolveModeColumns(dataset);
-  const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
-  const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
-  if (!rowIndexes.length) throw new Error("No visible unlocked rows selected");
+  const rowIndexes = targetRowIndexes(dataset, filters, selectedIds);
+  if (!rowIndexes.length) throw new Error("Select at least one visible row first");
   const before = rowIndexes.map((index) => Number(dataset.rows[index][columns.settlement]));
   let next = withUndo(dataset);
   next.rows = updateRows(next, rowIndexes, (row) => {
@@ -631,10 +640,9 @@ export function computeDiscount(dataset, filters, yPct, xPct, cap) {
   return appendLog(next, "Compute Discount", before, after, rowIndexes.length);
 }
 
-export function applyDecision(dataset, filters, thresholds, thresholdMode = "price") {
-  const selected = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
-  const rowIndexes = dataset.rows.map((row, index) => (selected.has(row.__orig_index) ? index : -1)).filter((index) => index >= 0);
-  if (!rowIndexes.length) throw new Error("No visible unlocked rows selected");
+export function applyDecision(dataset, filters, thresholds, thresholdMode = "price", selectedIds = []) {
+  const rowIndexes = targetRowIndexes(dataset, filters, selectedIds);
+  if (!rowIndexes.length) throw new Error("Select at least one visible row first");
 
   if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) {
     const before = rowIndexes.map((index) => Number(dataset.rows[index]["Output Settlement"]) || null);
@@ -682,32 +690,46 @@ export function saveSizeOverride(dataset, filters, sku, size) {
 }
 
 export function undoDataset(dataset) {
-  if (!dataset.undoRows) return dataset;
-  return { ...dataset, rows: cloneRows(dataset.undoRows), undoRows: null };
+  const history = [...(dataset.history || [])];
+  if (!history.length) return dataset;
+  const rows = history.pop();
+  return { ...dataset, rows: cloneRows(rows), history, undoRows: history[history.length - 1] || null, changeLog: dataset.changeLog.slice(0, -1) };
 }
 
-export function exportDataset(dataset) {
-  const rows = cloneRows(dataset.rows)
+export function exportDataset(dataset, options = {}) {
+  const scope = options.scope || "all";
+  const selectedIds = new Set(Array.isArray(options.selectedIds) ? options.selectedIds : []);
+  const filteredIds = new Set(filteredRows(dataset, options.filters || defaultFiltersForDataset(dataset), true).map((row) => row.__orig_index));
+  let sourceRows = dataset.rows;
+  if (scope === "selected") sourceRows = sourceRows.filter((row) => selectedIds.has(row.__orig_index));
+  if (scope === "filtered") sourceRows = sourceRows.filter((row) => filteredIds.has(row.__orig_index));
+  if (!sourceRows.length) throw new Error("There are no rows in the selected export scope");
+  const requestedColumns = Array.isArray(options.columns) ? options.columns.filter(Boolean) : null;
+  const rows = cloneRows(sourceRows)
     .sort((a, b) => a.__orig_index - b.__orig_index)
-    .map(({ __orig_index, __locked, ...row }) => row);
-  const exportRows = dataset.mode === SETTLEMENT_RECOMMENDATION_MODE
+    .map(({ __orig_index, __locked, ...row }) => requestedColumns?.length
+      ? Object.fromEntries(requestedColumns.map((column) => [column, row[column] ?? ""]))
+      : row);
+  const exportRows = dataset.mode === SETTLEMENT_RECOMMENDATION_MODE && !requestedColumns?.length
     ? rows.map((row) => Object.fromEntries(SETTLEMENT_RECOMMENDATION_EXPORT_COLUMNS.map((column) => [column, row[column] ?? ""])))
     : rows;
   const sheet = XLSX.utils.json_to_sheet(exportRows);
 
-  if (dataset.fileType === "csv") {
+  const format = options.format || (dataset.fileType === "csv" ? "csv" : "xlsx");
+  const baseName = String(options.fileName || "WEB_EXCEL_OUTPUT").replace(/\.(csv|xlsx)$/i, "") || "WEB_EXCEL_OUTPUT";
+  if (format === "csv") {
     const csv = XLSX.utils.sheet_to_csv(sheet);
     return {
-      fileName: "PROGRAM_OUTPUTTED.csv",
+      fileName: `${baseName}.csv`,
       blob: new Blob([csv], { type: "text/csv;charset=utf-8" }),
     };
   }
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, sheet, "RateInsight");
+  XLSX.utils.book_append_sheet(workbook, sheet, String(options.sheetName || "Web Excel").slice(0, 31));
   const output = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
   return {
-    fileName: dataset.mode === SETTLEMENT_RECOMMENDATION_MODE ? "SETTLEMENT_RECOMMENDATIONS_OUTPUT.xlsx" : "PROGRAM_OUTPUTTED.xlsx",
+    fileName: `${baseName}.xlsx`,
     blob: new Blob([output], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
   };
 }

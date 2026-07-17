@@ -182,14 +182,11 @@ function evaluateWorkbook(workbook) {
   return next;
 }
 
-function buildWorkbook(workbookFile) {
-  const selectedSheetName = workbookFile.SheetNames.includes(PREMADE_SHEET_NAME)
-    ? PREMADE_SHEET_NAME
-    : workbookFile.SheetNames[0];
-  const sheetNames = [selectedSheetName];
+function buildWorkbook(workbookFile, title = "Workbook.xlsx") {
+  const sheetNames = [...workbookFile.SheetNames];
   const sheets = Object.fromEntries(sheetNames.map((sheetName) => [sheetName, buildSheet(sheetName, workbookFile.Sheets[sheetName])]));
   return evaluateWorkbook({
-    title: "Hisaab.xlsx",
+    title,
     sheetNames,
     sheets,
   });
@@ -199,7 +196,12 @@ export async function loadPremadeWorkbook() {
   const response = await fetch(hisaabWorkbookUrl);
   const arrayBuffer = await response.arrayBuffer();
   const workbookFile = XLSX.read(arrayBuffer, { type: "array", cellFormula: true, cellNF: true, cellStyles: true, cellText: true });
-  return buildWorkbook(workbookFile);
+  return buildWorkbook(workbookFile, "Hisaab.xlsx");
+}
+
+export async function loadHisaabWorkbookFile(file) {
+  const workbookFile = XLSX.read(await file.arrayBuffer(), { type: "array", cellFormula: true, cellNF: true, cellStyles: true, cellText: true });
+  return buildWorkbook(workbookFile, file.name || "Workbook.xlsx");
 }
 
 export function updatePremadeWorkbookCell(workbook, sheetName, address, inputValue) {
@@ -213,6 +215,26 @@ export function updatePremadeWorkbookCell(workbook, sheetName, address, inputVal
 
 export function getPremadeSheet(workbook, sheetName) {
   return workbook?.sheets?.[sheetName] || null;
+}
+
+export function exportHisaabWorkbook(workbook) {
+  const output = XLSX.utils.book_new();
+  for (const sheetName of workbook.sheetNames) {
+    const sheet = workbook.sheets[sheetName];
+    const worksheet = {};
+    for (const row of sheet.rows) {
+      for (const cell of row) {
+        if (cell.value === "" && !cell.formula) continue;
+        worksheet[cell.address] = cell.formula
+          ? { t: typeof cell.value === "number" ? "n" : "s", v: cell.value, f: cell.formula, z: cell.format || undefined }
+          : { t: typeof cell.value === "number" ? "n" : "s", v: cell.value, z: cell.format || undefined };
+      }
+    }
+    worksheet["!ref"] = XLSX.utils.encode_range(sheet.range);
+    XLSX.utils.book_append_sheet(output, worksheet, sheetName.slice(0, 31));
+  }
+  const data = XLSX.write(output, { bookType: "xlsx", type: "array" });
+  return { fileName: String(workbook.title || "Hisaab-edited.xlsx").replace(/\.xlsx$/i, "") + "-edited.xlsx", blob: new Blob([data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }) };
 }
 
 export { formatCellDisplay, formatEditableValue, PREMADE_SHEET_NAME };

@@ -16,7 +16,7 @@ from tkinter import messagebox, ttk
 from datetime import datetime
 from dataclasses import dataclass, field
 from pathlib import Path
-from time import sleep
+from time import monotonic, sleep
 from typing import Callable
 
 import msvcrt
@@ -145,11 +145,76 @@ def untrack_webdriver(driver: webdriver.Firefox) -> None:
         pass
 
 
+def quit_webdriver_safely(
+    driver: webdriver.Firefox,
+    timeout_seconds: float = 5.0,
+) -> None:
+    quit_finished = threading.Event()
+
+    def quit_driver() -> None:
+        try:
+            driver.quit()
+        except Exception:
+            pass
+        finally:
+            quit_finished.set()
+
+    quit_thread = threading.Thread(target=quit_driver, daemon=True)
+    quit_thread.start()
+    if quit_finished.wait(timeout_seconds):
+        return
+
+    log_event(
+        "BOOT",
+        "WebDriver quit did not return after "
+        f"{timeout_seconds:g} seconds; treating the browser as already closed.",
+    )
+    service_process = getattr(getattr(driver, "service", None), "process", None)
+    if service_process is None or service_process.poll() is not None:
+        return
+    try:
+        service_process.terminate()
+        service_process.wait(timeout=2)
+    except Exception:
+        try:
+            service_process.kill()
+        except Exception:
+            pass
+
+
+def wait_before_browser_shutdown(
+    delay_seconds: int,
+    run_control: RunControl | None = None,
+) -> None:
+    bounded_delay = max(int(delay_seconds), 0)
+    if bounded_delay == 0:
+        log_event("BOOT", "Browser close delay is 0 seconds; closing now.")
+        return
+
+    deadline = monotonic() + bounded_delay
+    last_reported_seconds: int | None = None
+    while True:
+        if run_control is not None:
+            run_control.check_abort()
+        remaining_seconds = max(0, int(deadline - monotonic() + 0.999))
+        if remaining_seconds != last_reported_seconds and remaining_seconds > 0:
+            log_event(
+                "BOOT",
+                f"Browser close countdown: {remaining_seconds} second(s) remaining.",
+            )
+            last_reported_seconds = remaining_seconds
+        if remaining_seconds <= 0:
+            break
+        sleep(min(0.2, max(deadline - monotonic(), 0)))
+
+    log_event("BOOT", "Browser close wait complete; closing browser now.")
+
+
 def cleanup_active_webdrivers() -> None:
     while ACTIVE_WEBDRIVERS:
         driver = ACTIVE_WEBDRIVERS.pop()
         try:
-            driver.quit()
+            quit_webdriver_safely(driver)
         except Exception:
             pass
 
@@ -397,7 +462,7 @@ class RunControl:
         if active_driver is None:
             return
         try:
-            active_driver.quit()
+            quit_webdriver_safely(active_driver)
         except Exception:
             pass
 
@@ -4029,9 +4094,48 @@ def fill_brand_name(driver: webdriver.Firefox, brand_name: str) -> None:
         "//button[@data-testid='button' and normalize-space()='Check Brand']",
     )
 
-    brand_input = wait_for_clickable(driver, brand_input_locator)
-    brand_input.clear()
-    brand_input.send_keys(brand_name)
+    def visible_brand_input(active_driver: webdriver.Firefox) -> WebElement | bool:
+        for candidate in active_driver.find_elements(*brand_input_locator):
+            try:
+                if candidate.is_displayed() and candidate.is_enabled():
+                    return candidate
+            except StaleElementReferenceException:
+                continue
+        return False
+
+    last_error: Exception | None = None
+    for attempt in range(1, 4):
+        try:
+            brand_input = WebDriverWait(driver, 20).until(visible_brand_input)
+            driver.execute_script(
+                "window.focus(); "
+                "arguments[0].scrollIntoView({block: 'center', inline: 'nearest'}); "
+                "arguments[0].focus(); "
+                "arguments[0].click();",
+                brand_input,
+            )
+            brand_input.click()
+            brand_input.send_keys(Keys.CONTROL, "a")
+            brand_input.send_keys(Keys.BACKSPACE)
+            brand_input.send_keys(brand_name)
+            WebDriverWait(driver, 5).until(
+                lambda _driver: str(brand_input.get_attribute("value") or "").strip()
+                == brand_name
+            )
+            break
+        except (StaleElementReferenceException, TimeoutException, WebDriverException) as exc:
+            last_error = exc
+            log_event(
+                "LISTING",
+                f"Brand input focus/type attempt {attempt}/3 failed with "
+                f"{exc.__class__.__name__}; retrying.",
+            )
+            sleep(0.5)
+    else:
+        raise TimeoutException(
+            f"Could not focus and fill the Brand input after 3 attempts: {last_error}"
+        )
+
     log_event("LISTING", f"Entered brand name: {brand_name}")
 
     check_brand_button = wait_for_clickable(driver, check_brand_button_locator)
@@ -6756,11 +6860,14 @@ def run_single_listing_session(
         final_action = resolve_final_listing_action(config.final_listing_action)
         if final_action == "send_to_qc":
             wait_for_changes_saved_toast_appearances(driver, pause_controller, config, required_appearances=1)
-            log_event("BOOT", "Waiting 5 seconds after the Send to QC success toast before closing browser.")
-            sleep(5)
+            log_event(
+                "BOOT",
+                f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds after the Send to QC "
+                "success toast before closing browser.",
+            )
         else:
             log_event("BOOT", f"Waiting {SUCCESS_CLOSE_DELAY_SECONDS} seconds before closing browser.")
-            sleep(SUCCESS_CLOSE_DELAY_SECONDS)
+        wait_before_browser_shutdown(SUCCESS_CLOSE_DELAY_SECONDS, run_control)
 
         session_result.succeeded = True
         return session_result
@@ -6796,7 +6903,7 @@ def run_single_listing_session(
     finally:
         pause_controller.stop()
         try:
-            driver.quit()
+            quit_webdriver_safely(driver)
         finally:
             untrack_webdriver(driver)
             if run_control is not None:
