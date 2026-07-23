@@ -373,6 +373,7 @@ function App() {
   const [sort, setSort] = useState({ column: "", direction: "asc" });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const fileInputRef = useRef(null);
+  const selectRangeMatchesRef = useRef(false);
 
   useEffect(() => {
     if (!dataset) {
@@ -387,8 +388,24 @@ function App() {
   }, [dataset, filters]);
 
   useEffect(() => {
-    setSelectedIds([]);
-  }, [filters]);
+    if (!dataset) {
+      setSelectedIds([]);
+      selectRangeMatchesRef.current = false;
+      return;
+    }
+
+    if (selectRangeMatchesRef.current && filters.selectedRange) {
+      const matchingIds = createSnapshot(dataset, filters).matchingRowIds || [];
+      setSelectedIds(matchingIds);
+      setNotice({
+        type: "success",
+        message: `${matchingIds.length.toLocaleString()} rows in the selected price range are ready in Review & Edit.`,
+      });
+    } else {
+      setSelectedIds([]);
+    }
+    selectRangeMatchesRef.current = false;
+  }, [dataset, filters]);
 
   useEffect(() => {
     setOfferConfig((current) => ({
@@ -529,6 +546,7 @@ function App() {
   }
 
   function handleRangeChange(nextRange) {
+    selectRangeMatchesRef.current = Boolean(nextRange);
     setFilters((current) => ({ ...current, selectedRange: nextRange ? [Math.min(nextRange[0], nextRange[1]), Math.max(nextRange[0], nextRange[1])] : null }));
   }
 
@@ -580,7 +598,7 @@ function App() {
         {renderFilterPanel()}
         <section className="metrics-grid">{cards.map((card) => <div className="metric-card" key={card.key}><div className="metric-label">{card.label}</div><div className="metric-value">{card.value}</div><div className="metric-detail">{card.detail}</div></div>)}</section>
         <section className="content-grid">
-          <div className="panel chart-panel"><div className="panel-head"><div><div className="panel-title">{activeMode.valueLabel} Distribution <HelpTip text={`Drag across the graph to select a ${activeMode.valueShort} band. The dashboard summary and listing table update to that band.`} /></div><div className="panel-subtitle">{`Interactive view of the currently visible ${activeMode.valueShort} values.`}</div></div><button className="ghost-button" disabled={!dataset} onClick={() => setFilters((c) => ({ ...c, selectedRange: null }))}>Reset Selection</button></div><div className="chart-wrap"><MiniLineChart data={chartData} selectedRange={filters.selectedRange} onRangeChange={handleRangeChange} /></div></div>
+          <div className="panel chart-panel"><div className="panel-head"><div><div className="panel-title">{activeMode.valueLabel} Distribution <HelpTip text={`Drag across the graph to select a ${activeMode.valueShort} band. Every matching row is selected automatically in Review & Edit.`} /></div><div className="panel-subtitle">{`Interactive view of the currently visible ${activeMode.valueShort} values.`}</div></div><button className="ghost-button" disabled={!dataset} onClick={() => handleRangeChange(null)}>Reset Selection</button></div><div className="chart-wrap"><MiniLineChart data={chartData} selectedRange={filters.selectedRange} onRangeChange={handleRangeChange} /></div></div>
           <div className="panel"><div className="panel-head"><div><div className="panel-title">{activeMode.valueLabel} Summary</div><div className="panel-subtitle">{`Counts, ${activeMode.valueShort} selection stats, and active inactive matrix.`}</div></div></div><div className="summary-stack"><div className="summary-box">{dashboard?.summary?.rowCountText || "Loaded: 0 | Visible: 0 | Export: 0"}</div><div className="summary-box">Account: {dashboard?.accountName || "Unknown"}</div><div className="summary-box">Mode value source: {activeMode.valueLabel}</div><div className="summary-box">{`${activeMode.valueLabel} selection range: ${dashboard?.summary?.selectionRange ? `${dashboard.summary.selectionRange[0].toFixed(2)} to ${dashboard.summary.selectionRange[1].toFixed(2)}` : "None"}`}</div><div className="summary-box">{dashboard?.summary?.selectionStats?.label || "No Selection"}</div><table className="summary-table"><thead><tr><th>Status</th><th>Count</th><th>Sizes</th></tr></thead><tbody>{(dashboard?.summary?.statusMatrix || []).map((row) => <tr key={row.status}><td>{row.status}</td><td>{row.count}</td><td>{row.sizes?.length ? row.sizes.join(", ") : "-"}</td></tr>)}</tbody></table></div></div>
         </section>
         <section className="pie-grid">

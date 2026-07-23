@@ -17,8 +17,9 @@ const ORDER_CSV_VALUE_COLUMNS = ["Price inc. FKMP Contribution & Subsidy", "Invo
 const FALLBACK_KIND_DEFINITIONS = [
   { key: "ICE", label: "ICE final price floor", defaultThreshold: "469", rules: [{ skuIncludesAny: ["ice", "blue"] }] },
   { key: "BEIGE", label: "BEIGE final price floor", defaultThreshold: "459", rules: [{ skuIncludesAny: ["beige", "cream"] }] },
+  { key: "WHITE-BAGGY", label: "White BAGGY floor", defaultThreshold: "429", rules: [{ skuIncludesAll: ["white", "baggy"] }, { skuIncludesAll: ["white"], titleIncludesAny: ["relaxed"] }] },
   { key: "WHITE", label: "WHITE final price floor", defaultThreshold: "389", rules: [{ skuIncludesAny: ["white"] }] },
-  { key: "BLACK-BAGGY", label: "BLACK BAGGY floor", defaultThreshold: "429", rules: [{ skuIncludesAny: ["baggy"] }, { skuIncludesAll: ["black"], titleIncludesAny: ["relaxed"] }] },
+  { key: "BLACK-BAGGY", label: "BLACK BAGGY floor", defaultThreshold: "429", rules: [{ skuIncludesAll: ["black", "baggy"] }, { skuIncludesAll: ["black"], titleIncludesAny: ["relaxed"] }] },
   { key: "BLACK-PLAIN", label: "BLACK PLAIN floor", defaultThreshold: "399", rules: [{ skuIncludesAny: ["black"] }] },
   { key: "MIX", label: "MIX floor", defaultThreshold: "469", match: {} }
 ];
@@ -46,6 +47,7 @@ export const THRESHOLD_DEFAULTS = Object.fromEntries((KIND_DEFINITIONS.length ? 
 export const SETTLEMENT_THRESHOLD_DEFAULTS = {
   ICE: "360",
   BEIGE: "369",
+  "WHITE-BAGGY": "319",
   WHITE: "283",
   "BLACK-BAGGY": "319",
   "BLACK-PLAIN": "288",
@@ -57,6 +59,7 @@ export const SETTLEMENT_THRESHOLD_LABELS = {
   ...THRESHOLD_LABELS,
   ICE: "ICE settlement ceiling",
   BEIGE: "BEIGE settlement ceiling",
+  "WHITE-BAGGY": "White BAGGY settlement ceiling",
   WHITE: "White settlement ceiling",
   Trouser: "Trouser settlement ceiling",
   "BLACK-BAGGY": "BB settlement ceiling",
@@ -546,6 +549,7 @@ export function createSnapshot(dataset, rawFilters) {
     filterOptions: buildOptions(dataset),
     columns: rowColumns,
     rows: exported.slice(0, 400),
+    matchingRowIds: exported.map((row) => row.__orig_index),
     visibleCount: visible.length,
     exportCount: exported.length,
     chart,

@@ -825,6 +825,44 @@ def copy_full_chat_text_once() -> str:
     return get_clipboard_text()
 
 
+def find_latest_prompt_end(full_chat_text: str, prompt_text: str) -> int | None:
+    """Return the end offset of the latest submitted prompt in copied chat text."""
+    if not full_chat_text or not prompt_text:
+        return None
+
+    exact_prompt_index = full_chat_text.rfind(prompt_text)
+    if exact_prompt_index != -1:
+        return exact_prompt_index + len(prompt_text)
+
+    # Copied ChatGPT transcripts can collapse whitespace or corrupt a character
+    # inside a long prompt. Its final words are stable ASCII in both templates,
+    # so use a whitespace-tolerant tail anchor without losing the raw-text
+    # offset needed to isolate the current response.
+    prompt_words = prompt_text.split()
+    prompt_tail_words = prompt_words[-24:]
+    prompt_tail = " ".join(prompt_tail_words)
+    if len(prompt_tail) < 80:
+        return None
+
+    tail_pattern = r"\s+".join(re.escape(word) for word in prompt_tail_words)
+    tail_matches = list(
+        re.finditer(tail_pattern, full_chat_text, flags=re.IGNORECASE)
+    )
+    if not tail_matches:
+        return None
+    return tail_matches[-1].end()
+
+
+def get_response_after_latest_prompt(
+    full_chat_text: str,
+    prompt_text: str,
+) -> str | None:
+    prompt_end = find_latest_prompt_end(full_chat_text, prompt_text)
+    if prompt_end is None:
+        return None
+    return full_chat_text[prompt_end:].strip()
+
+
 def wait_for_stable_full_chat_text(
     prompt_text: str = "",
     timeout_started_at: float | None = None,
@@ -841,8 +879,15 @@ def wait_for_stable_full_chat_text(
         current_copy = copy_full_chat_text_once()
         print(f"Captured full chat copy attempt {attempt}.")
         is_stable_copy = bool(current_copy and previous_copy == current_copy)
-        has_ideas = bool(parse_ideas(current_copy))
-        lower_copy = current_copy.casefold() if current_copy else ""
+        current_response = (
+            get_response_after_latest_prompt(current_copy, prompt_text)
+            if prompt_text
+            else current_copy
+        )
+        has_ideas = bool(
+            current_response is not None and parse_ideas(current_response)
+        )
+        lower_copy = current_response.casefold() if current_response else ""
         still_in_progress = any(
             phrase in lower_copy for phrase in IDEA_RESPONSE_IN_PROGRESS_PHRASES
         )
@@ -1138,6 +1183,13 @@ def save_current_run_idea(idea: BackgroundIdea) -> None:
 
 def extract_latest_output(full_chat_text: str, prompt_text: str) -> str:
     normalized_full_chat = full_chat_text.replace("\r\n", "\n").strip()
+    current_response = get_response_after_latest_prompt(
+        normalized_full_chat,
+        prompt_text,
+    )
+    if current_response is not None:
+        return strip_duplicated_prompt_prefix(current_response, prompt_text)
+
     previous_full_chat = load_existing_text(LAST_FULL_CHAT_PATH)
     previous_outputs = load_existing_text(ALL_RESPONSES_PATH)
 
@@ -1366,17 +1418,14 @@ def has_generated_image_confirmation(
     full_chat_text: str,
     generation_prompt_text: str,
 ) -> bool:
-    normalized_chat = " ".join(full_chat_text.split())
-    normalized_prompt = " ".join(generation_prompt_text.split())
-    if not normalized_chat or not normalized_prompt:
-        return False
-
-    prompt_index = normalized_chat.rfind(normalized_prompt)
-    if prompt_index == -1:
-        return False
-
-    trailing_text = normalized_chat[prompt_index + len(normalized_prompt):]
-    return "generated image:" in trailing_text.casefold()
+    current_response = get_response_after_latest_prompt(
+        full_chat_text,
+        generation_prompt_text,
+    )
+    return bool(
+        current_response
+        and "generated image:" in current_response.casefold()
+    )
 
 
 def chatgpt_answering_pixel_matches() -> tuple[bool, tuple[int, int, int]]:
@@ -1432,6 +1481,10 @@ def wait_for_image_generation_completion(
                 f"the configured terminal phrase: {abort_phrase!r}"
             )
         is_stable_copy = bool(current_copy and previous_copy == current_copy)
+        current_response = get_response_after_latest_prompt(
+            current_copy,
+            generation_prompt_text,
+        )
         has_generated_confirmation = has_generated_image_confirmation(
             current_copy,
             generation_prompt_text,
@@ -1439,7 +1492,8 @@ def wait_for_image_generation_completion(
 
         if (
             is_stable_copy
-            and not is_image_generation_in_progress(current_copy)
+            and current_response is not None
+            and not is_image_generation_in_progress(current_response)
             and has_generated_confirmation
         ):
             print(
@@ -1565,7 +1619,7 @@ def run_generation_prompt_for_remaining_images(
     image_paths: list[Path],
     generation_prompt_text: str,
     product_kind: str,
-) -> None:
+) -> bool:
     if IMAGE_GENERATION_VERIFICATION_LIMIT == -1:
         target_verification_count = len(image_paths)
     elif IMAGE_GENERATION_VERIFICATION_LIMIT < -1:
@@ -1585,8 +1639,8 @@ def run_generation_prompt_for_remaining_images(
         beep_all_images_generation_complete()
         save_generated_images_to_output_folder()
         time.sleep(POST_SAVE_EXTRACTION_WAIT_SECONDS)
-        extract_generated_images_from_latest_saved_html(product_kind)
-        return
+        output_dir = extract_generated_images_from_latest_saved_html(product_kind)
+        return output_dir is not None
 
     print(
         f"Will verify {target_verification_count} generated image(s) before the final beep/save flow."
@@ -1645,7 +1699,8 @@ def run_generation_prompt_for_remaining_images(
     beep_all_images_generation_complete()
     save_generated_images_to_output_folder()
     time.sleep(POST_SAVE_EXTRACTION_WAIT_SECONDS)
-    extract_generated_images_from_latest_saved_html(product_kind)
+    output_dir = extract_generated_images_from_latest_saved_html(product_kind)
+    return successful_count > 0 and output_dir is not None
 
 
 def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> bool:
@@ -1687,41 +1742,49 @@ def run_chatgpt_manual_browser_flow(context: ProductPromptContext) -> bool:
         context.prompt_text,
         prompt_submitted_at,
     )
-    if latest_output:
-        ideas = save_parsed_idea_results(latest_output, context.existing_phrases)
-        print("Captured latest output successfully.")
-        if ideas:
-            new_titles = [idea.title for idea in get_new_ideas(ideas, context.existing_phrases)]
-            if new_titles:
-                print("Ideas not found in Excel:")
-                for title in new_titles:
-                    print(f"- {title}")
-
-            current_idea = choose_current_idea(ideas, context.existing_phrases)
-            generation_prompt_text = prepare_current_generation_prompt(
-                current_idea,
-                context.product_color,
-            )
-            # beep_ready_for_generation_prompt()
-
-            print(f"Selected CURRENT IDEA: {current_idea.title}")
-            # print(
-            #     "Image generation prompt is ready. Press the Right Arrow key to paste the generation prompt and image."
-            # )
-            # wait_for_start_hotkey()
-            append_phrase_to_workbook(context.product_kind, current_idea.title)
-            save_current_run_idea(current_idea)
-            print(f"Saved current run idea JSON to: {CURRENT_RUN_IDEA_PATH}")
-            run_generation_prompt_for_remaining_images(
-                context.image_paths,
-                generation_prompt_text,
-                context.product_kind,
-            )
-        else:
-            print("No parsed ideas were found in the latest output.")
-    else:
+    if not latest_output:
         print("No new latest output text could be isolated from the copied conversation.")
+        return False
 
+    ideas = save_parsed_idea_results(latest_output, context.existing_phrases)
+    print("Captured latest output successfully.")
+    if not ideas:
+        print("No parsed ideas were found in the latest output.")
+        return False
+
+    new_titles = [idea.title for idea in get_new_ideas(ideas, context.existing_phrases)]
+    if new_titles:
+        print("Ideas not found in Excel:")
+        for title in new_titles:
+            print(f"- {title}")
+
+    current_idea = choose_current_idea(ideas, context.existing_phrases)
+    generation_prompt_text = prepare_current_generation_prompt(
+        current_idea,
+        context.product_color,
+    )
+    # beep_ready_for_generation_prompt()
+
+    print(f"Selected CURRENT IDEA: {current_idea.title}")
+    # print(
+    #     "Image generation prompt is ready. Press the Right Arrow key to paste the generation prompt and image."
+    # )
+    # wait_for_start_hotkey()
+    save_current_run_idea(current_idea)
+    print(f"Saved current run idea JSON to: {CURRENT_RUN_IDEA_PATH}")
+    generation_succeeded = run_generation_prompt_for_remaining_images(
+        context.image_paths,
+        generation_prompt_text,
+        context.product_kind,
+    )
+    if not generation_succeeded:
+        print(
+            "Image generation did not produce a verified, extracted result. "
+            "Leaving the idea unmarked so this cycle can retry."
+        )
+        return False
+
+    append_phrase_to_workbook(context.product_kind, current_idea.title)
     return True
 
 

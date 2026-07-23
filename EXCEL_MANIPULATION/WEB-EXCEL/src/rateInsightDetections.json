@@ -50,6 +50,20 @@
       ]
     },
     {
+      "key": "WHITE-BAGGY",
+      "label": "White BAGGY floor",
+      "defaultThreshold": "429",
+      "rules": [
+        {
+          "skuIncludesAll": ["white", "baggy"]
+        },
+        {
+          "skuIncludesAll": ["white"],
+          "titleIncludesAny": ["relaxed"]
+        }
+      ]
+    },
+    {
       "key": "WHITE",
       "label": "WHITE final price floor",
       "defaultThreshold": "389",
