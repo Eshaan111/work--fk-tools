@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260802-093107-018511",
+  "label_number": 121,
+  "order_id": "OD438243841499916100",
+  "sku": "FB-34-Black-Baggy-Plain-Jeans-BEPJ-3XKGW02",
+  "product": "GENZ VANE Relaxed Fit Men Black Jeans",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0931 hrs, 02/08/26",
+  "awb": "FMPP4180159056",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 34,
+  "sort_tag": "BLACK-BAGGY-34",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260802-093107-018511\\121-OD438243841499916100.zpl",
+  "preview_file": null
+}

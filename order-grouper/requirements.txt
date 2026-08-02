@@ -2,3 +2,7 @@ openpyxl
 PyAutoGUI
 pynput
 selenium
+PyMuPDF
+Pillow
+pytesseract
+pywin32

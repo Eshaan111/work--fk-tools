@@ -1,1 +1,1 @@
-Queue item 1/2 failed before it could finish: simulated setup failure
+Batch aborted by user.

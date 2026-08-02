@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260802-093709-403672",
+  "label_number": 50,
+  "order_id": "OD338246176045453400",
+  "sku": "F-30-CREAM-BAGGY-JEANS-PLAIN-CRE-51651DW-328",
+  "product": "INDIVANE Regular Men Beige Jeans 30 CRE",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0937 hrs, 02/08/26",
+  "awb": "FMPP4180643458",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 30,
+  "sort_tag": "BEIGE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260802-093709-403672\\050-OD338246176045453400.zpl",
+  "preview_file": null
+}

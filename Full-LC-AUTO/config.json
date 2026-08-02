@@ -39,7 +39,7 @@
                 "thumbnail_3",
                 "thumbnail_4"
             ],
-            "image_upload_verify_timeout_seconds": 60,
+            "image_upload_verify_timeout_seconds": 30,
             "image_upload_retry_passes": 2,
             "success_close_delay_seconds": 5,
             "monitor_poll_interval_ms": 250,

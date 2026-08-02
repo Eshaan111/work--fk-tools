@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260801-093314-338225",
+  "label_number": 18,
+  "order_id": "OD438241189819777100",
+  "sku": null,
+  "product": null,
+  "quantity": null,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0933 hrs, 01/08/26",
+  "awb": "FMPC6352940430",
+  "fit": "PLAIN",
+  "color": null,
+  "size": null,
+  "sort_tag": "MIX",
+  "is_mix": true,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260801-093314-338225\\018-OD438241189819777100.zpl",
+  "preview_file": null
+}

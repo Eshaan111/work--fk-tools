@@ -1,0 +1,10 @@
+{
+  "job_id": "20260728-115112-996573",
+  "received_at": "2026-07-28T06:21:12+00:00",
+  "peer": "127.0.0.1:62910",
+  "format": "zpl",
+  "byte_count": 3196,
+  "sha256": "9d178aed847a1e570331be7e64538d83154d1bdd91cf93754b7ce113f2afe96c",
+  "starts_with_hex": "0d 0a 20 20 20 20 20 20 20 20 20 20 20 20 5e 58 41 0d 0a 7e 54 41 30 30 30 0d 0a 7e 4a 53 4e 0d 0a 5e 4c 54 30 0d 0a 5e 4d 4e 57 0d 0a 5e 4d 54 44 0d 0a 5e 50 4f 4e 0d 0a 5e 50 4d 4e 0d 0a 5e",
+  "raw_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\raw\\raw-20260728-115112-996573.zpl"
+}

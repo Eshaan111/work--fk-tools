@@ -1,0 +1,17 @@
+[
+  {
+    "print_position": 1,
+    "kind": "category_separator",
+    "separator_text": "WHITE-PLAIN-32",
+    "sort_tag": "WHITE-PLAIN-32"
+  },
+  {
+    "print_position": 2,
+    "kind": "flipkart_label",
+    "original_label_number": 1,
+    "order_id": "OD338236040649056100",
+    "sku": "FJS-S-32-White-Plain-Jeans-WPJ-845927301547041411",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "name": "flipkart-zpl-preview",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "zpl-renderer-js": "4.0.0"
+  }
+}

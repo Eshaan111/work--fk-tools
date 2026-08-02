@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260801-092417-704473",
+  "label_number": 83,
+  "order_id": "OD438235438599804100",
+  "sku": "V637_11-Baggy-BK-52_Black_32",
+  "product": "Prabhuji Regular Men Black Jeans 32 11",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0924 hrs, 01/08/26",
+  "awb": "FMPC6351130964",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 32,
+  "sort_tag": "BLACK-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260801-092417-704473\\083-OD438235438599804100.zpl",
+  "preview_file": null
+}

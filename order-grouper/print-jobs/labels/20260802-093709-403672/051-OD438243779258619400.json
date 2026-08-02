@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260802-093709-403672",
+  "label_number": 51,
+  "order_id": "OD438243779258619400",
+  "sku": "S-F-28-BLACK-PLAIN-JEANS-054981051651000-A161",
+  "product": "INDIVANE Men Black Jeans 28 BPJ-NY26C",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0937 hrs, 02/08/26",
+  "awb": "FMPC6353929731",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260802-093709-403672\\051-OD438243779258619400.zpl",
+  "preview_file": null
+}

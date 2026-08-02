@@ -1,0 +1,25 @@
+{
+  "physical_printer": {
+    "queue_name": "TSC TTP-244 Pro",
+    "driver_name": "TSC TTP-244 Pro",
+    "port_name": "USB001",
+    "port_description": "TSCTTP-244 Pro",
+    "port_monitor": "Dynamic Print Monitor",
+    "usb_device_id": "USB\\VID_1203&PID_0172\\000001",
+    "usb_print_id": "USBPRINT\\TSCTTP-244_PRO\\6&2B02C22&2&USB001"
+  },
+  "flipkart_capture_queue": {
+    "queue_name": "PDFCreator",
+    "driver_name": "TSC TTP-244 Pro",
+    "port_name": "FlipkartRawCapturePort",
+    "host": "127.0.0.1",
+    "port": 9100,
+    "protocol": "RAW"
+  },
+  "preserved_pdfcreator_queue": {
+    "queue_name": "PDFCreator Original",
+    "driver_name": "PDFCreator",
+    "port_name": "pdfcmon"
+  },
+  "capture_command": "python raw_print_capture.py"
+}

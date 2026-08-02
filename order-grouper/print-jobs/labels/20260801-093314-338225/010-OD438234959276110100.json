@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260801-093314-338225",
+  "label_number": 10,
+  "order_id": "OD438234959276110100",
+  "sku": "F-28-ICE-BAGGY-PLAIN-IBP-GEAAWf",
+  "product": "MEIXN Straight Fit Men Light Blue Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0933 hrs, 01/08/26",
+  "awb": "FMPC6350905362",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 28,
+  "sort_tag": "ICE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260801-093314-338225\\010-OD438234959276110100.zpl",
+  "preview_file": null
+}

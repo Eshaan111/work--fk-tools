@@ -1,0 +1,64 @@
+[
+  {
+    "print_position": 1,
+    "kind": "category_separator",
+    "separator_text": "WHITE-PLAIN-32",
+    "category_label_count": 6,
+    "sellers": "PRABHU",
+    "sort_tag": "WHITE-PLAIN-32"
+  },
+  {
+    "print_position": 2,
+    "kind": "flipkart_label",
+    "original_label_number": 1,
+    "order_id": "OD438236110613994100",
+    "sku": "FJS-S-32-White-Plain-Jeans-WPJ-845927301547041411",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 3,
+    "kind": "flipkart_label",
+    "original_label_number": 2,
+    "order_id": "OD338234064971422100",
+    "sku": "FJS-S-32-White-Plain-Jeans-WPJ-845927301547041411",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 4,
+    "kind": "flipkart_label",
+    "original_label_number": 3,
+    "order_id": "OD338235666363529100",
+    "sku": "FJS-S-32-White-Plain-Jeans-WPJ-845927301547041411",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 5,
+    "kind": "flipkart_label",
+    "original_label_number": 4,
+    "order_id": "OD438235059980952100",
+    "sku": "FJS-S-32-White-Plain-Jeans-WPJ-845927301547041411",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 6,
+    "kind": "flipkart_label",
+    "original_label_number": 5,
+    "order_id": "OD438234452671921100",
+    "sku": "FJS-S-32-White-Plain-Jeans-WPJ-845927301547041411",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 7,
+    "kind": "flipkart_label",
+    "original_label_number": 6,
+    "order_id": "OD438233760741705100",
+    "sku": "FJS-S-32-White-Plain-Jeans-WPJ-845927301547041411",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  }
+]

@@ -2199,6 +2199,15 @@ def prompt_for_startup_selection() -> list[StartupSelection]:
                 parent=root,
             )
             return
+        try:
+            validate_startup_queue_inputs(queued_selections)
+        except Exception as exc:
+            messagebox.showerror(
+                "Queue preflight failed",
+                str(exc),
+                parent=root,
+            )
+            return
         selection = list(queued_selections)
         root.destroy()
 
@@ -6124,6 +6133,184 @@ def run_login_precheck(
     flow_definition: FlowDefinition | None,
 ) -> None:
     return None
+
+
+def get_preflight_page_definitions(
+    flow_definition: FlowDefinition | None,
+    listing_selection: ListingSelection,
+) -> list[FlowPageDefinition]:
+    if flow_definition is not None:
+        return [
+            build_page_definition_from_spec(step_definition)
+            for step_definition in flow_definition.steps
+        ]
+
+    legacy_definitions = {
+        "additional_description": FlowPageDefinition(
+            order=1,
+            step_name="additional_description",
+            page_file="",
+            handler="additional_description",
+            excel_config_attr="additional_description_excel",
+        ),
+        "product_description": FlowPageDefinition(
+            order=2,
+            step_name="product_description",
+            page_file="",
+            handler="product_description",
+            excel_config_attr="product_description_excel",
+        ),
+        "price_stock_shipping": FlowPageDefinition(
+            order=3,
+            step_name="price_stock_shipping",
+            page_file="",
+            handler="price_stock_shipping",
+            excel_config_attr="price_stock_shipping_excel",
+        ),
+        "images": FlowPageDefinition(
+            order=4,
+            step_name="images",
+            page_file="",
+            handler="images",
+            brand_name=listing_selection.brand_name,
+        ),
+        "variants": FlowPageDefinition(
+            order=5,
+            step_name="variants",
+            page_file="",
+            handler="variants",
+            worksheet_name=get_variants_sheet_name(listing_selection.product_type),
+            excel_config_attr="variants_excel",
+        ),
+    }
+    return [
+        legacy_definitions[step_name]
+        for step_name in LEGACY_PRODUCT_PAGE_FLOWS.get(listing_selection.product_type, ())
+        if step_name in legacy_definitions
+    ]
+
+
+def validate_startup_queue_inputs(startup_selections: list[StartupSelection]) -> None:
+    """Validate all Excel rows and image capacity before launching a browser."""
+    validation_errors: list[str] = []
+    image_requirements: dict[tuple[str, str, str], dict[str, object]] = {}
+
+    for queue_index, startup_selection in enumerate(startup_selections, start=1):
+        listing_selection = startup_selection.listing_selection
+        queue_label = (
+            f"Item {queue_index} ({startup_selection.laptop_name}/"
+            f"{startup_selection.profile_name}, {listing_selection.product_type}/"
+            f"{listing_selection.surface}, {listing_selection.kind}, "
+            f"size {listing_selection.size})"
+        )
+        try:
+            set_active_laptop(startup_selection.laptop_name)
+            config, flow_definition = build_bot_config(startup_selection)
+            page_definitions = get_preflight_page_definitions(
+                flow_definition,
+                listing_selection,
+            )
+        except Exception as exc:
+            validation_errors.append(f"{queue_label}: could not load its flow configuration: {exc}")
+            continue
+
+        checked_excel_sources: set[tuple[str, str | None]] = set()
+        for page_definition in page_definitions:
+            if not page_definition.excel_config_attr:
+                continue
+            workbook_path = getattr(config, page_definition.excel_config_attr)
+            source_key = (str(workbook_path.resolve()).casefold(), page_definition.worksheet_name)
+            if source_key in checked_excel_sources:
+                continue
+            checked_excel_sources.add(source_key)
+            try:
+                load_product_input_row(
+                    workbook_path,
+                    listing_selection.kind,
+                    listing_selection.size,
+                    worksheet_name=page_definition.worksheet_name,
+                    surface=listing_selection.surface,
+                )
+            except Exception as exc:
+                validation_errors.append(
+                    f"{queue_label}: missing required Excel row for "
+                    f"'{page_definition.step_name}' in {workbook_path.name}: {exc}"
+                )
+
+        image_page = next(
+            (
+                page_definition
+                for page_definition in page_definitions
+                if page_definition.handler in {"image_upload_page", "images"}
+                or page_definition.step_name == "images"
+            ),
+            None,
+        )
+        if image_page is None:
+            continue
+
+        image_brand = image_page.brand_name or listing_selection.brand_name
+        image_directory = config.image_directory.resolve()
+        image_key = (
+            str(image_directory).casefold(),
+            normalize_brand_name(image_brand),
+            listing_selection.surface,
+        )
+        requirement = image_requirements.setdefault(
+            image_key,
+            {
+                "directory": image_directory,
+                "brand": image_brand,
+                "surface": listing_selection.surface,
+                "required": 0,
+                "items": [],
+            },
+        )
+        requirement["required"] = int(requirement["required"]) + startup_selection.run_count
+        cast_items = requirement["items"]
+        if isinstance(cast_items, list):
+            cast_items.append(str(queue_index))
+
+    for requirement in image_requirements.values():
+        image_directory = requirement["directory"]
+        image_brand = str(requirement["brand"])
+        surface = str(requirement["surface"])
+        required_count = int(requirement["required"])
+        try:
+            folders = load_image_folders(Path(image_directory))
+            normalized_brand = normalize_brand_name(image_brand)
+            usable_folders = [
+                image_folder
+                for image_folder in folders
+                if image_folder.image_paths
+                and surface
+                not in image_folder.exhausted_brand_surfaces.get(normalized_brand, set())
+            ]
+        except Exception as exc:
+            validation_errors.append(
+                f"Images for {image_brand}/{surface}: could not inspect "
+                f"{image_directory}: {exc}"
+            )
+            continue
+
+        if len(usable_folders) < required_count:
+            item_numbers = ", ".join(requirement["items"])
+            validation_errors.append(
+                f"Images for {image_brand}/{surface} (queue item(s) {item_numbers}): "
+                f"need {required_count} non-empty available folder(s), but only "
+                f"{len(usable_folders)} are available in {image_directory}."
+            )
+
+    if validation_errors:
+        raise ValueError(
+            "The queue cannot start until these input problems are fixed:\n\n- "
+            + "\n- ".join(validation_errors)
+        )
+
+    log_event(
+        "PREFLIGHT",
+        f"Validated Excel rows and image capacity for {len(startup_selections)} queued item(s).",
+    )
 
 
 def open_flow_tab(

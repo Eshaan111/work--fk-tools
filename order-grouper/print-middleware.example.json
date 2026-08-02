@@ -1,0 +1,26 @@
+{
+  "directories": {
+    "incoming": "print-jobs/incoming",
+    "processing": "print-jobs/processing",
+    "archive": "print-jobs/archive",
+    "failed": "print-jobs/failed"
+  },
+  "poll_seconds": 1.0,
+  "stable_seconds": 2.0,
+  "pdfcreator_capture": {
+    "enabled": true,
+    "profile": ""
+  },
+  "ocr": {
+    "enabled": true,
+    "language": "eng",
+    "dpi": 300,
+    "tesseract_command": "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+  },
+  "printing": {
+    "enabled": false,
+    "printer_name": "TSC TTP-244 Pro",
+    "sumatra_path": "C:\\Users\\ESHAAN\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe",
+    "settings": "paper=auto,noscale,monochrome,disable-auto-rotation"
+  }
+}
