@@ -10,10 +10,83 @@ from __future__ import annotations
 import gc
 import traceback
 from dataclasses import dataclass
+from functools import wraps
 from pathlib import Path
 from typing import Callable
 
 import main_ui_themed as base
+
+
+_MISSING_LABEL_ERROR_PARTS = (
+    "could not find label element for field:",
+    "could not find field wrapper for label:",
+    "could not find editable element for label:",
+    "could not find tag input wrapper for field:",
+    "could not find tag input element for field:",
+)
+_missing_label_skip_installed = False
+
+
+def _is_missing_label_error(error: base.TimeoutException) -> bool:
+    message = str(error).casefold()
+    return any(part in message for part in _MISSING_LABEL_ERROR_PARTS)
+
+
+def _skip_missing_labels_in_filler(
+    filler: Callable[..., base.FillResult],
+    log_stage: str,
+) -> Callable[..., base.FillResult]:
+    """Run a page filler field-by-field so an absent label skips only that value."""
+
+    @wraps(filler)
+    def wrapped(driver, field_definitions, product_input_row) -> base.FillResult:
+        generated_values: dict[str, str] = {}
+        skipped_fields: set[str] = set()
+
+        for field in field_definitions:
+            try:
+                field_result = filler(driver, [field], product_input_row)
+            except base.TimeoutException as error:
+                if not _is_missing_label_error(error):
+                    raise
+                skipped_fields.add(field.label)
+                base.log_event(
+                    log_stage,
+                    f"Skipping {field.label}: its label is not present in the current listing state.",
+                )
+                continue
+
+            generated_values.update(field_result.generated_values)
+            skipped_fields.update(field_result.skipped_fields)
+
+        return base.FillResult(
+            generated_values=generated_values,
+            skipped_fields=skipped_fields,
+        )
+
+    return wrapped
+
+
+def install_missing_label_skip_behavior() -> None:
+    """Apply missing-label skipping only to runs launched by this entry point."""
+
+    global _missing_label_skip_installed
+    if _missing_label_skip_installed:
+        return
+
+    base.fill_price_stock_shipping_fields = _skip_missing_labels_in_filler(
+        base.fill_price_stock_shipping_fields,
+        "PRICE",
+    )
+    base.fill_product_description_fields = _skip_missing_labels_in_filler(
+        base.fill_product_description_fields,
+        "DESC",
+    )
+    base.fill_additional_description_fields = _skip_missing_labels_in_filler(
+        base.fill_additional_description_fields,
+        "ADDL",
+    )
+    _missing_label_skip_installed = True
 
 
 class TabRunControl(base.RunControl):
@@ -252,6 +325,7 @@ def run_job_tab_based(
     run_control: base.RunControl | None = None,
     progress_callback: Callable[[base.JobSessionResult], None] | None = None,
 ) -> base.JobRunResult:
+    install_missing_label_skip_behavior()
     config, flow_definition = base.build_bot_config(startup_selection)
     listing = startup_selection.listing_selection
     base.run_login_precheck(config, listing, flow_definition)
@@ -403,6 +477,7 @@ def run_queued_jobs_tab_based(
 
 def main() -> None:
     # The shared monitor resolves these names from main_ui_themed at runtime.
+    install_missing_label_skip_behavior()
     base.RunControl = TabRunControl
     base.run_queued_jobs = run_queued_jobs_tab_based
     base.main()
