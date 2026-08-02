@@ -1,0 +1,94 @@
+{
+  "saved_at": "2026-08-02T13:46:24",
+  "summary": {
+    "completed_runs": 4,
+    "failed_runs": 1,
+    "total_runs": 5,
+    "result_path": "C:\\work--fk-tools\\Full-LC-AUTO\\run_helpers\\job_results\\20260802_134624_jeans_flipkart_genz-vane.json"
+  },
+  "listing_selection": {
+    "product_type": "jeans",
+    "surface": "flipkart",
+    "kind": "Black-baggy",
+    "size": "28",
+    "brand_name": "GENZ VANE",
+    "image_directory": "G:\\Other computers\\My Laptop\\work-mom\\LISTING IMAGES AUTOMATED\\Black-baggy"
+  },
+  "config": {
+    "profile_name": "prabhu",
+    "listing_url": "https://seller.flipkart.com/index.html#dashboard/addListings/single?vertical=jean&vid=667",
+    "image_directory": "G:\\Other computers\\My Laptop\\work-mom\\LISTING IMAGES AUTOMATED\\Black-baggy",
+    "snapshot_directory": "C:\\work--fk-tools\\Full-LC-AUTO\\snapshots",
+    "price_stock_shipping_excel": "C:\\work--fk-tools\\Full-LC-AUTO\\data inputs\\common\\Price-Stock-Shipping-inputs.xlsx",
+    "price_stock_shipping_json": "C:\\work--fk-tools\\Full-LC-AUTO\\assets\\Price-Stock-Shipping-inputs.json",
+    "product_description_excel": "C:\\work--fk-tools\\Full-LC-AUTO\\data inputs\\jeans\\Product-Description-inputs.xlsx",
+    "product_description_json": "C:\\work--fk-tools\\Full-LC-AUTO\\json_LC_creation\\jeans_flipkart\\02_product_description.json",
+    "additional_description_excel": "C:\\work--fk-tools\\Full-LC-AUTO\\data inputs\\jeans\\Additional-Description-inputs.xlsx",
+    "additional_description_json": "C:\\work--fk-tools\\Full-LC-AUTO\\json_LC_creation\\jeans_flipkart\\01_additional_description.json",
+    "variants_excel": "C:\\work--fk-tools\\Full-LC-AUTO\\data inputs\\common\\Variants-excel.xlsx",
+    "firefox_profile_path": "C:\\Users\\HP\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\y6d16t5c.default-release",
+    "headless": false
+  },
+  "flow": {
+    "enabled": true,
+    "flow_name": "listing_creation",
+    "product_type": "jeans",
+    "surface": "flipkart",
+    "step_ids": [
+      "open_listing",
+      "additional_description",
+      "product_description",
+      "price_stock_shipping",
+      "images",
+      "variants",
+      "save_and_exit"
+    ]
+  },
+  "sessions": [
+    {
+      "run_index": 1,
+      "total_runs": 5,
+      "succeeded": true,
+      "error_message": null,
+      "snapshot_path": null,
+      "success_record_path": "C:\\work--fk-tools\\Full-LC-AUTO\\successful-run-record.xlsx",
+      "success_record_error": null
+    },
+    {
+      "run_index": 2,
+      "total_runs": 5,
+      "succeeded": true,
+      "error_message": null,
+      "snapshot_path": null,
+      "success_record_path": "C:\\work--fk-tools\\Full-LC-AUTO\\successful-run-record.xlsx",
+      "success_record_error": null
+    },
+    {
+      "run_index": 3,
+      "total_runs": 5,
+      "succeeded": false,
+      "error_message": "Run 3/5 failed: Message: \nStacktrace:\nRemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8\nWebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:169:5\nNoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:538:5\ndom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:137:16\n",
+      "snapshot_path": "C:\\work--fk-tools\\Full-LC-AUTO\\snapshots\\20260802_133916_run_3_error_before_tab_close.html",
+      "success_record_path": null,
+      "success_record_error": null
+    },
+    {
+      "run_index": 4,
+      "total_runs": 5,
+      "succeeded": true,
+      "error_message": null,
+      "snapshot_path": null,
+      "success_record_path": "C:\\work--fk-tools\\Full-LC-AUTO\\successful-run-record.xlsx",
+      "success_record_error": null
+    },
+    {
+      "run_index": 5,
+      "total_runs": 5,
+      "succeeded": true,
+      "error_message": null,
+      "snapshot_path": null,
+      "success_record_path": "C:\\work--fk-tools\\Full-LC-AUTO\\successful-run-record.xlsx",
+      "success_record_error": null
+    }
+  ]
+}
