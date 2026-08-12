@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260805-093251-688675",
+  "label_number": 43,
+  "order_id": "OD438274407304735100",
+  "sku": "JS-F-28-ICE-PLAIN-IBP-SNJSKK0970",
+  "product": "SEEMA ENTERPRISES Straight Fit Men Light Blue",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0932 hrs, 05/08/26",
+  "awb": "FMPC6366144963",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 28,
+  "sort_tag": "ICE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260805-093251-688675\\043-OD438274407304735100.zpl",
+  "preview_file": null
+}

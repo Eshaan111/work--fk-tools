@@ -427,11 +427,10 @@ function withUndo(dataset) {
 }
 
 function targetRowIndexes(dataset, filters, selectedIds) {
-  const allowed = new Set(filteredRows(dataset, filters, true).map((row) => row.__orig_index));
   const requested = new Set(Array.isArray(selectedIds) ? selectedIds : []);
   if (!requested.size) return [];
   return dataset.rows
-    .map((row, index) => (allowed.has(row.__orig_index) && requested.has(row.__orig_index) ? index : -1))
+    .map((row, index) => (!row.__locked && requested.has(row.__orig_index) ? index : -1))
     .filter((index) => index >= 0);
 }
 
@@ -626,27 +625,40 @@ export function setStatus(dataset, filters, status, selectedIds = []) {
 }
 
 export function computeDiscount(dataset, filters, yPct, xPct, cap, selectedIds = []) {
-  if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) throw new Error("Offer calculations are disabled for settlement recommendations files");
+  if (dataset.mode !== "offer") throw new Error("Offer calculations are only available for offer files");
+  const discountPct = Number(yPct);
+  const sharePct = Number(xPct);
+  const discountCap = cap == null || cap === "" ? null : Number(cap);
+  if (!Number.isFinite(discountPct) || discountPct < 0) throw new Error("Enter a valid non-negative discount percentage");
+  if (!Number.isFinite(sharePct) || sharePct < 0) throw new Error("Enter a valid non-negative discount share percentage");
+  if (discountCap != null && (!Number.isFinite(discountCap) || discountCap < 0)) throw new Error("Enter a valid non-negative maximum discount");
   const columns = resolveModeColumns(dataset);
   const rowIndexes = targetRowIndexes(dataset, filters, selectedIds);
-  if (!rowIndexes.length) throw new Error("Select at least one visible row first");
+  if (!rowIndexes.length) throw new Error("Select at least one row first");
   const before = rowIndexes.map((index) => Number(dataset.rows[index][columns.settlement]));
   let next = withUndo(dataset);
   next.rows = updateRows(next, rowIndexes, (row) => {
     const settlement = Number(row[columns.settlement]) || 0;
-    const base = (yPct / 100) * settlement;
-    const discount = Math.min((xPct / 100) * base, cap);
+    const base = (discountPct / 100) * settlement;
+    const uncappedDiscount = (sharePct / 100) * base;
+    const discount = discountCap == null ? uncappedDiscount : Math.min(uncappedDiscount, discountCap);
     row.Discount = Number(discount.toFixed(2));
     row["Final Price"] = Number((settlement - discount).toFixed(2));
     return row;
   });
   const after = rowIndexes.map((index) => Number(next.rows[index][columns.settlement]));
-  return appendLog(next, "Compute Discount", before, after, rowIndexes.length);
+  const capLabel = discountCap == null ? "No cap" : `Cap: ${discountCap}`;
+  return appendLog(next, "Compute Discount", before, after, rowIndexes.length, `Discount: ${discountPct}%, Share: ${sharePct}%, ${capLabel}`);
 }
 
 export function applyDecision(dataset, filters, thresholds, thresholdMode = "price", selectedIds = []) {
   const rowIndexes = targetRowIndexes(dataset, filters, selectedIds);
-  if (!rowIndexes.length) throw new Error("Select at least one visible row first");
+  if (!rowIndexes.length) throw new Error("Select at least one row first");
+
+  const invalidThresholdKinds = [...new Set(rowIndexes
+    .map((index) => String(dataset.rows[index]["Jeans Type"] || ""))
+    .filter((kind) => !Number.isFinite(Number(thresholds?.[kind])) || Number(thresholds[kind]) < 0))];
+  if (invalidThresholdKinds.length) throw new Error(`Enter valid thresholds for: ${invalidThresholdKinds.join(", ")}`);
 
   if (dataset.mode === SETTLEMENT_RECOMMENDATION_MODE) {
     const before = rowIndexes.map((index) => Number(dataset.rows[index]["Output Settlement"]) || null);
@@ -664,13 +676,17 @@ export function applyDecision(dataset, filters, thresholds, thresholdMode = "pri
     return appendLog(next, "Apply Decision", before, after, rowIndexes.length, modeLabel);
   }
 
-  if (!dataset.rows.some((row) => row["Final Price"] != null && row["Final Price"] !== "")) throw new Error("Compute discount first");
+  const rowsWithoutFinalPrice = rowIndexes.filter((index) => {
+    const value = dataset.rows[index]["Final Price"];
+    return value == null || value === "" || !Number.isFinite(Number(value));
+  });
+  if (rowsWithoutFinalPrice.length) throw new Error(`Compute discount for all selected rows first (${rowsWithoutFinalPrice.length} missing)`);
   const columns = resolveModeColumns(dataset);
   const before = rowIndexes.map((index) => Number(dataset.rows[index][columns.settlement]));
   let next = withUndo(dataset);
   next.rows = updateRows(next, rowIndexes, (row) => {
-    const threshold = Number(thresholds[String(row["Jeans Type"])]) || 0;
-    row.Decision = Number(row["Final Price"] || 0) >= threshold ? "ACCEPT" : "REJECT";
+    const threshold = Number(thresholds[String(row["Jeans Type"])]);
+    row.Decision = Number(row["Final Price"]) >= threshold ? "ACCEPT" : "REJECT";
     return row;
   });
   const after = rowIndexes.map((index) => Number(next.rows[index][columns.settlement]));

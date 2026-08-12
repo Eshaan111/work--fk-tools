@@ -1,0 +1,19 @@
+[
+  {
+    "print_position": 1,
+    "kind": "category_separator",
+    "separator_text": "ICE-34",
+    "category_label_count": 1,
+    "sellers": "SEEMA",
+    "sort_tag": "ICE-BAGGY-34"
+  },
+  {
+    "print_position": 2,
+    "kind": "flipkart_label",
+    "original_label_number": 1,
+    "order_id": "OD438253933638357100",
+    "sku": "JS-F-34-ICE-BAGGY-PLAIN-IBP-JKW88600-SD",
+    "sort_tag": "ICE-BAGGY-34",
+    "is_mix": false
+  }
+]

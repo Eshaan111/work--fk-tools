@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260805-093251-688675",
+  "label_number": 8,
+  "order_id": "OD338271592237513100",
+  "sku": "S-28-White-Plain-Jeans-PWJ-5412455",
+  "product": "METRISK Slim Men White Jeans 28 JNC",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0932 hrs, 05/08/26",
+  "awb": "FMPC6364708299",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260805-093251-688675\\008-OD338271592237513100.zpl",
+  "preview_file": null
+}

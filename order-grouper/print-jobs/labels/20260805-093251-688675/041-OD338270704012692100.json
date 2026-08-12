@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260805-093251-688675",
+  "label_number": 41,
+  "order_id": "OD338270704012692100",
+  "sku": "JS-F-30-ICE-BAGGY-PLAIN-IBP-BHHHBDKAS779",
+  "product": "SEEMA ENTERPRISES Relaxed Fit Men Light Blue",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0932 hrs, 05/08/26",
+  "awb": "SF3461723644F",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 30,
+  "sort_tag": "ICE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260805-093251-688675\\041-OD338270704012692100.zpl",
+  "preview_file": null
+}

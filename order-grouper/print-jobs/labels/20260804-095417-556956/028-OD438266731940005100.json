@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260804-095417-556956",
+  "label_number": 28,
+  "order_id": "OD438266731940005100",
+  "sku": "F-32-Black-PLAIN-BPJ-79791303711681",
+  "product": "FADETREND Regular Men Black Jeans 32 PBJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0954 hrs, 04/08/26",
+  "awb": "FMPC6362755695",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 32,
+  "sort_tag": "BLACK-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260804-095417-556956\\028-OD438266731940005100.zpl",
+  "preview_file": null
+}

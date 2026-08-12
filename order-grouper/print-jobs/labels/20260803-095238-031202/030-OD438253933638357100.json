@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260803-095238-031202",
+  "label_number": 30,
+  "order_id": "OD438253933638357100",
+  "sku": "JS-F-34-ICE-BAGGY-PLAIN-IBP-JKW88600-SD",
+  "product": "SEEMA ENTERPRISES Loose Fit Men Light Blue",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0952 hrs, 03/08/26",
+  "awb": "FMPP4182305796",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 34,
+  "sort_tag": "ICE-BAGGY-34",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260803-095238-031202\\030-OD438253933638357100.zpl",
+  "preview_file": null
+}

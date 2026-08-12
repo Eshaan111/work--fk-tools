@@ -373,7 +373,7 @@ function App() {
   const [sort, setSort] = useState({ column: "", direction: "asc" });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const fileInputRef = useRef(null);
-  const selectRangeMatchesRef = useRef(false);
+  const rangeSelectionActionRef = useRef(null);
 
   useEffect(() => {
     if (!dataset) {
@@ -390,21 +390,24 @@ function App() {
   useEffect(() => {
     if (!dataset) {
       setSelectedIds([]);
-      selectRangeMatchesRef.current = false;
+      rangeSelectionActionRef.current = null;
       return;
     }
 
-    if (selectRangeMatchesRef.current && filters.selectedRange) {
+    if (rangeSelectionActionRef.current === "replace" && filters.selectedRange) {
       const matchingIds = createSnapshot(dataset, filters).matchingRowIds || [];
       setSelectedIds(matchingIds);
       setNotice({
         type: "success",
         message: `${matchingIds.length.toLocaleString()} rows in the selected price range are ready in Review & Edit.`,
       });
-    } else {
+    } else if (rangeSelectionActionRef.current === "clear") {
       setSelectedIds([]);
+    } else {
+      const validIds = new Set(dataset.rows.filter((row) => !row.__locked).map((row) => row.__orig_index));
+      setSelectedIds((current) => current.filter((id) => validIds.has(id)));
     }
-    selectRangeMatchesRef.current = false;
+    rangeSelectionActionRef.current = null;
   }, [dataset, filters]);
 
   useEffect(() => {
@@ -423,6 +426,7 @@ function App() {
   const columns = dashboard?.columns || [];
   const displayedColumns = useMemo(() => visibleListingColumns(columns, listingView), [columns, listingView]);
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+  const selectedRows = useMemo(() => dataset?.rows?.filter((row) => selectedSet.has(row.__orig_index)) || [], [dataset, selectedSet]);
   const sortedRows = useMemo(() => {
     if (!sort.column) return rows;
     return [...rows].sort((a, b) => {
@@ -439,6 +443,16 @@ function App() {
   const activeThresholdLabels = thresholdLabelsForMode(activeThresholdMode);
   const activeThresholds = offerConfig.thresholdSets?.[activeThresholdMode] || activeThresholdDefaults;
   const activeMode = modeMeta(dashboard?.mode, dashboard?.selectedValueColumn, activeThresholdMode);
+  const offerNumbers = {
+    discountPct: Number(offerConfig.yPct),
+    sharePct: Number(offerConfig.xPct),
+    cap: offerConfig.cap.trim() === "" ? null : Number(offerConfig.cap),
+  };
+  const offerInputsValid = Number.isFinite(offerNumbers.discountPct) && offerNumbers.discountPct >= 0
+    && Number.isFinite(offerNumbers.sharePct) && offerNumbers.sharePct >= 0
+    && (offerNumbers.cap == null || (Number.isFinite(offerNumbers.cap) && offerNumbers.cap >= 0));
+  const thresholdsValid = Object.values(activeThresholds).every((value) => value !== "" && Number.isFinite(Number(value)) && Number(value) >= 0);
+  const selectedRowsHaveFinalPrice = selectedRows.length > 0 && selectedRows.every((row) => row["Final Price"] !== "" && row["Final Price"] != null && Number.isFinite(Number(row["Final Price"])));
 
   async function handleUpload(event) {
     const file = event.target.files?.[0];
@@ -542,11 +556,11 @@ function App() {
       const nextDataset = setMode(dataset, mode);
       setFilters(defaultFiltersForDataset(nextDataset));
       return nextDataset;
-    });
+    }, `${mode === "offer" ? "Selling Price" : "Bank Settlement"} is now the active value for charts, filters, and changes.`);
   }
 
   function handleRangeChange(nextRange) {
-    selectRangeMatchesRef.current = Boolean(nextRange);
+    rangeSelectionActionRef.current = nextRange ? "replace" : "clear";
     setFilters((current) => ({ ...current, selectedRange: nextRange ? [Math.min(nextRange[0], nextRange[1]), Math.max(nextRange[0], nextRange[1])] : null }));
   }
 
@@ -575,11 +589,34 @@ function App() {
     }));
   }
 
+  function renderValueSourceSelector() {
+    const modeChoices = [
+      dashboard?.availableModes?.normal ? { key: "normal", label: "Bank Settlement", detail: "Change settlement values" } : null,
+      dashboard?.availableModes?.offer ? { key: "offer", label: "Selling Price", detail: "Change prices and use offer rules" } : null,
+    ].filter(Boolean);
+    const columnChoices = (dashboard?.availableValueColumns || []).map((column) => ({ key: column, label: column, detail: "Use this order value" }));
+    const choices = modeChoices.length > 1 ? modeChoices : columnChoices;
+    if (choices.length < 2) return null;
+
+    return (
+      <div className="value-source-panel">
+        <div className="value-source-copy"><span>Value to review and change</span><strong>{activeMode.valueLabel}</strong></div>
+        <div className="value-source-options" role="group" aria-label="Value to review and change">
+          {choices.map((choice) => {
+            const isModeChoice = modeChoices.length > 1;
+            const active = isModeChoice ? dashboard?.mode === choice.key : dashboard?.selectedValueColumn === choice.key;
+            return <button key={choice.key} className={active ? "value-source-button value-source-button-active" : "value-source-button"} aria-pressed={active} onClick={() => isModeChoice ? handleModeChange(choice.key) : handleValueColumnChange(choice.key)}><span className="value-source-check">{active ? "✓" : ""}</span><span><strong>{choice.label}</strong><small>{choice.detail}</small></span></button>;
+          })}
+        </div>
+      </div>
+    );
+  }
+
   function renderFilterPanel() {
     return (
       <section className="panel filter-panel">
         <div className="panel-head compact-head"><div><div className="panel-title">Find and filter rows</div><div className="panel-subtitle">Filters change the dashboard and visible table. Select rows separately before applying changes.</div></div><button className="ghost-button" onClick={resetFilters}>Reset filters</button></div>
-        {dashboard?.availableValueColumns?.length ? <div className="toggle-row" style={{ marginBottom: 14 }}>{dashboard.availableValueColumns.map((column) => <button key={column} className={dashboard.selectedValueColumn === column ? "toggle-button toggle-button-active" : "toggle-button"} onClick={() => handleValueColumnChange(column)}>{column}</button>)}</div> : null}
+        {renderValueSourceSelector()}
         <div className="filter-grid">
           <label className="field-block field-span-2"><LabelWithHelp label="Search rows" help="Searches the visible workbook rows by SKU and title at the same time." /><div className="search-field"><input value={filters.search} onChange={(e) => setFilters((c) => ({ ...c, search: e.target.value }))} placeholder="Try SKU, title, or keyword" /></div></label>
           {[ ["Listing type", "listing", filterOptions.listing, "Filters owner vs latched listing rows."], ["Jeans family", "jeans", filterOptions.jeans, "Filters the classified jeans bucket used by offer mode thresholds."], ["Detected size", "size", filterOptions.size, "Uses SKU-based size detection plus any saved overrides."], ["Listing status", "status", filterOptions.status, "Shows only ACTIVE or INACTIVE rows when needed."] ].map(([label, key, options, help]) => (
@@ -613,6 +650,18 @@ function App() {
     const visibleIds = rows.map((row) => row.__orig_index);
     const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedSet.has(id));
     const selectedPreview = rows.filter((row) => selectedSet.has(row.__orig_index)).slice(0, 3);
+    const bulkValueMeta = {
+      Add: { label: "Amount to add", placeholder: "Example: 25" },
+      Multiply: { label: "Multiplier", placeholder: "Example: 1.05" },
+      Replace: { label: "Replacement value", placeholder: "Example: 499" },
+    }[bulkEditState.mode];
+
+    const applyBulkEditToSelection = () => {
+      const nextDataset = bulkEdit(dataset, filters, bulkEditState.mode, Number(bulkEditState.value), bulkEditState.capValue ? bulkEditState.capMode : null, bulkEditState.capValue ? Number(bulkEditState.capValue) : null, selectedIds);
+      const nextDefaults = defaultFiltersForDataset(nextDataset);
+      setFilters((current) => ({ ...current, settlementMax: Math.max(Number(current.settlementMax || 0), nextDefaults.settlementMax) }));
+      return nextDataset;
+    };
 
     const selectionDetail = (
       <div className="confirmation-preview">
@@ -633,33 +682,25 @@ function App() {
     return (
       <>
         {renderFilterPanel()}
-        <section className="selection-bar" aria-live="polite">
-          <div><strong>{selectedIds.length.toLocaleString()} selected</strong><span>Only checked rows can be changed.</span></div>
-          <div className="selection-actions">
-            <button className="ghost-button" onClick={toggleVisibleRows}>{allVisibleSelected ? "Clear visible selection" : `Select ${rows.length} visible rows`}</button>
-            <button className="text-button" disabled={!selectedIds.length} onClick={() => setSelectedIds([])}>Clear all</button>
-          </div>
-        </section>
-
         <section className="edit-layout">
           {dashboard?.mode !== "settlementRecommendations" ? (
             <div className="panel">
-              <div className="panel-head"><div><div className="panel-title">Change selected values</div><div className="panel-subtitle">Preview and confirm every bulk edit before it is applied.</div></div></div>
+              <div className="panel-head"><div><div className="panel-title">Change {activeMode.valueLabel}</div><div className="panel-subtitle">Only selected rows are changed. Every edit is previewed before it is applied.</div></div><span className="active-value-badge">{activeMode.valueLabel}</span></div>
               <div className="stack-grid">
                 <div className="mini-form-row">
                   <label className="field-block"><span>Edit method</span><select value={bulkEditState.mode} onChange={(e) => setBulkEditState((c) => ({ ...c, mode: e.target.value }))}><option>Add</option><option>Multiply</option><option>Replace</option></select></label>
-                  <label className="field-block"><span>Value</span><input type="number" value={bulkEditState.value} onChange={(e) => setBulkEditState((c) => ({ ...c, value: e.target.value }))} placeholder="Example: 25 or 1.05" /></label>
+                  <label className="field-block"><span>{bulkValueMeta.label}</span><input type="number" value={bulkEditState.value} onChange={(e) => setBulkEditState((c) => ({ ...c, value: e.target.value }))} placeholder={bulkValueMeta.placeholder} /></label>
                 </div>
-                <div className="mini-form-row">
+                {bulkEditState.mode === "Multiply" ? <div className="mini-form-row">
                   <label className="field-block"><span>Optional limit type</span><select value={bulkEditState.capMode} onChange={(e) => setBulkEditState((c) => ({ ...c, capMode: e.target.value }))}><option value="Min">Maximum value</option><option value="Max">Minimum value</option></select></label>
                   <label className="field-block"><span>Optional limit</span><input type="number" value={bulkEditState.capValue} onChange={(e) => setBulkEditState((c) => ({ ...c, capValue: e.target.value }))} placeholder="Leave empty for no limit" /></label>
-                </div>
+                </div> : null}
                 <button className="primary-button" disabled={!selectedIds.length || bulkEditState.value === ""} onClick={() => requireSelection({
                   title: "Confirm bulk value change",
                   message: `${bulkEditState.mode} ${bulkEditState.value} using ${activeMode.valueLabel}?`,
-                  work: () => bulkEdit(dataset, filters, bulkEditState.mode, Number(bulkEditState.value), bulkEditState.capValue ? bulkEditState.capMode : null, bulkEditState.capValue ? Number(bulkEditState.capValue) : null, selectedIds),
+                  work: applyBulkEditToSelection,
                   successMessage: `${selectedIds.length} selected rows updated.`,
-                })}>Preview value change</button>
+                })}>Preview {activeMode.valueLabel} change</button>
                 <div className="status-button-row">
                   <button className="status-chip status-chip-active" disabled={!selectedIds.length} onClick={() => requireSelection({ title: "Mark rows active?", message: "Stock values may also be updated by the workbook rules.", work: () => setStatus(dataset, filters, "ACTIVE", selectedIds), successMessage: `${selectedIds.length} rows marked active.` })}>Mark selected active</button>
                   <button className="status-chip status-chip-inactive" disabled={!selectedIds.length} onClick={() => requireSelection({ title: "Mark rows inactive?", message: "Stock values may also be updated by the workbook rules.", work: () => setStatus(dataset, filters, "INACTIVE", selectedIds), successMessage: `${selectedIds.length} rows marked inactive.` })}>Mark selected inactive</button>
@@ -668,25 +709,28 @@ function App() {
             </div>
           ) : null}
 
-          <div className="panel">
-            <div className="panel-head"><div><div className="panel-title">{dashboard?.mode === "settlementRecommendations" ? "Recommendation rules" : "Offer calculation"}</div><div className="panel-subtitle">Advanced controls for the current supported file type.</div></div></div>
+          {["offer", "settlementRecommendations"].includes(dashboard?.mode || "") ? <div className="panel offer-actions-panel">
+            <div className="panel-head"><div><div className="panel-title">{dashboard?.mode === "settlementRecommendations" ? "Settlement Recommendation Accept / Reject" : "Selling Price Offer & Accept / Reject"}</div><div className="panel-subtitle">{dashboard?.mode === "settlementRecommendations" ? "Review settlement recommendations, then apply Accept / Reject to the selected rows." : "Calculate Discount and Final Price from Selling Price, then apply Accept / Reject to the same selected rows."}</div></div><span className="active-value-badge">Source: {dashboard?.mode === "settlementRecommendations" ? "Settlement" : "Selling Price"}</span></div>
             <div className="stack-grid">
+              <div className="action-source-banner"><span>Active calculation source</span><strong>{dashboard?.mode === "settlementRecommendations" ? "Current Settlement / Recommended Settlement" : "Selling Price(Rs)"}</strong><small>{dashboard?.mode === "settlementRecommendations" ? `Accept / Reject currently uses ${activeThresholdMode === SETTLEMENT_THRESHOLD_MODE ? "settlement" : "price"} thresholds.` : "Discount is deducted from Selling Price(Rs) to create Final Price."}</small></div>
               {dashboard?.mode === "settlementRecommendations" ? (
                 <div className="toggle-row"><button className={activeThresholdMode === SETTLEMENT_THRESHOLD_MODE ? "toggle-button toggle-button-active" : "toggle-button"} onClick={() => handleThresholdModeChange(SETTLEMENT_THRESHOLD_MODE)}>Use settlement thresholds</button><button className={activeThresholdMode === PRICE_THRESHOLD_MODE ? "toggle-button toggle-button-active" : "toggle-button"} onClick={() => handleThresholdModeChange(PRICE_THRESHOLD_MODE)}>Use price thresholds</button></div>
               ) : (
                 <div className="mini-form-row three-inputs">
-                  <label className="field-block"><span>Base percentage</span><input type="number" value={offerConfig.yPct} onChange={(e) => setOfferConfig((c) => ({ ...c, yPct: e.target.value }))} /></label>
-                  <label className="field-block"><span>Discount percentage</span><input type="number" value={offerConfig.xPct} onChange={(e) => setOfferConfig((c) => ({ ...c, xPct: e.target.value }))} /></label>
-                  <label className="field-block"><span>Maximum discount</span><input type="number" value={offerConfig.cap} onChange={(e) => setOfferConfig((c) => ({ ...c, cap: e.target.value }))} /></label>
+                  <label className="field-block"><LabelWithHelp label="Discount percentage" help="The percentage of the selling price used as the discount base." /><input type="number" min="0" step="any" value={offerConfig.yPct} onChange={(e) => setOfferConfig((c) => ({ ...c, yPct: e.target.value }))} /></label>
+                  <label className="field-block"><LabelWithHelp label="Share of discount" help="The percentage of the discount base that is actually deducted." /><input type="number" min="0" step="any" value={offerConfig.xPct} onChange={(e) => setOfferConfig((c) => ({ ...c, xPct: e.target.value }))} /></label>
+                  <label className="field-block"><LabelWithHelp label="Maximum discount" help="Optional ceiling on the calculated discount. Leave blank for no cap." /><input type="number" min="0" step="any" value={offerConfig.cap} onChange={(e) => setOfferConfig((c) => ({ ...c, cap: e.target.value }))} placeholder="No cap" /></label>
                 </div>
               )}
-              <details className="advanced-details"><summary>Review or change thresholds</summary><div className="threshold-grid">{THRESHOLD_KEYS.map((key) => <label className="threshold-card" key={key}><span>{activeThresholdLabels[key]}</span><input type="number" value={activeThresholds[key]} onChange={(e) => setOfferConfig((c) => ({ ...c, thresholdSets: { ...c.thresholdSets, [activeThresholdMode]: { ...activeThresholds, [key]: e.target.value } } }))} /></label>)}</div></details>
+              {dashboard?.mode === "offer" ? <div className={offerInputsValid ? "offer-formula" : "offer-formula offer-formula-error"}><strong>Formula</strong><span>{`Discount = Selling Price × Discount % × Share %${offerNumbers.cap == null ? " (no cap)" : `, capped at ${offerNumbers.cap}`}`}</span><span>Final Price = Selling Price − Discount</span></div> : null}
+              <details className="advanced-details"><summary>Review or change thresholds</summary><div className="threshold-grid">{THRESHOLD_KEYS.map((key) => <label className="threshold-card" key={key}><span>{activeThresholdLabels[key]}</span><input type="number" min="0" step="any" value={activeThresholds[key]} onChange={(e) => setOfferConfig((c) => ({ ...c, thresholdSets: { ...c.thresholdSets, [activeThresholdMode]: { ...activeThresholds, [key]: e.target.value } } }))} /></label>)}</div></details>
               <div className="status-button-row">
-                {dashboard?.mode === "offer" ? <button className="primary-button" disabled={!selectedIds.length} onClick={() => requireSelection({ title: "Calculate discounts?", message: `Base ${offerConfig.yPct}%, discount ${offerConfig.xPct}%, capped at ${offerConfig.cap}.`, work: () => computeDiscount(dataset, filters, Number(offerConfig.yPct || 0), Number(offerConfig.xPct || 0), Number(offerConfig.cap || 0), selectedIds), successMessage: `Discount calculated for ${selectedIds.length} rows.` })}>Preview discount calculation</button> : null}
-                <button className="ghost-button" disabled={!selectedIds.length || !["offer", "settlementRecommendations"].includes(dashboard?.mode || "")} onClick={() => requireSelection({ title: "Apply accept/reject rules?", message: `The selected ${activeThresholdMode} thresholds will be applied.`, work: () => applyDecision(dataset, filters, Object.fromEntries(Object.entries(activeThresholds).map(([key, value]) => [key, Number(value || 0)])), activeThresholdMode, selectedIds), successMessage: `Decision rules applied to ${selectedIds.length} rows.` })}>Preview decision rules</button>
+                {dashboard?.mode === "offer" ? <button className="primary-button" disabled={!selectedIds.length || !offerInputsValid} onClick={() => requireSelection({ title: "Calculate discounts?", message: `Discount ${offerNumbers.discountPct}%, share ${offerNumbers.sharePct}%${offerNumbers.cap == null ? ", with no cap" : `, capped at ${offerNumbers.cap}`}.`, work: () => computeDiscount(dataset, filters, offerNumbers.discountPct, offerNumbers.sharePct, offerNumbers.cap, selectedIds), successMessage: `Discount calculated for ${selectedIds.length} rows. Selection kept for the decision step.` })}>1. Calculate Discount from Selling Price</button> : null}
+                <button className="ghost-button decision-button" disabled={!selectedIds.length || !thresholdsValid || !["offer", "settlementRecommendations"].includes(dashboard?.mode || "") || (dashboard?.mode === "offer" && !selectedRowsHaveFinalPrice)} onClick={() => requireSelection({ title: "Apply Accept / Reject rules?", message: `The selected ${activeThresholdMode} thresholds will be applied to ${selectedIds.length} selected rows.`, work: () => applyDecision(dataset, filters, Object.fromEntries(Object.entries(activeThresholds).map(([key, value]) => [key, Number(value)])), activeThresholdMode, selectedIds), successMessage: `Accept / Reject applied to ${selectedIds.length} rows. Selection preserved.` })}>{dashboard?.mode === "offer" ? "2. Preview Accept / Reject" : "Preview Settlement Accept / Reject"}</button>
               </div>
+              {dashboard?.mode === "offer" && selectedIds.length && !selectedRowsHaveFinalPrice ? <div className="hint-box">The Accept / Reject button is enabled after Final Price has been calculated for every selected row.</div> : null}
             </div>
-          </div>
+          </div> : null}
 
           {dashboard?.mode !== "settlementRecommendations" ? (
             <div className="panel">
@@ -701,7 +745,7 @@ function App() {
         </section>
 
         <section className="panel">
-          <div className="panel-head"><div><div className="panel-title">Review workbook rows</div><div className="panel-subtitle">Check rows to select them. Click a column heading to sort the current view.</div></div><div className="mono-value">{rows.length} of {dashboard?.exportCount || 0} matching rows shown</div></div>
+          <div className="panel-head"><div><div className="panel-title">Review workbook rows</div><div className="panel-subtitle">Check rows to select them. Click a column heading to sort the current view.</div></div><div className="table-selection-summary" aria-live="polite"><div><strong>{selectedIds.length.toLocaleString()} selected</strong><span>{rows.length} of {dashboard?.exportCount || 0} matching rows shown</span></div><div className="selection-actions"><button className="ghost-button" onClick={toggleVisibleRows}>{allVisibleSelected ? "Clear visible" : `Select ${rows.length} visible`}</button><button className="text-button" disabled={!selectedIds.length} onClick={() => setSelectedIds([])}>Clear selection</button></div></div></div>
           <div className="listing-toolbar"><div className="listing-view-tabs">{Object.entries(LISTING_COLUMN_VIEWS).map(([key, config]) => <button key={key} className={listingView === key ? "listing-view-tab listing-view-tab-active" : "listing-view-tab"} onClick={() => setListingView(key)}>{config.label}</button>)}</div><div className="listing-toolbar-note">{displayedColumns.length} columns visible</div></div>
           <div className="table-scroll" tabIndex="0" aria-label="Workbook rows">
             <table className="listing-table">

@@ -1,0 +1,19 @@
+[
+  {
+    "print_position": 1,
+    "kind": "category_separator",
+    "separator_text": "BEIGE-30",
+    "category_label_count": 1,
+    "sellers": "PRABHU",
+    "sort_tag": "BEIGE-BAGGY-30"
+  },
+  {
+    "print_position": 2,
+    "kind": "flipkart_label",
+    "original_label_number": 1,
+    "order_id": "OD438268787395275100",
+    "sku": "F-30-BEIGE-BAGGY-PLAIN-MEN-JEANS-HDNW7582247",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  }
+]

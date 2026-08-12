@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260803-095238-031202",
+  "label_number": 53,
+  "order_id": "OD338252719603808400",
+  "sku": "SHY_F-32-BEIGE-BAGGY-JEANS-CS1418",
+  "product": "FADEVIELLE Men Beige Jeans 32 25_lead_2",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0952 hrs, 03/08/26",
+  "awb": "FMPP4181976719",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 32,
+  "sort_tag": "BEIGE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260803-095238-031202\\053-OD338252719603808400.zpl",
+  "preview_file": null
+}

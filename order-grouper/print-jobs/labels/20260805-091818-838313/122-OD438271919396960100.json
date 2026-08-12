@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260805-091818-838313",
+  "label_number": 122,
+  "order_id": "OD438271919396960100",
+  "sku": "CPTY-S-28--WhitePBJ-01231",
+  "product": "STARVIELLE Relaxed Fit Men White Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0918 hrs, 05/08/26",
+  "awb": "SF3461690541F",
+  "fit": "BAGGY",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260805-091818-838313\\122-OD438271919396960100.zpl",
+  "preview_file": null
+}

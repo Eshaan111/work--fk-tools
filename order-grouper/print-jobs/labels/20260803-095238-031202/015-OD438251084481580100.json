@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260803-095238-031202",
+  "label_number": 15,
+  "order_id": "OD438251084481580100",
+  "sku": "S-32-Black-Plain-Jeans-PBJ-9874545",
+  "product": "GALATA COLLECTION Regular Men Black Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0952 hrs, 03/08/26",
+  "awb": "FMPC6357893590",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 32,
+  "sort_tag": "BLACK-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260803-095238-031202\\015-OD438251084481580100.zpl",
+  "preview_file": null
+}

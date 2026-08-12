@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260803-094717-801215",
+  "label_number": 94,
+  "order_id": "OD338250611118750100",
+  "sku": "F-28-Black-Baggy-Plain-Jeans-BEPJ-IYW0J6K55W",
+  "product": "STARVIELLE Relaxed Fit Men Black Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0947 hrs, 03/08/26",
+  "awb": "1344862050568",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260803-094717-801215\\094-OD338250611118750100.zpl",
+  "preview_file": null
+}
