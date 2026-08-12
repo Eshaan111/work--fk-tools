@@ -74,8 +74,10 @@ python print_zpl_batch.py <captured.zpl> --printer "TSC TTP-244 Pro"
 ## Automatic batch-print dialog
 
 Double-click `Launch Flipkart Batch Printer.cmd`. The dialog owns TCP port
-9100, waits for a Flipkart/QZ batch, extracts each label, sorts complete label
-blocks, and submits the sorted ZPL batch once to `TSC TTP-244 Pro`. Sorting is
+9100, waits for a Flipkart/QZ batch, and extracts each label. Every incoming
+batch opens a decision popup with `Sort & Print`, `Print Original Order`,
+`Add to Pile`, and `Cancel`. Sorting reorders complete label blocks and submits
+the resulting ZPL batch once to `TSC TTP-244 Pro`. Sorting is
 color (ICE, BEIGE, BLACK, WHITE), then fit (BAGGY, PLAIN), then size ascending;
 unclassified labels are tagged MIX and sent last. A separate large-text divider
 label is inserted before every category (for example, `ICE-28` or
@@ -85,6 +87,12 @@ MIX; a trailing `_39` means size 32 only when the SKU is not already ambiguous.
 Each divider also shows the number of order labels in that category and the
 seller alias (`PRABHU` for PRABHU ENTERPRISES and `SEEMA` for SEEMA
 ENTERPRISES). If both appear in one category, both aliases are shown.
+
+`Add to Pile` stores the captured batch without printing it. The main window
+shows the piled job/label totals. `Print pile` asks whether to globally sort all
+labels from every piled job or print normally in arrival order (all of Job A,
+then all of Job B). The pile is cleared only after Windows accepts the complete
+print job; a failed submission leaves the pile available for retry.
 
 Do not run `raw_print_capture.py` at the same time as the dialog because only
 one process can listen on port 9100.

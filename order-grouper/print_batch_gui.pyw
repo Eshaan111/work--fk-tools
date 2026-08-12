@@ -25,6 +25,7 @@ from raw_print_capture import (
 CAPTURE_HOST = "127.0.0.1"
 CAPTURE_PORT = 9100
 PHYSICAL_PRINTER = "TSC TTP-244 Pro"
+PILE_DIRECTORY = DEFAULT_RAW_DIRECTORY.parent / "piles"
 COLOR_ORDER = {"ICE": 0, "BEIGE": 1, "BLACK": 2, "WHITE": 3}
 FIT_ORDER = {"BAGGY": 0, "PLAIN": 1}
 SIZE_ORDER = {26: 0, 28: 1, 30: 2, 32: 3, 34: 4, 36: 5}
@@ -106,6 +107,14 @@ def apply_sorting(source: Path, metadata: dict[str, object]) -> Path:
     labels_summary = Path(str(metadata["labels_summary"]))
     records = json.loads(labels_summary.read_text(encoding="utf-8"))
     data = source.read_bytes()
+    required_sort_fields = {"color", "fit", "size", "is_mix", "sort_tag"}
+    for index, record in enumerate(records, start=1):
+        missing = required_sort_fields.difference(record)
+        if missing:
+            raise RuntimeError(
+                f"Label {index} is missing sorting data: "
+                f"{', '.join(sorted(missing))}. Re-extract this legacy batch first."
+            )
 
     all_blocks = list(re.finditer(rb"\^XA.*?\^XZ", data, re.I | re.S))
     printable_blocks = [
@@ -220,6 +229,9 @@ class BatchCaptureWorker(threading.Thread):
     def __init__(self, events: queue.Queue[dict[str, Any]]) -> None:
         super().__init__(daemon=True)
         self.events = events
+        self.decisions: queue.Queue[str] = queue.Queue()
+        self.commands: queue.Queue[tuple[str, str | None]] = queue.Queue()
+        self.pile: list[tuple[Path, dict[str, object]]] = []
         self.stop_event = threading.Event()
         self.server: socket.socket | None = None
 
@@ -234,6 +246,129 @@ class BatchCaptureWorker(threading.Thread):
             except OSError:
                 pass
 
+    def submit_decision(self, decision: str) -> None:
+        self.decisions.put(decision)
+
+    def request_print_pile(self, mode: str) -> None:
+        self.commands.put(("print_pile", mode))
+
+    def pile_totals(self) -> tuple[int, int]:
+        return (
+            len(self.pile),
+            sum(int(metadata.get("label_count", 0)) for _, metadata in self.pile),
+        )
+
+    def emit_pile_updated(self) -> None:
+        job_count, label_count = self.pile_totals()
+        self.emit("pile_updated", job_count=job_count, label_count=label_count)
+
+    def wait_for_decision(self) -> str:
+        while not self.stop_event.is_set():
+            try:
+                return self.decisions.get(timeout=0.5)
+            except queue.Empty:
+                continue
+        return "cancel"
+
+    def prepare_pile_job(self) -> tuple[Path, dict[str, object]]:
+        pile_id = f"pile-{datetime.now():%Y%m%d-%H%M%S-%f}"
+        pile_directory = PILE_DIRECTORY / pile_id
+        pile_directory.mkdir(parents=True, exist_ok=False)
+        pile_source = pile_directory / f"{pile_id}.zpl"
+        labels_summary = pile_directory / "labels.json"
+
+        combined_data = bytearray()
+        combined_records: list[dict[str, object]] = []
+        for source, metadata in self.pile:
+            combined_data.extend(source.read_bytes())
+            summary_path = Path(str(metadata["labels_summary"]))
+            records = json.loads(summary_path.read_text(encoding="utf-8"))
+            combined_records.extend(records)
+
+        pile_source.write_bytes(bytes(combined_data))
+        labels_summary.write_text(
+            json.dumps(combined_records, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        metadata: dict[str, object] = {
+            "job_id": pile_id,
+            "format": "zpl",
+            "label_count": len(combined_records),
+            "labels_summary": str(labels_summary),
+            "pile_job_count": len(self.pile),
+            "raw_file": str(pile_source),
+        }
+        pile_source.with_suffix(".zpl.json").write_text(
+            json.dumps(metadata, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        return pile_source, metadata
+
+    def print_saved_job(
+        self,
+        source: Path,
+        metadata: dict[str, object],
+        mode: str,
+        context: str,
+    ) -> None:
+        order_label_count = int(metadata.get("label_count", 0))
+        printable_source = source
+        separator_count = 0
+        printable_count = order_label_count
+        if mode == "sorted":
+            self.emit("sorting", label_count=order_label_count, context=context)
+            printable_source = apply_sorting(source, metadata)
+            separator_count = int(metadata.get("separator_count", 0))
+            printable_count = int(
+                metadata.get("printable_count", order_label_count)
+            )
+
+        self.emit(
+            "printing",
+            label_count=printable_count,
+            order_label_count=order_label_count,
+            separator_count=separator_count,
+            context=context,
+            mode=mode,
+        )
+        windows_job_id, verified_count = print_raw_zpl(
+            printable_source,
+            PHYSICAL_PRINTER,
+        )
+        self.emit(
+            "printed",
+            source=str(printable_source),
+            label_count=verified_count,
+            order_label_count=order_label_count,
+            windows_job_id=windows_job_id,
+            context=context,
+            mode=mode,
+        )
+
+    def process_commands(self) -> None:
+        while True:
+            try:
+                command, argument = self.commands.get_nowait()
+            except queue.Empty:
+                return
+
+            if command != "print_pile" or argument not in {"sorted", "original"}:
+                continue
+            if not self.pile:
+                self.emit("pile_empty")
+                continue
+            try:
+                source, metadata = self.prepare_pile_job()
+                self.print_saved_job(source, metadata, argument, "pile")
+                self.pile.clear()
+                self.emit_pile_updated()
+            except Exception as error:
+                self.emit(
+                    "batch_error",
+                    message=f"{type(error).__name__}: {error}",
+                    context="pile",
+                )
+
     def run(self) -> None:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
@@ -245,6 +380,7 @@ class BatchCaptureWorker(threading.Thread):
                 self.emit("listening")
 
                 while not self.stop_event.is_set():
+                    self.process_commands()
                     try:
                         connection, peer = server.accept()
                     except socket.timeout:
@@ -304,29 +440,28 @@ class BatchCaptureWorker(threading.Thread):
                     str(processing_error or "No printable labels were detected.")
                 )
 
-            self.emit("sorting", label_count=label_count)
-            printable_source = apply_sorting(source, metadata)
-            printable_count = int(metadata.get("printable_count", label_count))
-            separator_count = int(metadata.get("separator_count", 0))
-
             self.emit(
-                "printing",
-                label_count=printable_count,
-                order_label_count=label_count,
-                separator_count=separator_count,
+                "decision_required",
+                label_count=label_count,
+                source=str(source),
             )
-            windows_job_id, verified_count = print_raw_zpl(
-                printable_source,
-                PHYSICAL_PRINTER,
-            )
-            self.emit(
-                "printed",
-                source=str(printable_source),
-                label_count=verified_count,
-                windows_job_id=windows_job_id,
-            )
+            decision = self.wait_for_decision()
+            if decision == "sorted":
+                self.print_saved_job(source, metadata, "sorted", "batch")
+            elif decision == "original":
+                self.print_saved_job(source, metadata, "original", "batch")
+            elif decision == "pile":
+                self.pile.append((source, metadata))
+                self.emit_pile_updated()
+                self.emit("added_to_pile", label_count=label_count)
+            else:
+                self.emit("batch_cancelled", label_count=label_count)
         except Exception as error:
-            self.emit("batch_error", message=f"{type(error).__name__}: {error}")
+            self.emit(
+                "batch_error",
+                message=f"{type(error).__name__}: {error}",
+                context="batch",
+            )
 
 
 class BatchPrinterApp:
@@ -372,6 +507,9 @@ class BatchPrinterApp:
         self.status = tk.StringVar(value="Starting capture service...")
         self.detail = tk.StringVar(value="")
         self.listener_state = tk.StringVar(value="STOPPED")
+        self.pile_state = tk.StringVar(value="Pile: 0 jobs / 0 labels")
+        self.pile_job_count = 0
+        self.pile_label_count = 0
 
         container = ttk.Frame(root, style="App.TFrame")
         container.pack(fill="both", expand=True)
@@ -428,6 +566,19 @@ class BatchPrinterApp:
             style="Secondary.TButton",
         )
         self.stop_button.pack(side="left", padx=(8, 0))
+        self.print_pile_button = ttk.Button(
+            controls,
+            text="Print pile",
+            command=self.print_pile,
+            state="disabled",
+            style="Primary.TButton",
+        )
+        self.print_pile_button.pack(side="right")
+        ttk.Label(
+            controls,
+            textvariable=self.pile_state,
+            style="Detail.TLabel",
+        ).pack(side="right", padx=(0, 12))
 
         history_frame = ttk.Frame(body, style="Card.TFrame", padding=14)
         history_frame.pack(fill="both", expand=True, pady=(14, 0))
@@ -484,6 +635,85 @@ class BatchPrinterApp:
             self.worker.stop()
         self.root.destroy()
 
+    def action_dialog(
+        self,
+        title: str,
+        heading: str,
+        message: str,
+        options: list[tuple[str, str, str]],
+    ) -> str:
+        result = tk.StringVar(value="cancel")
+        dialog = tk.Toplevel(self.root)
+        dialog.title(title)
+        dialog.configure(background="#F2F7F3")
+        dialog.resizable(False, False)
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        card = ttk.Frame(dialog, style="Card.TFrame", padding=22)
+        card.pack(fill="both", expand=True, padx=14, pady=14)
+        ttk.Label(card, text=heading, style="Status.TLabel").pack(anchor="w")
+        ttk.Label(
+            card,
+            text=message,
+            style="Detail.TLabel",
+            wraplength=520,
+            justify="left",
+        ).pack(anchor="w", pady=(7, 18))
+
+        def choose(value: str) -> None:
+            result.set(value)
+            dialog.destroy()
+
+        for value, label, style_name in options:
+            ttk.Button(
+                card,
+                text=label,
+                command=lambda selected=value: choose(selected),
+                style=style_name,
+            ).pack(fill="x", pady=(0, 8))
+
+        dialog.protocol("WM_DELETE_WINDOW", lambda: choose("cancel"))
+        dialog.update_idletasks()
+        x = self.root.winfo_rootx() + (self.root.winfo_width() - dialog.winfo_width()) // 2
+        y = self.root.winfo_rooty() + (self.root.winfo_height() - dialog.winfo_height()) // 2
+        dialog.geometry(f"+{max(0, x)}+{max(0, y)}")
+        dialog.focus_force()
+        self.root.wait_window(dialog)
+        return result.get()
+
+    def print_pile(self) -> None:
+        if self.worker is None or not self.worker.is_alive():
+            messagebox.showwarning(
+                "Listener not running",
+                "Start the listener before printing the pile.",
+            )
+            return
+        if self.pile_label_count < 1:
+            messagebox.showinfo("Pile is empty", "There are no batches in the pile.")
+            return
+
+        choice = self.action_dialog(
+            "Print pile",
+            "Print the complete pile?",
+            (
+                f"{self.pile_job_count} jobs containing "
+                f"{self.pile_label_count} order labels are ready.\n\n"
+                "Sorted printing combines and sorts every label globally. "
+                "Normal printing preserves Job A, then Job B, in original order."
+            ),
+            [
+                ("sorted", "Sort & Print Pile", "Primary.TButton"),
+                ("original", "Print Pile Normally", "Secondary.TButton"),
+                ("cancel", "Cancel", "Secondary.TButton"),
+            ],
+        )
+        if choice in {"sorted", "original"}:
+            self.worker.request_print_pile(choice)
+            self.status.set("Preparing pile")
+            self.detail.set("Combining all piled jobs into one print batch.")
+            self.print_pile_button.configure(state="disabled")
+
     def poll_events(self) -> None:
         try:
             while True:
@@ -510,6 +740,25 @@ class BatchPrinterApp:
                 "Label details extracted (SKU, product, quantity, payment, "
                 "service, carrier, packaging, seller and AWB). Preparing batch."
             )
+        elif event_type == "decision_required":
+            choice = self.action_dialog(
+                "New Flipkart batch",
+                f"{event['label_count']} order labels received",
+                (
+                    "Choose how this batch should be handled. Adding it to the "
+                    "pile saves it without printing."
+                ),
+                [
+                    ("sorted", "Sort & Print", "Primary.TButton"),
+                    ("original", "Print Original Order", "Secondary.TButton"),
+                    ("pile", "Add to Pile", "Secondary.TButton"),
+                    ("cancel", "Cancel — Do Not Print", "Secondary.TButton"),
+                ],
+            )
+            if self.worker is not None:
+                self.worker.submit_decision(choice)
+            self.status.set("Processing your selection")
+            self.detail.set("The captured batch remains saved locally.")
         elif event_type == "sorting":
             self.status.set("Sorting stage")
             self.detail.set(
@@ -523,7 +772,12 @@ class BatchPrinterApp:
                 f"to {PHYSICAL_PRINTER}."
             )
         elif event_type == "printed":
-            self.status.set("Batch sent successfully")
+            context = str(event.get("context", "batch"))
+            self.status.set(
+                "Pile sent successfully"
+                if context == "pile"
+                else "Batch sent successfully"
+            )
             self.detail.set("Waiting for the next Flipkart print batch.")
             self.history.insert(
                 "",
@@ -532,10 +786,48 @@ class BatchPrinterApp:
                     datetime.now().strftime("%H:%M:%S"),
                     event["label_count"],
                     event["windows_job_id"],
-                    "Submitted to TTP-244 Pro",
+                    (
+                        "Pile submitted to TTP-244 Pro"
+                        if context == "pile"
+                        else "Submitted to TTP-244 Pro"
+                    ),
                 ),
                 tags=("success",),
             )
+        elif event_type == "pile_updated":
+            self.pile_job_count = int(event["job_count"])
+            self.pile_label_count = int(event["label_count"])
+            self.pile_state.set(
+                f"Pile: {self.pile_job_count} jobs / "
+                f"{self.pile_label_count} labels"
+            )
+            self.print_pile_button.configure(
+                state="normal" if self.pile_label_count else "disabled"
+            )
+        elif event_type == "added_to_pile":
+            self.status.set("Batch added to pile")
+            self.detail.set(
+                f"Stored {event['label_count']} labels without printing. "
+                "Waiting for the next batch."
+            )
+            self.history.insert(
+                "",
+                0,
+                values=(
+                    datetime.now().strftime("%H:%M:%S"),
+                    event["label_count"],
+                    "—",
+                    "Added to pile",
+                ),
+            )
+        elif event_type == "batch_cancelled":
+            self.status.set("Batch cancelled")
+            self.detail.set(
+                "The batch was saved locally but was not printed or added to the pile."
+            )
+        elif event_type == "pile_empty":
+            self.status.set("Pile is empty")
+            self.detail.set("Add one or more incoming batches before printing the pile.")
         elif event_type == "batch_error":
             self.status.set("Batch failed")
             self.detail.set(event["message"])
