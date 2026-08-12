@@ -6190,6 +6190,42 @@ def get_preflight_page_definitions(
     ]
 
 
+def resolve_preflight_image_brand(
+    config: BotConfig,
+    listing_selection: ListingSelection,
+    flow_definition: FlowDefinition | None,
+    image_page: FlowPageDefinition,
+) -> str:
+    """Resolve the image brand the same way the runtime image step does."""
+    if flow_definition is not None:
+        image_step = next(
+            (
+                step
+                for step in flow_definition.steps
+                if step.spec_file == image_page.page_file
+                and step.handler == "image_upload_page"
+            ),
+            None,
+        )
+        if image_step is not None:
+            image_source = image_step.spec_payload.get("image_source")
+            if isinstance(image_source, dict) and image_source.get("brand_name_from"):
+                flow_state = FlowState()
+                flow_state.context.update(flow_definition.manifest_context)
+                # Runtime queue data is authoritative over manifest defaults.
+                flow_state.context["brand_name"] = listing_selection.brand_name
+                resolved_brand = resolve_runtime_reference(
+                    image_source["brand_name_from"],
+                    config,
+                    listing_selection,
+                    flow_state,
+                )
+                if isinstance(resolved_brand, str) and resolved_brand.strip():
+                    return resolved_brand.strip()
+
+    return image_page.brand_name or listing_selection.brand_name
+
+
 def validate_startup_queue_inputs(startup_selections: list[StartupSelection]) -> None:
     """Validate all Excel rows and image capacity before launching a browser."""
     validation_errors: list[str] = []
@@ -6249,7 +6285,12 @@ def validate_startup_queue_inputs(startup_selections: list[StartupSelection]) ->
         if image_page is None:
             continue
 
-        image_brand = image_page.brand_name or listing_selection.brand_name
+        image_brand = resolve_preflight_image_brand(
+            config,
+            listing_selection,
+            flow_definition,
+            image_page,
+        )
         image_directory = config.image_directory.resolve()
         image_key = (
             str(image_directory).casefold(),

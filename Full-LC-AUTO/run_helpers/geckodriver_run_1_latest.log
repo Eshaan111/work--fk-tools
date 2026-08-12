@@ -970,3 +970,320 @@ TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
 interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
 webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
 1784897270005	Marionette	INFO	Stopped listening on port 50956
+1785654967392	geckodriver	INFO	Listening on 127.0.0.1:50508
+1785654970564	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "-profile" "C:\\Users\\HP\\AppData\\Roaming ... irefox\\Profiles\\y6d16t5c.default-release" "--remote-debugging-port" "50509" "--remote-allow-hosts" "localhost" "-no-remote"
+1785654971315	Marionette	INFO	Marionette enabled
+1785654971355	Marionette	INFO	Listening on port 50516
+WebDriver BiDi listening on ws://127.0.0.1:50509
+Read port: 50516
+1785654971576	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.error: "Experiment desktop-release-rollout-show-relay-to-all-browsers-next-sign-up-modal-cta has unknown featureId: email-autocomplete-relay"
+console.error: "Experiment visual-card-updates has unknown featureId: newtabRefinedCardsLayout"
+console.error: "Experiment enable-nimbus-unenrollment-synchronization has unknown featureId: nimbusStore"
+console.error: "Experiment private-window-visual-refresh-design-change-only has unknown featureId: feltPrivacy"
+1785655061527	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+JavaScript warning: https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js, line 1885: Script terminated by timeout at:
+nrWrapper@https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js:1885:33
+
+1785655203611	Marionette	INFO	Stopped listening on port 50516
+1785655351912	geckodriver	INFO	Listening on 127.0.0.1:50837
+1785655355042	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "-profile" "C:\\Users\\HP\\AppData\\Roaming ... irefox\\Profiles\\y6d16t5c.default-release" "--remote-debugging-port" "50838" "--remote-allow-hosts" "localhost" "-no-remote"
+1785655355686	Marionette	INFO	Marionette enabled
+1785655355720	Marionette	INFO	Listening on port 50845
+WebDriver BiDi listening on ws://127.0.0.1:50838
+Read port: 50845
+1785655355933	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+console.error: "Experiment desktop-release-rollout-show-relay-to-all-browsers-next-sign-up-modal-cta has unknown featureId: email-autocomplete-relay"
+console.error: "Experiment visual-card-updates has unknown featureId: newtabRefinedCardsLayout"
+console.error: "Experiment enable-nimbus-unenrollment-synchronization has unknown featureId: nimbusStore"
+console.error: "Experiment private-window-visual-refresh-design-change-only has unknown featureId: feltPrivacy"
+1785655443053	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1, line 806: Script terminated by timeout at:
+S@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:806:27
+xL@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:889:351
+l.nt@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1001:472
+b@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1006:725
+u@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:727:271
+vo@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:441:648
+pD@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:727:369
+nD.prototype.flush@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:731:83
+nD.prototype.push@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:729:379
+xD@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:733:627
+JS/<@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1007:161
+l.Tq/<@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:949:126
+l.Tq/c/<@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:948:418
+nrWrapper@https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js:1896:33
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785655664710	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785655877821	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785656095753	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+1785656310342	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+1785656527035	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/903.f2203231207948d21085.js, line 2: Script terminated by timeout at:
+19755/i/g.fx.tick@https://static-assets-web.flixcart.com/fk-sp-static/script/903.f2203231207948d21085.js:2:168540
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785656739282	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785656954147	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785657197588	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785657415209	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1, line 258: Script terminated by timeout at:
+l.get@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:258:593
+Ae@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:320:240
+l.apply@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:294:465
+gb@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:257:711
+Md.prototype.evaluate@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:296:72
+yh/c<@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:377:159
+l.apply@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:294:465
+gb@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:257:711
+Md.prototype.evaluate@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:296:72
+Fe@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:321:216
+l.apply@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:294:465
+gb@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:257:711
+fb@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:257:462
+de@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:310:301
+l.apply@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:294:465
+gb@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:257:711
+fb@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:257:462
+ne@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:312:301
+te@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:316:137
+ue@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:315:97
+l.apply@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:294:465
+gb@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:257:711
+fb@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:257:462
+xe/<@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:318:475
+l.invoke@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:294:362
+FT/<@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:1052:1000
+jN.prototype.K@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:961:1600
+kN@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:961:1687
+l.ot@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:1042:375
+l.nt/</<@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:1041:82
+Sl@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:443:77
+op@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:473:243
+l.nt/<@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:1041:68
+d@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:959:495
+$M.prototype.fa@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:960:349
+l.nt@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:1041:52
+b@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:1045:725
+u@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:749:271
+vo@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:463:648
+pD@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:749:369
+nD.prototype.flush@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:753:83
+nD.prototype.push@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:751:379
+xD@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:755:627
+JS/<@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:1046:161
+l.Tq/<@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:988:126
+l.Tq/c/<@https://www.googletagmanager.com/gtag/js?id=G-TVF0VCMCT3&cx=c&gtm=4e67t1:987:418
+nrWrapper@https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js:1896:33
+
+1785657630418	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1, line 806: Script terminated by timeout at:
+S@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:806:27
+S@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:806:180
+ZR@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:996:1795
+l.ot@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1003:141
+l.nt/</<@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1002:82
+Sl@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:421:77
+op@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:451:243
+l.nt/<@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1002:68
+d@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:920:495
+$M.prototype.fa@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:921:349
+l.nt@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1002:52
+b@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1006:725
+u@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:727:271
+vo@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:441:648
+pD@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:727:369
+nD.prototype.flush@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:731:83
+nD.prototype.push@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:729:379
+xD@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:733:627
+JS/<@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:1007:161
+l.Tq/<@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:949:126
+l.Tq/c/<@https://www.googletagmanager.com/gtag/js?id=G-0SJLGHBL81&cx=c&gtm=4e67t1:948:418
+nrWrapper@https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js:1896:33
+
+1785657842668	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785658069934	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript error: https://static-assets-web.flixcart.com/fk-sp-static/script/7306.cb88b290e9269d26bd96.js, line 2: TypeError: can't convert undefined to object
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+1785658239505	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+1785658456207	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript error: , line 0: uncaught exception: <html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+1785658668022	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785658887871	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+1785659103941	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js, line 1885: Script terminated by timeout at:
+nrWrapper@https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js:1885:33
+
+1785659318659	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+1785659535283	RemoteAgent	WARN	TimedPromise timed out after 500 ms: stacktrace:
+TimedPromise/<@chrome://remote/content/shared/Sync.sys.mjs:448:24
+TimedPromise@chrome://remote/content/shared/Sync.sys.mjs:432:10
+interaction.flushEventLoop@chrome://remote/content/marionette/interaction.sys.mjs:471:10
+webdriverClickElement@chrome://remote/content/marionette/interaction.sys.mjs:221:33
+console.warn: WindowsJumpLists: "Failed to fetch favicon for " "https://chatgpt.com/" [Exception... "Failure"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "<unknown>"  data: no]
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/6287.669b9fbaed5cf6a1ea1a.js:2:2384524
+
+1785659667478	Marionette	INFO	Stopped listening on port 50845
