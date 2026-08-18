@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260813-091305-174737",
+  "label_number": 61,
+  "order_id": "OD438340717076295100",
+  "sku": "F-32-Beige-Baggy-Plain-Jeans-BEPJ-QR9LOG3",
+  "product": "FADEVIELLE Relaxed Fit Men Beige Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0913 hrs, 13/08/26",
+  "awb": "FMPC6394122203",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 32,
+  "sort_tag": "BEIGE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260813-091305-174737\\061-OD438340717076295100.zpl",
+  "preview_file": null
+}

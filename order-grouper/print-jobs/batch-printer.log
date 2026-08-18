@@ -1,0 +1,9 @@
+2026-08-15 20:58:08,830 ERROR MainThread Failed to handle UI event {'type': 'capturing'}
+Traceback (most recent call last):
+  File "print_batch_gui.pyw", line 762, in poll_events
+    self.handle_event(event)
+    ~~~~~~~~~~~~~~~~~^^^^^^^
+  File "print_batch_gui.pyw", line 791, in handle_event
+    self.detail.set(f"Capturing {event['byte_count']:,} bytes…")
+                                 ~~~~~^^^^^^^^^^^^^^
+KeyError: 'byte_count'

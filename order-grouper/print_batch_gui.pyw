@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ctypes
 import json
+import logging
 import queue
 import re
 import socket
@@ -26,9 +27,23 @@ CAPTURE_HOST = "127.0.0.1"
 CAPTURE_PORT = 9100
 PHYSICAL_PRINTER = "TSC TTP-244 Pro"
 PILE_DIRECTORY = DEFAULT_RAW_DIRECTORY.parent / "piles"
+LOG_FILE = DEFAULT_RAW_DIRECTORY.parent / "batch-printer.log"
+LOGGER = logging.getLogger("flipkart_batch_printer")
 COLOR_ORDER = {"ICE": 0, "BEIGE": 1, "BLACK": 2, "WHITE": 3}
 FIT_ORDER = {"BAGGY": 0, "PLAIN": 1}
 SIZE_ORDER = {26: 0, 28: 1, 30: 2, 32: 3, 34: 4, 36: 5}
+
+
+def configure_runtime_logging() -> None:
+    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if LOGGER.handlers:
+        return
+    handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s %(levelname)s %(threadName)s %(message)s")
+    )
+    LOGGER.addHandler(handler)
+    LOGGER.setLevel(logging.INFO)
 
 
 def enable_high_dpi_rendering() -> None:
@@ -226,12 +241,16 @@ def apply_sorting(source: Path, metadata: dict[str, object]) -> Path:
 
 
 class BatchCaptureWorker(threading.Thread):
-    def __init__(self, events: queue.Queue[dict[str, Any]]) -> None:
+    def __init__(
+        self,
+        events: queue.Queue[dict[str, Any]],
+        pile: list[tuple[Path, dict[str, object]]] | None = None,
+    ) -> None:
         super().__init__(daemon=True)
         self.events = events
         self.decisions: queue.Queue[str] = queue.Queue()
         self.commands: queue.Queue[tuple[str, str | None]] = queue.Queue()
-        self.pile: list[tuple[Path, dict[str, object]]] = []
+        self.pile = list(pile or [])
         self.stop_event = threading.Event()
         self.server: socket.socket | None = None
 
@@ -363,6 +382,7 @@ class BatchCaptureWorker(threading.Thread):
                 self.pile.clear()
                 self.emit_pile_updated()
             except Exception as error:
+                LOGGER.exception("Pile printing failed")
                 self.emit(
                     "batch_error",
                     message=f"{type(error).__name__}: {error}",
@@ -393,6 +413,7 @@ class BatchCaptureWorker(threading.Thread):
                     with connection:
                         self.process_connection(connection, peer)
         except Exception as error:
+            LOGGER.exception("Capture worker stopped unexpectedly")
             self.emit("fatal", message=f"{type(error).__name__}: {error}")
         finally:
             self.server = None
@@ -457,6 +478,7 @@ class BatchCaptureWorker(threading.Thread):
             else:
                 self.emit("batch_cancelled", label_count=label_count)
         except Exception as error:
+            LOGGER.exception("Incoming batch processing failed")
             self.emit(
                 "batch_error",
                 message=f"{type(error).__name__}: {error}",
@@ -469,6 +491,7 @@ class BatchPrinterApp:
         self.root = root
         self.events: queue.Queue[dict[str, Any]] = queue.Queue()
         self.worker: BatchCaptureWorker | None = None
+        root.report_callback_exception = self.report_callback_exception
 
         root.title("Flipkart Batch Printer")
         display_scale = max(1.0, root.winfo_fpixels("1i") / 96.0)
@@ -616,12 +639,29 @@ class BatchPrinterApp:
     def start(self) -> None:
         if self.worker is not None and self.worker.is_alive():
             return
-        self.worker = BatchCaptureWorker(self.events)
+        retained_pile = list(self.worker.pile) if self.worker is not None else []
+        self.worker = BatchCaptureWorker(self.events, pile=retained_pile)
         self.worker.start()
         self.listener_state.set("STARTING")
         self.listener_badge.configure(style="Stopped.TLabel")
         self.status.set("Starting capture service...")
         self.detail.set("Checking local port 9100.")
+
+    def report_callback_exception(
+        self,
+        exception_type: type[BaseException],
+        exception: BaseException,
+        traceback_object: object,
+    ) -> None:
+        LOGGER.error(
+            "Unhandled Tk callback exception",
+            exc_info=(exception_type, exception, traceback_object),
+        )
+        try:
+            self.status.set("Interface recovered from an error")
+            self.detail.set(f"{exception_type.__name__}: {exception}")
+        except tk.TclError:
+            pass
 
     def stop(self) -> None:
         if self.worker is not None:
@@ -717,10 +757,25 @@ class BatchPrinterApp:
     def poll_events(self) -> None:
         try:
             while True:
-                self.handle_event(self.events.get_nowait())
+                event = self.events.get_nowait()
+                try:
+                    self.handle_event(event)
+                except Exception as error:
+                    LOGGER.exception("Failed to handle UI event %r", event)
+                    if (
+                        event.get("type") == "decision_required"
+                        and self.worker is not None
+                    ):
+                        self.worker.submit_decision("cancel")
+                    self.status.set("Interface recovered from an error")
+                    self.detail.set(f"{type(error).__name__}: {error}")
         except queue.Empty:
             pass
-        self.root.after(100, self.poll_events)
+        finally:
+            try:
+                self.root.after(100, self.poll_events)
+            except tk.TclError:
+                pass
 
     def handle_event(self, event: dict[str, Any]) -> None:
         event_type = event["type"]
@@ -829,7 +884,12 @@ class BatchPrinterApp:
             self.status.set("Pile is empty")
             self.detail.set("Add one or more incoming batches before printing the pile.")
         elif event_type == "batch_error":
-            self.status.set("Batch failed")
+            context = str(event.get("context", "batch"))
+            if context == "pile" and self.pile_label_count:
+                self.print_pile_button.configure(state="normal")
+                self.status.set("Pile print failed — pile retained")
+            else:
+                self.status.set("Batch failed")
             self.detail.set(event["message"])
             self.history.insert(
                 "",
@@ -845,8 +905,9 @@ class BatchPrinterApp:
             self.detail.set(event["message"])
             messagebox.showerror("Capture service failed", event["message"])
         elif event_type == "stopped":
-            self.listener_state.set("STOPPED")
-            self.listener_badge.configure(style="Stopped.TLabel")
+            if self.listener_state.get() != "FAILED":
+                self.listener_state.set("STOPPED")
+                self.listener_badge.configure(style="Stopped.TLabel")
             self.start_button.configure(state="normal")
             self.stop_button.configure(state="disabled")
             if self.status.get() == "Stopping...":
@@ -854,6 +915,8 @@ class BatchPrinterApp:
 
 
 def main() -> None:
+    configure_runtime_logging()
+    LOGGER.info("Starting Flipkart Batch Printer")
     enable_high_dpi_rendering()
     root = tk.Tk()
     detected_dpi = root.winfo_fpixels("1i")

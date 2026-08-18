@@ -1,0 +1,18 @@
+{
+  "job_id": "seema-white-20260815-203752-523135",
+  "format": "zpl",
+  "label_count": 38,
+  "labels_summary": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\reprints\\seema-white-20260815-203752-523135\\labels.json",
+  "raw_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\reprints\\seema-white-20260815-203752-523135\\seema-white-original-blocks.zpl",
+  "source_jobs": [
+    "20260815-193704-701184",
+    "20260815-193723-144862",
+    "20260815-194314-760571"
+  ],
+  "filter": "seller=SEEMA ENTERPRISES; color=WHITE",
+  "sorting_applied": true,
+  "sorted_file": "print-jobs\\reprints\\sorted\\seema-white-original-blocks.zpl",
+  "sort_manifest": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\reprints\\seema-white-20260815-203752-523135\\sort-order.json",
+  "separator_count": 7,
+  "printable_count": 45
+}

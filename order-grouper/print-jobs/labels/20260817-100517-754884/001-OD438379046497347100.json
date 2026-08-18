@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260817-100517-754884",
+  "label_number": 1,
+  "order_id": "OD438379046497347100",
+  "sku": "S-30-Black-Plain-Jeans-BPJ-3160749582",
+  "product": "FLEECRANE Straight Fit Men Black Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1005 hrs, 17/08/26",
+  "awb": "SF3612835366N",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260817-100517-754884\\001-OD438379046497347100.zpl",
+  "preview_file": null
+}

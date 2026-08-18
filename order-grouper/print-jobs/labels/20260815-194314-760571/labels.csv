@@ -1,0 +1,2 @@
+﻿batch_id,label_number,order_id,sku,product,quantity,payment_type,service_type,carrier,packaging_instruction,seller,printed_at,awb,fit,color,size,sort_tag,is_mix,zpl_file,preview_file
+20260815-194314-760571,1,OD438365494486257400,SHY_FJS-S-28-White-Plain-Jeans-PWJ-03238651,JEE GENZZ Men White Jeans 28 JS,1,COD,STD,E-Kart Logistics,,SEEMA ENTERPRISES,"1943 hrs, 15/08/26",FMPC6402525754,PLAIN,WHITE,28,WHITE-PLAIN-28,False,C:\Users\ESHAAN\HAKUR\work--fk-tools\order-grouper\print-jobs\labels\20260815-194314-760571\001-OD438365494486257400.zpl,

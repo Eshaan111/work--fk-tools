@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260813-091305-174737",
+  "label_number": 36,
+  "order_id": "OD438344640882441100",
+  "sku": "JS-S-28-White-Plain-Jeans-WPJ-318967204547041411",
+  "product": "SEEMA ENTERPRISES Regular Men White Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0913 hrs, 13/08/26",
+  "awb": "FMPC6395857457",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260813-091305-174737\\036-OD438344640882441100.zpl",
+  "preview_file": null
+}

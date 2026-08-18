@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260813-091305-174737",
+  "label_number": 18,
+  "order_id": "OD438342466151914100",
+  "sku": "F-34-ICE-BAGGY-PLAIN-IBP-WNDAW62896WAD",
+  "product": "Mocktail Kocktail Loose Fit Men Light Blue",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0913 hrs, 13/08/26",
+  "awb": "FMPC6395307814",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 34,
+  "sort_tag": "ICE-BAGGY-34",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260813-091305-174737\\018-OD438342466151914100.zpl",
+  "preview_file": null
+}

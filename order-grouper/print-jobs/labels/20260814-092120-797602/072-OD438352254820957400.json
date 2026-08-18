@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260814-092120-797602",
+  "label_number": 72,
+  "order_id": "OD438352254820957400",
+  "sku": "S-SP_F-30-Black-PLAIN-BPJ-79855175531047",
+  "product": "SE GENZ TRENDS Men Black Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0921 hrs, 14/08/26",
+  "awb": "SF3458496900F",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260814-092120-797602\\072-OD438352254820957400.zpl",
+  "preview_file": null
+}

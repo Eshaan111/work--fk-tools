@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260815-193723-144862",
+  "label_number": 41,
+  "order_id": "OD438362024082509100",
+  "sku": "S-32-White-Plain-Jeans-WPJ-8125796405470414",
+  "product": "FADEVIELLE Regular Men White Jeans 32 WPJ",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1937 hrs, 15/08/26",
+  "awb": "FMPP4215726733",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260815-193723-144862\\041-OD438362024082509100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260817-095528-739953",
+  "label_number": 53,
+  "order_id": "OD438372213459083100",
+  "sku": "MVS-30-Black-Plain-Jeans-BPJ-4705923816",
+  "product": "FADEVILLE Relaxed Fit Men Black Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0954 hrs, 17/08/26",
+  "awb": "FMPC6406741572",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260817-095528-739953\\053-OD438372213459083100.zpl",
+  "preview_file": null
+}

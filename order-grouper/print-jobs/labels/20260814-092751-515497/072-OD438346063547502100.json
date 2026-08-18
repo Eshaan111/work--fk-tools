@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260814-092751-515497",
+  "label_number": 72,
+  "order_id": "OD438346063547502100",
+  "sku": "OSP_F-32-Black-PLAIN-BPJ-21789614501206",
+  "product": "DENIM FIT Boyfriend Men Black Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0927 hrs, 14/08/26",
+  "awb": "FMPC6398360072",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 32,
+  "sort_tag": "BLACK-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260814-092751-515497\\072-OD438346063547502100.zpl",
+  "preview_file": null
+}

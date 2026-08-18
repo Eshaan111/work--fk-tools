@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260815-193723-144862",
+  "label_number": 47,
+  "order_id": "OD438356060133981100",
+  "sku": "I-30-Black-Plain-Jeans-BPJ-302764198",
+  "product": "FAIDRALWILL Regular Men Black Jeans 30 BPJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1937 hrs, 15/08/26",
+  "awb": "FMPC6402618102",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260815-193723-144862\\047-OD438356060133981100.zpl",
+  "preview_file": null
+}

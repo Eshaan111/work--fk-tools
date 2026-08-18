@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260815-192839-649813",
+  "label_number": 98,
+  "order_id": "OD438357274360092100",
+  "sku": "F-White-30-Plain-0651604898",
+  "product": "Kimi Slim Men White Jeans 30 MMWHite",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "1928 hrs, 15/08/26",
+  "awb": "FMPC6402617499",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 30,
+  "sort_tag": "WHITE-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260815-192839-649813\\098-OD438357274360092100.zpl",
+  "preview_file": null
+}

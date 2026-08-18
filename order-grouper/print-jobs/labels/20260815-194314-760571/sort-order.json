@@ -1,0 +1,19 @@
+[
+  {
+    "print_position": 1,
+    "kind": "category_separator",
+    "separator_text": "WHITE-PLAIN-28",
+    "category_label_count": 1,
+    "sellers": "SEEMA",
+    "sort_tag": "WHITE-PLAIN-28"
+  },
+  {
+    "print_position": 2,
+    "kind": "flipkart_label",
+    "original_label_number": 1,
+    "order_id": "OD438365494486257400",
+    "sku": "SHY_FJS-S-28-White-Plain-Jeans-PWJ-03238651",
+    "sort_tag": "WHITE-PLAIN-28",
+    "is_mix": false
+  }
+]
