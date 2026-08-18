@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-102007-483687",
+  "label_number": 26,
+  "order_id": "OD338380383156671100",
+  "sku": "F-28-BEIGE-BAGGY-PLAIN-MEN-JEANS-HDNW758296",
+  "product": "STARVIELLE Straight Fit Men Beige Jeans 28",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "1020 hrs, 18/08/26",
+  "awb": "SF3460327369F",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 28,
+  "sort_tag": "BEIGE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-102007-483687\\026-OD338380383156671100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-102441-392354",
+  "label_number": 3,
+  "order_id": "OD338381412163147100",
+  "sku": "MSKUT-F-28-ICE-BAGGY--IBP-NDNWAKOO93",
+  "product": "FLELECRANEES TREND Boyfriend Men Silver Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1024 hrs, 18/08/26",
+  "awb": "SF3612842457N",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 28,
+  "sort_tag": "ICE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-102441-392354\\003-OD338381412163147100.zpl",
+  "preview_file": null
+}

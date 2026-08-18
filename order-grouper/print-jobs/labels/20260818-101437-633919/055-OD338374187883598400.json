@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-101437-633919",
+  "label_number": 55,
+  "order_id": "OD338374187883598400",
+  "sku": "FS-32-ICE-BAGGY-PLAIN-IBP-342664264352",
+  "product": "INDIVANE Men Light Blue Jeans ICE 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1014 hrs, 18/08/26",
+  "awb": "FMPC6410850283",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 32,
+  "sort_tag": "ICE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-101437-633919\\055-OD338374187883598400.zpl",
+  "preview_file": null
+}

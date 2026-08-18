@@ -675,6 +675,18 @@ class BatchPrinterApp:
             self.worker.stop()
         self.root.destroy()
 
+    def restore_main_window(self) -> None:
+        """Make an incoming-job prompt reachable even if the app was minimized."""
+        try:
+            if self.root.state() in {"iconic", "withdrawn"}:
+                self.root.deiconify()
+            self.root.update_idletasks()
+            self.root.lift()
+            self.root.attributes("-topmost", True)
+            self.root.after(900, lambda: self.root.attributes("-topmost", False))
+        except tk.TclError:
+            pass
+
     def action_dialog(
         self,
         title: str,
@@ -682,13 +694,13 @@ class BatchPrinterApp:
         message: str,
         options: list[tuple[str, str, str]],
     ) -> str:
+        self.restore_main_window()
         result = tk.StringVar(value="cancel")
         dialog = tk.Toplevel(self.root)
+        dialog.withdraw()
         dialog.title(title)
         dialog.configure(background="#F2F7F3")
         dialog.resizable(False, False)
-        dialog.transient(self.root)
-        dialog.grab_set()
 
         card = ttk.Frame(dialog, style="Card.TFrame", padding=22)
         card.pack(fill="both", expand=True, padx=14, pady=14)
@@ -715,10 +727,31 @@ class BatchPrinterApp:
 
         dialog.protocol("WM_DELETE_WINDOW", lambda: choose("cancel"))
         dialog.update_idletasks()
-        x = self.root.winfo_rootx() + (self.root.winfo_width() - dialog.winfo_width()) // 2
-        y = self.root.winfo_rooty() + (self.root.winfo_height() - dialog.winfo_height()) // 2
-        dialog.geometry(f"+{max(0, x)}+{max(0, y)}")
+        dialog_width = dialog.winfo_reqwidth()
+        dialog_height = dialog.winfo_reqheight()
+        screen_width = dialog.winfo_screenwidth()
+        screen_height = dialog.winfo_screenheight()
+        x = self.root.winfo_rootx() + (self.root.winfo_width() - dialog_width) // 2
+        y = self.root.winfo_rooty() + (self.root.winfo_height() - dialog_height) // 2
+        x = min(max(20, x), max(20, screen_width - dialog_width - 20))
+        y = min(max(20, y), max(20, screen_height - dialog_height - 60))
+        dialog.geometry(f"{dialog_width}x{dialog_height}+{x}+{y}")
+        dialog.deiconify()
+        dialog.lift()
+        dialog.attributes("-topmost", True)
+        dialog.wait_visibility()
+        dialog.grab_set()
         dialog.focus_force()
+
+        def release_topmost() -> None:
+            try:
+                dialog.attributes("-topmost", False)
+            except tk.TclError:
+                pass
+
+        dialog.after(1200, release_topmost)
+        dialog.bind("<Escape>", lambda _event: choose("cancel"))
+        dialog.bell()
         self.root.wait_window(dialog)
         return result.get()
 

@@ -7,3 +7,6 @@ Traceback (most recent call last):
     self.detail.set(f"Capturing {event['byte_count']:,} bytes…")
                                  ~~~~~^^^^^^^^^^^^^^
 KeyError: 'byte_count'
+2026-08-17 09:55:19,381 INFO MainThread Starting Flipkart Batch Printer
+2026-08-18 10:12:20,553 INFO MainThread Starting Flipkart Batch Printer
+2026-08-18 10:24:32,542 INFO MainThread Starting Flipkart Batch Printer

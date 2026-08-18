@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-102007-483687",
+  "label_number": 82,
+  "order_id": "OD438374849775592100",
+  "sku": "F-White-32-Plain-560984565",
+  "product": "BEG FASHION Slim Men White Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "1020 hrs, 18/08/26",
+  "awb": "FMPC6410796231",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-102007-483687\\082-OD438374849775592100.zpl",
+  "preview_file": null
+}
