@@ -1,0 +1,2 @@
+﻿batch_id,label_number,order_id,sku,product,quantity,payment_type,service_type,carrier,packaging_instruction,seller,printed_at,awb,fit,color,size,sort_tag,is_mix,zpl_file,preview_file
+20260821-090208-017112,1,OD338410905562571100,F-28-BEIGE-BAGGY-JEANS-BEBJ-1231354,INDIVANE Relaxed Fit Men Beige Jeans 28,1,COD,STD,E-Kart Logistics,Use Transparent Packaging,SEEMA ENTERPRISES,"0902 hrs, 21/08/26",FMPC6421280654,BAGGY,BEIGE,28,BEIGE-BAGGY-28,False,C:\Users\ESHAAN\HAKUR\work--fk-tools\order-grouper\print-jobs\labels\20260821-090208-017112\001-OD338410905562571100.zpl,

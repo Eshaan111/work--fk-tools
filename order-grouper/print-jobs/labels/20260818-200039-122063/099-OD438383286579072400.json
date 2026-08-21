@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200039-122063",
+  "label_number": 99,
+  "order_id": "OD438383286579072400",
+  "sku": "S-I-30-White-Plain-Jeans-WPJ-65423213",
+  "product": "FLIECRANE Men Black Jeans 32 PBJ-12212",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2000 hrs, 18/08/26",
+  "awb": "FMPC6413258702",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 30,
+  "sort_tag": "WHITE-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200039-122063\\099-OD438383286579072400.zpl",
+  "preview_file": null
+}

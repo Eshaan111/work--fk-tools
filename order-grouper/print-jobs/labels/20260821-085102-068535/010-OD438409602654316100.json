@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260821-085102-068535",
+  "label_number": 10,
+  "order_id": "OD438409602654316100",
+  "sku": "OVD553_V9_Black_30",
+  "product": "DENIM FIT Relaxed Fit Men Multicolor Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0851 hrs, 21/08/26",
+  "awb": "SF3612908049N",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260821-085102-068535\\010-OD438409602654316100.zpl",
+  "preview_file": null
+}

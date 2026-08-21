@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260821-084340-941201",
+  "label_number": 97,
+  "order_id": "OD438409773020851100",
+  "sku": "S-28-White-Plain-Jeans-WPJ-435609218",
+  "product": "FADEVIELLE Slim Men White Jeans 28 WPJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0843 hrs, 21/08/26",
+  "awb": "FMPC6420685310",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260821-084340-941201\\097-OD438409773020851100.zpl",
+  "preview_file": null
+}

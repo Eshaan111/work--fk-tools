@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200039-122063",
+  "label_number": 61,
+  "order_id": "OD338384360622495100",
+  "sku": "FB-34-ICE-Baggy-Plain-Jeans-BEPJ-2EFNZU4",
+  "product": "FADEVIELLE Relaxed Fit Men Light Blue Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2000 hrs, 18/08/26",
+  "awb": "1344860975211",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 34,
+  "sort_tag": "ICE-BAGGY-34",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200039-122063\\061-OD338384360622495100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200814-502504",
+  "label_number": 2,
+  "order_id": "OD338345869180263100",
+  "sku": "BTL-SNS03-CB-MEN-ICE-BAGGY_32",
+  "product": "COLLABERY Boot-Leg Men Light Blue Jeans",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "2008 hrs, 18/08/26",
+  "awb": "FMPP4223807669",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 32,
+  "sort_tag": "ICE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200814-502504\\002-OD338345869180263100.zpl",
+  "preview_file": null
+}

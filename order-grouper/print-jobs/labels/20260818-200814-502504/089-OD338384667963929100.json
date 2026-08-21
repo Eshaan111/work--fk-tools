@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200814-502504",
+  "label_number": 89,
+  "order_id": "OD338384667963929100",
+  "sku": "F-32-ICE-BAGGY-PLAIN-IBP-419195498989V43",
+  "product": "Prabhu Fab Regular Men Blue Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "2008 hrs, 18/08/26",
+  "awb": "FMPC6413242313",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 32,
+  "sort_tag": "ICE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200814-502504\\089-OD338384667963929100.zpl",
+  "preview_file": null
+}

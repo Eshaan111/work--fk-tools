@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200039-122063",
+  "label_number": 48,
+  "order_id": "OD438390344733353100",
+  "sku": "FB-28-Black-Baggy-Plain-Jeans-BEPJ-YTNF155",
+  "product": "FADEVIELLE Relaxed Fit Men Black Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2000 hrs, 18/08/26",
+  "awb": "FMPC6412244368",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200039-122063\\048-OD438390344733353100.zpl",
+  "preview_file": null
+}

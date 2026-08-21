@@ -89,6 +89,52 @@ def seller_name(record: dict[str, object]) -> str:
     return cleaned or "UNKNOWN SELLER"
 
 
+def build_print_summary(
+    metadata: dict[str, object],
+) -> list[dict[str, object]]:
+    """Count captured order labels by color/fit and size for the UI summary."""
+    labels_summary = Path(str(metadata["labels_summary"]))
+    records = json.loads(labels_summary.read_text(encoding="utf-8"))
+    grouped: dict[tuple[str, str], dict[int, int]] = {}
+    mix_count = 0
+
+    for record in records:
+        if bool(record.get("is_mix")):
+            mix_count += 1
+            continue
+        try:
+            color = str(record["color"])
+            fit = str(record["fit"])
+            size = int(record["size"])
+            if color not in COLOR_ORDER or fit not in FIT_ORDER or size not in SIZE_ORDER:
+                raise ValueError("unrecognized sorting value")
+        except (KeyError, TypeError, ValueError):
+            mix_count += 1
+            continue
+        sizes = grouped.setdefault((color, fit), {})
+        sizes[size] = sizes.get(size, 0) + 1
+
+    summary: list[dict[str, object]] = []
+    for color, fit in sorted(
+        grouped,
+        key=lambda value: (COLOR_ORDER[value[0]], FIT_ORDER[value[1]]),
+    ):
+        sizes = grouped[(color, fit)]
+        summary.append(
+            {
+                "heading": f"{color}-{fit}",
+                "total": sum(sizes.values()),
+                "sizes": [
+                    {"size": size, "count": sizes[size]}
+                    for size in sorted(sizes, key=SIZE_ORDER.__getitem__)
+                ],
+            }
+        )
+    if mix_count:
+        summary.append({"heading": "MIX", "total": mix_count, "sizes": []})
+    return summary
+
+
 def make_category_label(heading: str, label_count: int, sellers: str) -> bytes:
     """Create a standalone divider label; captured labels are never edited."""
     font_width = max(54, min(96, 900 // len(heading)))
@@ -354,6 +400,12 @@ class BatchCaptureWorker(threading.Thread):
             printable_source,
             PHYSICAL_PRINTER,
         )
+        summary: list[dict[str, object]] = []
+        if mode == "sorted" or context == "pile":
+            try:
+                summary = build_print_summary(metadata)
+            except Exception:
+                LOGGER.exception("Could not build the printed-label summary")
         self.emit(
             "printed",
             source=str(printable_source),
@@ -362,6 +414,7 @@ class BatchCaptureWorker(threading.Thread):
             windows_job_id=windows_job_id,
             context=context,
             mode=mode,
+            summary=summary,
         )
 
     def process_commands(self) -> None:
@@ -755,6 +808,133 @@ class BatchPrinterApp:
         self.root.wait_window(dialog)
         return result.get()
 
+    def show_print_summary(
+        self,
+        summary: list[dict[str, object]],
+        order_label_count: int,
+        context: str,
+    ) -> None:
+        if not summary:
+            return
+        self.restore_main_window()
+        dialog = tk.Toplevel(self.root)
+        dialog.withdraw()
+        dialog.title("Pile summary" if context == "pile" else "Sorted batch summary")
+        dialog.configure(background="#F2F7F3")
+        dialog.minsize(420, 320)
+
+        card = ttk.Frame(dialog, style="Card.TFrame", padding=20)
+        card.pack(fill="both", expand=True, padx=14, pady=14)
+        ttk.Label(
+            card,
+            text="PRINTED LABEL SUMMARY",
+            style="Eyebrow.TLabel",
+        ).pack(anchor="w")
+        ttk.Label(
+            card,
+            text=f"{order_label_count} order labels submitted",
+            style="Status.TLabel",
+        ).pack(anchor="w", pady=(7, 3))
+        ttk.Label(
+            card,
+            text="Counts below exclude the inserted category-divider labels.",
+            style="Detail.TLabel",
+        ).pack(anchor="w", pady=(0, 12))
+
+        text_frame = ttk.Frame(card, style="Card.TFrame")
+        text_frame.pack(fill="both", expand=True)
+        summary_text = tk.Text(
+            text_frame,
+            width=38,
+            height=min(26, max(10, sum(len(group["sizes"]) + 2 for group in summary))),
+            background="#F8FCF9",
+            foreground="#294634",
+            relief="flat",
+            borderwidth=0,
+            padx=16,
+            pady=12,
+            font=("Segoe UI", 11),
+            cursor="arrow",
+        )
+        scrollbar = ttk.Scrollbar(
+            text_frame,
+            orient="vertical",
+            command=summary_text.yview,
+        )
+        summary_text.configure(yscrollcommand=scrollbar.set)
+        summary_text.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        summary_text.tag_configure(
+            "heading",
+            foreground="#166534",
+            font=("Segoe UI", 12, "bold"),
+            spacing1=6,
+            spacing3=3,
+        )
+        summary_text.tag_configure(
+            "size",
+            lmargin1=22,
+            lmargin2=22,
+            spacing1=2,
+            spacing3=2,
+        )
+        for group in summary:
+            total = int(group["total"])
+            summary_text.insert(
+                "end",
+                f"{group['heading']}  ({total})\n",
+                "heading",
+            )
+            sizes = group["sizes"]
+            if sizes:
+                for size_entry in sizes:
+                    count = int(size_entry["count"])
+                    summary_text.insert(
+                        "end",
+                        f"{int(size_entry['size'])}  ────→  {count}\n",
+                        "size",
+                    )
+            else:
+                summary_text.insert("end", f"Unclassified  ────→  {total}\n", "size")
+            summary_text.insert("end", "\n")
+        summary_text.configure(state="disabled")
+
+        ttk.Button(
+            card,
+            text="Close summary",
+            command=dialog.destroy,
+            style="Primary.TButton",
+        ).pack(fill="x", pady=(14, 0))
+        dialog.bind("<Escape>", lambda _event: dialog.destroy())
+
+        dialog.update_idletasks()
+        dialog_width = max(460, dialog.winfo_reqwidth())
+        dialog_height = min(
+            dialog.winfo_screenheight() - 100,
+            max(420, dialog.winfo_reqheight()),
+        )
+        x = min(
+            max(20, self.root.winfo_rootx() + 70),
+            max(20, dialog.winfo_screenwidth() - dialog_width - 20),
+        )
+        y = min(
+            max(20, self.root.winfo_rooty() + 45),
+            max(20, dialog.winfo_screenheight() - dialog_height - 60),
+        )
+        dialog.geometry(f"{dialog_width}x{dialog_height}+{x}+{y}")
+        dialog.deiconify()
+        dialog.lift()
+        dialog.attributes("-topmost", True)
+        dialog.focus_force()
+
+        def release_topmost() -> None:
+            try:
+                dialog.attributes("-topmost", False)
+            except tk.TclError:
+                pass
+
+        dialog.after(1200, release_topmost)
+
     def print_pile(self) -> None:
         if self.worker is None or not self.worker.is_alive():
             messagebox.showwarning(
@@ -882,6 +1062,13 @@ class BatchPrinterApp:
                 ),
                 tags=("success",),
             )
+            summary = event.get("summary")
+            if isinstance(summary, list):
+                self.show_print_summary(
+                    summary,
+                    int(event["order_label_count"]),
+                    context,
+                )
         elif event_type == "pile_updated":
             self.pile_job_count = int(event["job_count"])
             self.pile_label_count = int(event["label_count"])

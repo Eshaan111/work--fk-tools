@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200039-122063",
+  "label_number": 75,
+  "order_id": "OD338380741220551100",
+  "sku": "JN_32_White_WPJ-12354198",
+  "product": "INIVAENE Straight Fit Men White Jeans 32",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2000 hrs, 18/08/26",
+  "awb": "FMPP4223818155",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200039-122063\\075-OD338380741220551100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260821-084340-941201",
+  "label_number": 93,
+  "order_id": "OD338405897738223100",
+  "sku": "S-28-Black-Plain-Jeans-PWJ-5468454",
+  "product": "METRISK Slim Men Black Jeans 28 Matrisk",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0843 hrs, 21/08/26",
+  "awb": "FMPC6421214206",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260821-084340-941201\\093-OD338405897738223100.zpl",
+  "preview_file": null
+}

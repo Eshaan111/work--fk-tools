@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200039-122063",
+  "label_number": 51,
+  "order_id": "OD438388776125418100",
+  "sku": "FB-28-WHITE-Baggy-Plain-Jeans-BEPJ-7SXFDMV",
+  "product": "FADEVIELLE Relaxed Fit Men White Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2000 hrs, 18/08/26",
+  "awb": "FMPC6413256637",
+  "fit": "BAGGY",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200039-122063\\051-OD438388776125418100.zpl",
+  "preview_file": null
+}

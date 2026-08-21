@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200940-594893",
+  "label_number": 18,
+  "order_id": "OD338382205487592100",
+  "sku": "MSKUT-F-32-ICE-BAGGY--IBP-BSKDW778",
+  "product": "PRABHUS TREND Boyfriend Men Blue Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "2009 hrs, 18/08/26",
+  "awb": "SF3460584280F",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 32,
+  "sort_tag": "ICE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200940-594893\\018-OD338382205487592100.zpl",
+  "preview_file": null
+}

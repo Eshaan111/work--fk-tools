@@ -1,0 +1,2 @@
+﻿batch_id,label_number,order_id,sku,product,quantity,payment_type,service_type,carrier,packaging_instruction,seller,printed_at,awb,fit,color,size,sort_tag,is_mix,zpl_file,preview_file
+20260818-202408-275598,1,OD438388776125418100,FB-28-WHITE-Baggy-Plain-Jeans-BEPJ-7SXFDMV,FADEVIELLE Relaxed Fit Men White Jeans 28,1,COD,STD,E-Kart Logistics,Use Transparent Packaging,SEEMA ENTERPRISES,"2024 hrs, 18/08/26",FMPC6413256637,BAGGY,WHITE,28,WHITE-BAGGY-28,False,C:\Users\ESHAAN\HAKUR\work--fk-tools\order-grouper\print-jobs\labels\20260818-202408-275598\001-OD438388776125418100.zpl,

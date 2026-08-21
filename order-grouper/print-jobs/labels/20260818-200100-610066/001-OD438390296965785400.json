@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260818-200100-610066",
+  "label_number": 1,
+  "order_id": "OD438390296965785400",
+  "sku": "S-OVD784_BPJ-XWQGER80C1_Black_30",
+  "product": "DENIM FIT Men Black Jeans 30 BPJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2000 hrs, 18/08/26",
+  "awb": "FMPC6412219600",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260818-200100-610066\\001-OD438390296965785400.zpl",
+  "preview_file": null
+}

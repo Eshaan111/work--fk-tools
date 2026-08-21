@@ -1,0 +1,22 @@
+{
+  "batch_id": "20260821-084340-941201",
+  "label_number": 34,
+  "order_id": "OD338406832374925100",
+  "sku": "F-30-BEIGE-BAGGY-JEANS-21-A2B146",
+  "product": "FLEECRANE Relaxed Fit Men Beige Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0843 hrs, 21/08/26",
+  "awb": "SF3461863521F",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 30,
+  "sort_tag": "BEIGE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260821-084340-941201\\034-OD338406832374925100.zpl",
+  "preview_file": null
+}
