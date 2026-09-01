@@ -1,8 +1,13 @@
+# Flipkart printer middleware (Windows RAW printing)
+pywin32
+
+# Flipkart order automation helpers
 openpyxl
 PyAutoGUI
 pynput
 selenium
+
+# PDF/image extraction and OCR helpers
 PyMuPDF
 Pillow
 pytesseract
-pywin32

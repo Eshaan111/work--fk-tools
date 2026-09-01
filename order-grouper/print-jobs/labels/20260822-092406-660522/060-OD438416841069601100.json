@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260822-092406-660522",
+  "label_number": 60,
+  "order_id": "OD438416841069601100",
+  "sku": "FB-34-WHITE-Baggy-Plain-Jeans-BEPJ-BLAXZXB",
+  "product": "INDIVANE Relaxed Fit Men White Jeans 34",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0924 hrs, 22/08/26",
+  "awb": "FMPC6423304702",
+  "customer_name": "Sagar Kumar",
+  "fit": "BAGGY",
+  "color": "WHITE",
+  "size": 34,
+  "sort_tag": "WHITE-BAGGY-34",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260822-092406-660522\\060-OD438416841069601100.zpl",
+  "preview_file": null
+}

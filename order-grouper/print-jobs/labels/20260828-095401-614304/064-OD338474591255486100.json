@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260828-095401-614304",
+  "label_number": 64,
+  "order_id": "OD338474591255486100",
+  "sku": "FB-34-WHITE-Baggy-Plain-Jeans-BEPJ-7NCQ74W",
+  "product": "STARVIELLE Relaxed Fit Men White Jeans 34",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0954 hrs, 28/08/26",
+  "awb": "5965738967580",
+  "customer_name": "Dinesh",
+  "fit": "BAGGY",
+  "color": "WHITE",
+  "size": 34,
+  "sort_tag": "WHITE-BAGGY-34",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260828-095401-614304\\064-OD338474591255486100.zpl",
+  "preview_file": null
+}

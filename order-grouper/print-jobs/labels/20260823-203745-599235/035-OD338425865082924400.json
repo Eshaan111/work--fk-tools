@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260823-203745-599235",
+  "label_number": 35,
+  "order_id": "OD338425865082924400",
+  "sku": "S-32-Black-Plain-Jeans-BPJ-851904723",
+  "product": "INDIVANE Jogger Fit Men Black Jeans 32",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2037 hrs, 23/08/26",
+  "awb": "FMPP4235105800",
+  "customer_name": "Bandi Mallikarjuna",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 32,
+  "sort_tag": "BLACK-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260823-203745-599235\\035-OD338425865082924400.zpl",
+  "preview_file": null
+}

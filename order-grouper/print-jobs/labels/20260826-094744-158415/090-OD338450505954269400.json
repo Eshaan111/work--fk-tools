@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260826-094744-158415",
+  "label_number": 90,
+  "order_id": "OD338450505954269400",
+  "sku": "S-32-White-Plain-Jeans-WPJ-927384625",
+  "product": "FADEVIELLE Straight Fit Men White Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0947 hrs, 26/08/26",
+  "awb": "FMPC6436795637",
+  "customer_name": "Santwo Bhat",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260826-094744-158415\\090-OD338450505954269400.zpl",
+  "preview_file": null
+}

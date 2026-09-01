@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260822-092406-660522",
+  "label_number": 93,
+  "order_id": "OD438370939090954100",
+  "sku": "S-30-White-Plain-Jeans-PWJ-0099853238",
+  "product": "JOVS HIL Regular Men White Jeans 30",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0924 hrs, 22/08/26",
+  "awb": "FMPP4229118871",
+  "customer_name": "Vijay Master",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 30,
+  "sort_tag": "WHITE-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260822-092406-660522\\093-OD438370939090954100.zpl",
+  "preview_file": null
+}

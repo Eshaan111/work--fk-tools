@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260822-092420-722332",
+  "label_number": 4,
+  "order_id": "OD438416951910743400",
+  "sku": "SF-28-BEIGE-BAGGY-JEANS-CS181",
+  "product": "FADEVIELLE Relaxed Fit Men Beige Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0924 hrs, 22/08/26",
+  "awb": "FMPC6423347896",
+  "customer_name": "Anup Soni",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 28,
+  "sort_tag": "BEIGE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260822-092420-722332\\004-OD438416951910743400.zpl",
+  "preview_file": null
+}

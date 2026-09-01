@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260823-203727-339336",
+  "label_number": 17,
+  "order_id": "OD438422584701271100",
+  "sku": "F-28-BEIGE-BAGGY-JEANS-CS123",
+  "product": "FADEVIELLE Straight Fit Men Beige Jeans 28",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2037 hrs, 23/08/26",
+  "awb": "FMPP4235105784",
+  "customer_name": "Prakhar Pratap Singh",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 28,
+  "sort_tag": "BEIGE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260823-203727-339336\\017-OD438422584701271100.zpl",
+  "preview_file": null
+}

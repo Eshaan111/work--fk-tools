@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260831-102117-372489",
+  "label_number": 4,
+  "order_id": "OD438494118906710100",
+  "sku": "F-28-Beige-Baggy-Plain-Jeans-BEPJ-HK7KLBR",
+  "product": "GENZ VANE Relaxed Fit Men Beige Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "1021 hrs, 31/08/26",
+  "awb": "FMPC6448315950",
+  "customer_name": "Naveena",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 28,
+  "sort_tag": "BEIGE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-102117-372489\\004-OD438494118906710100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260825-093905-965310",
+  "label_number": 100,
+  "order_id": "OD338445413091574100",
+  "sku": null,
+  "product": null,
+  "quantity": null,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0939 hrs, 25/08/26",
+  "awb": "FMPC6434615494",
+  "customer_name": "Rupesh Kumar",
+  "fit": "PLAIN",
+  "color": null,
+  "size": null,
+  "sort_tag": "MIX",
+  "is_mix": true,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260825-093905-965310\\100-OD338445413091574100.zpl",
+  "preview_file": null
+}

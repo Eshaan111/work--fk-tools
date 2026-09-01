@@ -1,0 +1,19 @@
+[
+  {
+    "print_position": 1,
+    "kind": "category_separator",
+    "separator_text": "BLACK-BAGGY-30",
+    "category_label_count": 1,
+    "sellers": "PRABHU",
+    "sort_tag": "BLACK-BAGGY-30"
+  },
+  {
+    "print_position": 2,
+    "kind": "flipkart_label",
+    "original_label_number": 1,
+    "order_id": "OD338487899789992100",
+    "sku": "JS-F-30-BLACK-BAGGY-PLAIN-JEANS-IBBP-KM596S",
+    "sort_tag": "BLACK-BAGGY-30",
+    "is_mix": false
+  }
+]

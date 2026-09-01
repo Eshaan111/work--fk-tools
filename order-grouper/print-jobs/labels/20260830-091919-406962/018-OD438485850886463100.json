@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260830-091919-406962",
+  "label_number": 18,
+  "order_id": "OD438485850886463100",
+  "sku": "S-28-White-Plain-Jeans-WPJ-68687410240",
+  "product": "INDIVANE Straight Fit Men White Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0919 hrs, 30/08/26",
+  "awb": "FMPC6446110045",
+  "customer_name": "Aayan Mujawar",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260830-091919-406962\\018-OD438485850886463100.zpl",
+  "preview_file": null
+}

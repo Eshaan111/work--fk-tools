@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260829-094758-995275",
+  "label_number": 89,
+  "order_id": "OD438477836750898100",
+  "sku": "SNS-CB-MEN-ICE-BAGGY_30",
+  "product": "COLLABERY Loose Fit Men Light Blue Jeans",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0947 hrs, 29/08/26",
+  "awb": "SF3466858881F",
+  "customer_name": "Vikas Parmar",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 30,
+  "sort_tag": "ICE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260829-094758-995275\\089-OD438477836750898100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260830-092746-862328",
+  "label_number": 22,
+  "order_id": "OD338483595923641100",
+  "sku": null,
+  "product": null,
+  "quantity": null,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0927 hrs, 30/08/26",
+  "awb": "5965740503240",
+  "customer_name": "Yashwanth Nayak Chinna Nayak",
+  "fit": "PLAIN",
+  "color": null,
+  "size": null,
+  "sort_tag": "MIX",
+  "is_mix": true,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260830-092746-862328\\022-OD338483595923641100.zpl",
+  "preview_file": null
+}

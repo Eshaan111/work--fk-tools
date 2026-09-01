@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260825-093349-915039",
+  "label_number": 14,
+  "order_id": "OD438442976833863100",
+  "sku": "F-30-BEIGE-BAGGY-JEANS-BEBJ-1231487",
+  "product": "INDIVANE Relaxed Fit Men Beige Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0933 hrs, 25/08/26",
+  "awb": "SF3463421085F",
+  "customer_name": "Jameswar Marndi",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 30,
+  "sort_tag": "BEIGE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260825-093349-915039\\014-OD438442976833863100.zpl",
+  "preview_file": null
+}

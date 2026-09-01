@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260823-202928-910095",
+  "label_number": 55,
+  "order_id": "OD438425635235457100",
+  "sku": "JV144_210-BLR-04_Blue_30",
+  "product": "GENZ VANE Regular Men Blue Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "2029 hrs, 23/08/26",
+  "awb": "FMPC6429251124",
+  "customer_name": "Phul Chan Kumar",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 30,
+  "sort_tag": "ICE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260823-202928-910095\\055-OD438425635235457100.zpl",
+  "preview_file": null
+}

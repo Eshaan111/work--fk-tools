@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260831-102117-372489",
+  "label_number": 40,
+  "order_id": "OD438497676211176100",
+  "sku": "F-28-ICE-BAGGY-PLAIN-IBP-DD00489W",
+  "product": "WAZWEAR Straight Fit Men Light Blue Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "1021 hrs, 31/08/26",
+  "awb": "FMPC6450337080",
+  "customer_name": "Janam Sahu",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 28,
+  "sort_tag": "ICE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-102117-372489\\040-OD438497676211176100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260828-095802-803839",
+  "label_number": 77,
+  "order_id": "OD438467798068581100",
+  "sku": "S-32-White-jeans-plain-PWJS-401",
+  "product": "INDIVANE Straight Fit Men White Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0958 hrs, 28/08/26",
+  "awb": "FMPC6442058096",
+  "customer_name": "Bhabesh Das",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260828-095802-803839\\077-OD438467798068581100.zpl",
+  "preview_file": null
+}

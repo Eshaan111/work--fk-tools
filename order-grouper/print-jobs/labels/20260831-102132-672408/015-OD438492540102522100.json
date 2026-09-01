@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260831-102132-672408",
+  "label_number": 15,
+  "order_id": "OD438492540102522100",
+  "sku": "JS-S-28-White-Plain-Jeans-PWJ-03410597",
+  "product": "GENZ VANE Regular Men White Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "1021 hrs, 31/08/26",
+  "awb": "FMPC6449846164",
+  "customer_name": "Somesh Wakode",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-102132-672408\\015-OD438492540102522100.zpl",
+  "preview_file": null
+}

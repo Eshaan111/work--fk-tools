@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260826-095434-775776",
+  "label_number": 2,
+  "order_id": "OD338453553587942400",
+  "sku": "FS-30-ICE-BAGGY-PLAIN-IBP-0259879815132",
+  "product": "INDIVANE Relaxed Fit Men Light Blue Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0954 hrs, 26/08/26",
+  "awb": "SF3550233886N",
+  "customer_name": "Mohd Jishan Jishan",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 30,
+  "sort_tag": "ICE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260826-095434-775776\\002-OD338453553587942400.zpl",
+  "preview_file": null
+}

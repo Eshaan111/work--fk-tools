@@ -1,0 +1,2 @@
+﻿batch_id,label_number,order_id,sku,product,quantity,payment_type,service_type,carrier,packaging_instruction,seller,printed_at,awb,customer_name,fit,color,size,sort_tag,is_mix,zpl_file,preview_file
+20260828-100249-707774,1,OD338474616325989100,F-32-BEIGE-BAGGY-PLAIN-MEN-JEANS-HDNW7582324446,GENZ VANE Straight Fit Men Beige Jeans,1,,STD,,,PRABHU ENTERPRISES,"1002 hrs, 28/08/26",SF3611919671N,Gautam Kumar,BAGGY,BEIGE,32,BEIGE-BAGGY-32,False,C:\Users\ESHAAN\HAKUR\work--fk-tools\order-grouper\print-jobs\labels\20260828-100249-707774\001-OD338474616325989100.zpl,

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260828-095802-803839",
+  "label_number": 55,
+  "order_id": "OD338470649270158100",
+  "sku": "FK_9487991-Baggy-GP-16_Blue_30",
+  "product": "Dkait Loose Fit Men Blue Jeans 30",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0958 hrs, 28/08/26",
+  "awb": "FMPP4243411149",
+  "customer_name": "Sanal Pk",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 30,
+  "sort_tag": "ICE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260828-095802-803839\\055-OD338470649270158100.zpl",
+  "preview_file": null
+}

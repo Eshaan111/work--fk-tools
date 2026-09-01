@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260831-102132-672408",
+  "label_number": 4,
+  "order_id": "OD338496087480491100",
+  "sku": "F-White-30-Plain-43249809",
+  "product": "PYKAR Slim Men White Jeans 30 WHITE",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "1021 hrs, 31/08/26",
+  "awb": "FMPC6449284708",
+  "customer_name": "Balarama Krishna",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 30,
+  "sort_tag": "WHITE-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-102132-672408\\004-OD338496087480491100.zpl",
+  "preview_file": null
+}

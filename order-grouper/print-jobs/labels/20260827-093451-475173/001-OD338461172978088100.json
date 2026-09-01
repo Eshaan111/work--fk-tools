@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260827-093451-475173",
+  "label_number": 1,
+  "order_id": "OD338461172978088100",
+  "sku": "CPTY-S-32-White--WPJ-6546512416",
+  "product": "STARVIELLE Relaxed Fit Men White Jeans 32",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0934 hrs, 27/08/26",
+  "awb": "SF3550254623N",
+  "customer_name": "Vishal",
+  "fit": "BAGGY",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260827-093451-475173\\001-OD338461172978088100.zpl",
+  "preview_file": null
+}

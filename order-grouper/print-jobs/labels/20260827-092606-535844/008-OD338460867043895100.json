@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260827-092606-535844",
+  "label_number": 8,
+  "order_id": "OD338460867043895100",
+  "sku": "MJ-30-Black-Plain-Jeans-MJ-5930284716",
+  "product": "FLIECRAINE Boyfriend Men Blue Jeans 30 BPJ",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0926 hrs, 27/08/26",
+  "awb": "SF3550253424N",
+  "customer_name": "Aman Raj",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260827-092606-535844\\008-OD338460867043895100.zpl",
+  "preview_file": null
+}

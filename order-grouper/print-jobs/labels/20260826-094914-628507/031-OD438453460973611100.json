@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260826-094914-628507",
+  "label_number": 31,
+  "order_id": "OD438453460973611100",
+  "sku": "S-28-Black-Plain-Jeans-PBJ-47588025",
+  "product": "G PLUS Slim Men Black Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0949 hrs, 26/08/26",
+  "awb": "FMPC6436537403",
+  "customer_name": "Suneel Kumar",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260826-094914-628507\\031-OD438453460973611100.zpl",
+  "preview_file": null
+}

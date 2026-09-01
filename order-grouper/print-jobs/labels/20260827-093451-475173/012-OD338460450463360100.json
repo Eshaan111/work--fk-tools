@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260827-093451-475173",
+  "label_number": 12,
+  "order_id": "OD338460450463360100",
+  "sku": "MSKUT-F-34-BLACK-BAGGY--IBBP-KM596S",
+  "product": "PRABHUS TREND Boyfriend Men Black Jeans 34",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0934 hrs, 27/08/26",
+  "awb": "SF3550251922N",
+  "customer_name": "Vivek Bharti",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 34,
+  "sort_tag": "BLACK-BAGGY-34",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260827-093451-475173\\012-OD338460450463360100.zpl",
+  "preview_file": null
+}

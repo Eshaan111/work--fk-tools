@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260825-093349-915039",
+  "label_number": 86,
+  "order_id": "OD438441513385767400",
+  "sku": "Sps_S-30-Black-Plain-Jeans-PBJ-47585488",
+  "product": "DDD COLLECTION Jogger Fit Men Black Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0933 hrs, 25/08/26",
+  "awb": "FMPC6433684942",
+  "customer_name": "Sumit Kumar",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260825-093349-915039\\086-OD438441513385767400.zpl",
+  "preview_file": null
+}

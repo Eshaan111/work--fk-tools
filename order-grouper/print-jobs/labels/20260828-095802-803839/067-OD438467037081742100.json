@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260828-095802-803839",
+  "label_number": 67,
+  "order_id": "OD438467037081742100",
+  "sku": "S-28-Plain-Black-Jeans-PBJ-09",
+  "product": "RAREONE Regular Men Black Jeans 28 R3",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0958 hrs, 28/08/26",
+  "awb": "FMPC6442101301",
+  "customer_name": "Subhrojit Saha",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260828-095802-803839\\067-OD438467037081742100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260828-100141-690155",
+  "label_number": 6,
+  "order_id": "OD438470394539753100",
+  "sku": "JS-DMJ-30-Black-Plain-Jeans-MJ-64973108257",
+  "product": "SEEMA ENTERPRISES Regular Men Black Jeans 30",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1001 hrs, 28/08/26",
+  "awb": "SF3611915863N",
+  "customer_name": "Rahul Singh",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260828-100141-690155\\006-OD438470394539753100.zpl",
+  "preview_file": null
+}

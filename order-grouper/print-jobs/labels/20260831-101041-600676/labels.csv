@@ -1,0 +1,2 @@
+﻿batch_id,label_number,order_id,sku,product,quantity,payment_type,service_type,carrier,packaging_instruction,seller,printed_at,awb,customer_name,fit,color,size,sort_tag,is_mix,zpl_file,preview_file
+20260831-101041-600676,1,OD438364185950238100,FB-32-WHITE-Baggy-Plain-Jeans-BEPJ-VO3X1EF,FADEVIELLE Relaxed Fit Men White Jeans 32,1,COD,STD,E-Kart Logistics,,SEEMA ENTERPRISES,"1010 hrs, 31/08/26",FMPC6450181031,Subhi Shukla,BAGGY,WHITE,32,WHITE-BAGGY-32,False,C:\Users\ESHAAN\HAKUR\work--fk-tools\order-grouper\print-jobs\labels\20260831-101041-600676\001-OD438364185950238100.zpl,

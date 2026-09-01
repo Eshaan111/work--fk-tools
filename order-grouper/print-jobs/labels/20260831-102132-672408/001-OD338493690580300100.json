@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260831-102132-672408",
+  "label_number": 1,
+  "order_id": "OD338493690580300100",
+  "sku": "F-Black-30-Plain-BPJ-2671863",
+  "product": "G PLUS Slim Men Black Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "1021 hrs, 31/08/26",
+  "awb": "FMPC6449809612",
+  "customer_name": "Salman Ali",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-102132-672408\\001-OD338493690580300100.zpl",
+  "preview_file": null
+}

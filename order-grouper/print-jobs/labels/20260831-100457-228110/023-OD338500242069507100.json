@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260831-100457-228110",
+  "label_number": 23,
+  "order_id": "OD338500242069507100",
+  "sku": "S-30-White-Plain-Jeans-PWJ-0323898756",
+  "product": "hotlist Slim Men White Jeans 30 WHITE",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1004 hrs, 31/08/26",
+  "awb": "FMPC6451272178",
+  "customer_name": "Ravi Kumar",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 30,
+  "sort_tag": "WHITE-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-100457-228110\\023-OD338500242069507100.zpl",
+  "preview_file": null
+}

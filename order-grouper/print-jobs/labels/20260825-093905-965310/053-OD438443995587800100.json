@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260825-093905-965310",
+  "label_number": 53,
+  "order_id": "OD438443995587800100",
+  "sku": "F-30-BLACK-PLAIN-BPJ-1282411",
+  "product": "PYKAR Slim Men Black Jeans 30 BLACK",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": null,
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0939 hrs, 25/08/26",
+  "awb": "FMPC6434613346",
+  "customer_name": "Alagu Poorvi72",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260825-093905-965310\\053-OD438443995587800100.zpl",
+  "preview_file": null
+}

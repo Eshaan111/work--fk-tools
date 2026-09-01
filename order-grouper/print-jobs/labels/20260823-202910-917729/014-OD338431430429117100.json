@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260823-202910-917729",
+  "label_number": 14,
+  "order_id": "OD338431430429117100",
+  "sku": "F-White-32-Plain-0909809709",
+  "product": "hotlist Slim Men White Jeans 32 white",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "2029 hrs, 23/08/26",
+  "awb": "FMPP4235104844",
+  "customer_name": "Anju A",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260823-202910-917729\\014-OD338431430429117100.zpl",
+  "preview_file": null
+}

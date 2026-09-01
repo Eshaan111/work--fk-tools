@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260823-203727-339336",
+  "label_number": 2,
+  "order_id": "OD438426904162366100",
+  "sku": "AVC_DMJ-30-Black-Plain-Jeans-MJ-98984451",
+  "product": "FLIECAINER Regular Men Black Jeans 30 BPJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2037 hrs, 23/08/26",
+  "awb": "FMPC6429252165",
+  "customer_name": "Suprajit Bairagi",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260823-203727-339336\\002-OD438426904162366100.zpl",
+  "preview_file": null
+}

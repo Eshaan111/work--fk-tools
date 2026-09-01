@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260828-095802-803839",
+  "label_number": 66,
+  "order_id": "OD338425728304275100",
+  "sku": "QWPT-F-30-ICE-BAGGY--IBP-9898904651235",
+  "product": "Fadeviellle Boyfriend Men Multicolor Jeans 30 QWPT",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0958 hrs, 28/08/26",
+  "awb": "FMPP4243330606",
+  "customer_name": "MRITYUNJAY BHATTACHARJEE",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 30,
+  "sort_tag": "ICE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260828-095802-803839\\066-OD338425728304275100.zpl",
+  "preview_file": null
+}

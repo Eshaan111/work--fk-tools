@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260827-093030-508441",
+  "label_number": 75,
+  "order_id": "OD438458431529754100",
+  "sku": "SP-SP-30-BLACK-BAGGY-PLAIN-Jean-419195498989V2771310",
+  "product": "Prabhuji Boot-Leg Men Multicolor Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0930 hrs, 27/08/26",
+  "awb": "5965738041594",
+  "customer_name": "Samir",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260827-093030-508441\\075-OD438458431529754100.zpl",
+  "preview_file": null
+}

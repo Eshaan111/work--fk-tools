@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260829-094758-995275",
+  "label_number": 84,
+  "order_id": "OD438477948631290100",
+  "sku": "FB-32-WHITE-Baggy-Plain-Jeans-BEPJ-ZEHXK5X",
+  "product": "GENZ VANE Relaxed Fit Men White Jeans",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0947 hrs, 29/08/26",
+  "awb": "FMPP4244230046",
+  "customer_name": "Mahanand Naik",
+  "fit": "BAGGY",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260829-094758-995275\\084-OD438477948631290100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260830-092746-862328",
+  "label_number": 16,
+  "order_id": "OD438488420630001100",
+  "sku": "F-28-BLACK-PLAIN-BPJ-7204188",
+  "product": "FLIECRAINE Regular Men Black Jeans 28 BPJ",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0927 hrs, 30/08/26",
+  "awb": "FMPP4246471293",
+  "customer_name": "Madhusmitasasmal",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260830-092746-862328\\016-OD438488420630001100.zpl",
+  "preview_file": null
+}

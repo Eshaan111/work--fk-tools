@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260830-092746-862328",
+  "label_number": 31,
+  "order_id": "OD338436363188113100",
+  "sku": "F-28-BEIGE-BAGGY-PLAIN-MEN-JEANS-HDNW7582125247",
+  "product": "GENZ VANE Straight Fit Men Beige Jeans",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0927 hrs, 30/08/26",
+  "awb": "FMPP4246471833",
+  "customer_name": "Davidbanjare",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 28,
+  "sort_tag": "BEIGE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260830-092746-862328\\031-OD338436363188113100.zpl",
+  "preview_file": null
+}

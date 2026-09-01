@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260831-100457-228110",
+  "label_number": 31,
+  "order_id": "OD438500366522310400",
+  "sku": "F-30-ICE-BAGGY-PLAIN-IBP-NSH6SN9",
+  "product": "DYENE Loose Fit Men Light Blue Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1004 hrs, 31/08/26",
+  "awb": "FMPC6451272105",
+  "customer_name": "Dipankr",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 30,
+  "sort_tag": "ICE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-100457-228110\\031-OD438500366522310400.zpl",
+  "preview_file": null
+}

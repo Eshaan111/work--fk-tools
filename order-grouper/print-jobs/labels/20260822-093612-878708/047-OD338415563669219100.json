@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260822-093612-878708",
+  "label_number": 47,
+  "order_id": "OD338415563669219100",
+  "sku": "F-28-BLACK-PLAIN-BPJ-3758678",
+  "product": "INIVAENE Regular Men Black Jeans 28 BPJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0936 hrs, 22/08/26",
+  "awb": "FMPC6424633857",
+  "customer_name": "SIDDHESHWAR GURU",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260822-093612-878708\\047-OD338415563669219100.zpl",
+  "preview_file": null
+}

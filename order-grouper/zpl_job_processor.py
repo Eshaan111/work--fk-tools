@@ -30,6 +30,7 @@ class ExtractedLabel:
     seller: str | None
     printed_at: str | None
     awb: str | None
+    customer_name: str | None
     fit: str
     color: str | None
     size: int | None
@@ -231,6 +232,7 @@ def process_zpl_job(
         )
         seller = extract_seller(fields)
         printed_at = extract_prefixed_value(fields, "Printed at")
+        customer_name = extract_prefixed_value(fields, "Name")
         fit, color, size, sort_tag, is_mix = classify_for_sorting(sku, product)
         identifier = order_id or f"label-{index:03d}"
         safe_identifier = re.sub(r"[^A-Za-z0-9._-]", "_", identifier)
@@ -258,6 +260,7 @@ def process_zpl_job(
             seller=seller,
             printed_at=printed_at,
             awb=awb,
+            customer_name=customer_name,
             fit=fit,
             color=color,
             size=size,
@@ -299,6 +302,7 @@ def process_zpl_job(
                 "seller",
                 "printed_at",
                 "awb",
+                "customer_name",
                 "fit",
                 "color",
                 "size",

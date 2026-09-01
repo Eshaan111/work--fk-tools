@@ -1,0 +1,13 @@
+{
+  "job_id": "20260831-100457-228110",
+  "received_at": "2026-08-31T04:34:57+00:00",
+  "peer": "127.0.0.1:56454",
+  "format": "zpl",
+  "byte_count": 237820,
+  "sha256": "6ce3b6f33fbbd89da8bb10687ca9e81219062ebf47c0c9f9393849aeb428f1af",
+  "starts_with_hex": "0d 0a 20 20 20 20 20 20 20 20 20 20 20 20 5e 58 41 0d 0a 7e 54 41 30 30 30 0d 0a 7e 4a 53 4e 0d 0a 5e 4c 54 30 0d 0a 5e 4d 4e 57 0d 0a 5e 4d 54 44 0d 0a 5e 50 4f 4e 0d 0a 5e 50 4d 4e 0d 0a 5e",
+  "raw_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\raw\\raw-20260831-100457-228110.zpl",
+  "label_count": 74,
+  "labels_directory": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-100457-228110",
+  "labels_summary": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-100457-228110\\labels.json"
+}

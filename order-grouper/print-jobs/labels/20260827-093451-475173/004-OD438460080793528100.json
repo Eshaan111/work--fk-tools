@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260827-093451-475173",
+  "label_number": 4,
+  "order_id": "OD438460080793528100",
+  "sku": "F-28-BLACK-PLAIN-BPJ-8112990",
+  "product": "Strobine Slim Men Black Jeans 28 New",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0934 hrs, 27/08/26",
+  "awb": "SF3550250616N",
+  "customer_name": "Nitish Yadav",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260827-093451-475173\\004-OD438460080793528100.zpl",
+  "preview_file": null
+}

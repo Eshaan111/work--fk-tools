@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260827-093451-475173",
+  "label_number": 11,
+  "order_id": "OD438462179251919100",
+  "sku": "FJS-S-30-Plain-Black-Jeans-PBJ-04894655789895",
+  "product": "JEE GENZ Jogger Fit Men Black Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0934 hrs, 27/08/26",
+  "awb": "SF3550258886N",
+  "customer_name": "Rohan Chopda",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260827-093451-475173\\011-OD438462179251919100.zpl",
+  "preview_file": null
+}

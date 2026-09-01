@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260829-094758-995275",
+  "label_number": 70,
+  "order_id": "OD438479228681380100",
+  "sku": "F-32-WHITE-PLAIN-WPJ-964232282",
+  "product": "FLIECAINERER Boyfriend Men White Jeans 32 PBJ",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0947 hrs, 29/08/26",
+  "awb": "FMPP4244542887",
+  "customer_name": "Golden Kumar",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 32,
+  "sort_tag": "WHITE-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260829-094758-995275\\070-OD438479228681380100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260830-092746-862328",
+  "label_number": 96,
+  "order_id": "OD338487899789992100",
+  "sku": "JS-F-30-BLACK-BAGGY-PLAIN-JEANS-IBBP-KM596S",
+  "product": "GENZ VANE Loose Fit Men Black Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0927 hrs, 30/08/26",
+  "awb": "1344862491365",
+  "customer_name": "Prasad",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260830-092746-862328\\096-OD338487899789992100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260826-095543-816254",
+  "label_number": 36,
+  "order_id": "OD338456296312176100",
+  "sku": "F-28-WHITE-PLAIN-WPJ-3292087171",
+  "product": "INIVAENE Slim Men White Jeans 28 WPJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0955 hrs, 26/08/26",
+  "awb": "5965737215012",
+  "customer_name": "Auranjeb Ansari",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260826-095543-816254\\036-OD338456296312176100.zpl",
+  "preview_file": null
+}

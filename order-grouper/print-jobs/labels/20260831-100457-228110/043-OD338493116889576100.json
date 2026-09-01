@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260831-100457-228110",
+  "label_number": 43,
+  "order_id": "OD338493116889576100",
+  "sku": null,
+  "product": null,
+  "quantity": null,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1004 hrs, 31/08/26",
+  "awb": "SF3465450272F",
+  "customer_name": "Dev Rana",
+  "fit": "PLAIN",
+  "color": null,
+  "size": null,
+  "sort_tag": "MIX",
+  "is_mix": true,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260831-100457-228110\\043-OD338493116889576100.zpl",
+  "preview_file": null
+}

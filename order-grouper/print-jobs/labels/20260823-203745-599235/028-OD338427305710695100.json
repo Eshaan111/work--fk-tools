@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260823-203745-599235",
+  "label_number": 28,
+  "order_id": "OD338427305710695100",
+  "sku": "S-30-Plain-White-Jeans-PBJ-01231",
+  "product": "DDD COLLECTION Regular Men White Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "2037 hrs, 23/08/26",
+  "awb": "FMPC6429252724",
+  "customer_name": "Karna",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 30,
+  "sort_tag": "WHITE-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260823-203745-599235\\028-OD338427305710695100.zpl",
+  "preview_file": null
+}

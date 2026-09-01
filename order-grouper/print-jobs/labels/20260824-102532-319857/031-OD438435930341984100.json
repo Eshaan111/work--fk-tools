@@ -1,0 +1,23 @@
+{
+  "batch_id": "20260824-102532-319857",
+  "label_number": 31,
+  "order_id": "OD438435930341984100",
+  "sku": "OVD67_BPJ-349TZEN_Black_28",
+  "product": "DENIM FIT Regular Men Black Jeans 28",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "1025 hrs, 24/08/26",
+  "awb": "FMPP4235393965",
+  "customer_name": "Rajesh",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 28,
+  "sort_tag": "BLACK-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\print-jobs\\labels\\20260824-102532-319857\\031-OD438435930341984100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,840 @@
+[
+  {
+    "print_position": 1,
+    "kind": "category_separator",
+    "separator_text": "ICE-28",
+    "category_label_count": 4,
+    "sellers": "SEEMA",
+    "sort_tag": "ICE-BAGGY-28"
+  },
+  {
+    "print_position": 2,
+    "kind": "flipkart_label",
+    "original_label_number": 15,
+    "order_id": "OD438467796484130100",
+    "sku": "F-28-ICE-BAGGY-PLAIN-IBP-014809475457-A15",
+    "sort_tag": "ICE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 3,
+    "kind": "flipkart_label",
+    "original_label_number": 16,
+    "order_id": "OD438470509819401100",
+    "sku": "F-28-ICE-BAGGY-PLAIN-IBP-827312382387",
+    "sort_tag": "ICE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 4,
+    "kind": "flipkart_label",
+    "original_label_number": 17,
+    "order_id": "OD438469274074042400",
+    "sku": "F-28-ICE-BAGGY-PLAIN-IBP-909598987878",
+    "sort_tag": "ICE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 5,
+    "kind": "flipkart_label",
+    "original_label_number": 18,
+    "order_id": "OD438470356164926400",
+    "sku": "F-28-ICE-BAGGY-PLAIN-IBP-909598987878",
+    "sort_tag": "ICE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 6,
+    "kind": "category_separator",
+    "separator_text": "ICE-30",
+    "category_label_count": 9,
+    "sellers": "SEEMA",
+    "sort_tag": "ICE-BAGGY-30"
+  },
+  {
+    "print_position": 7,
+    "kind": "flipkart_label",
+    "original_label_number": 30,
+    "order_id": "OD438473627421434100",
+    "sku": "F-30-ICE-BAGGY-PLAIN-JEANS-IBP-3232d2",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 8,
+    "kind": "flipkart_label",
+    "original_label_number": 54,
+    "order_id": "OD438415557804981100",
+    "sku": "FK_9487991-Baggy-GP-16_Blue_30",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 9,
+    "kind": "flipkart_label",
+    "original_label_number": 55,
+    "order_id": "OD338470649270158100",
+    "sku": "FK_9487991-Baggy-GP-16_Blue_30",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 10,
+    "kind": "flipkart_label",
+    "original_label_number": 56,
+    "order_id": "OD338466671464149400",
+    "sku": "FS-30-ICE-BAGGY-PLAIN-IBP-0259879815132",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 11,
+    "kind": "flipkart_label",
+    "original_label_number": 57,
+    "order_id": "OD338472387314919400",
+    "sku": "FS-30-ICE-BAGGY-PLAIN-IBP-0259879815132",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 12,
+    "kind": "flipkart_label",
+    "original_label_number": 60,
+    "order_id": "OD338468562284130100",
+    "sku": "JS-F-30-ICE-BAGGY-PLAIN-IBP-BHHHBDKAS779",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 13,
+    "kind": "flipkart_label",
+    "original_label_number": 61,
+    "order_id": "OD438422861347778100",
+    "sku": "JS-F-30-ICE-PLAIN-IBP-SNK87976S",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 14,
+    "kind": "flipkart_label",
+    "original_label_number": 65,
+    "order_id": "OD438469344550135400",
+    "sku": "PFJS-F-30-ICE-BAGGY-PLAIN-IBP-HBKDW882Sk",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 15,
+    "kind": "flipkart_label",
+    "original_label_number": 66,
+    "order_id": "OD338425728304275100",
+    "sku": "QWPT-F-30-ICE-BAGGY--IBP-9898904651235",
+    "sort_tag": "ICE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 16,
+    "kind": "category_separator",
+    "separator_text": "ICE-32",
+    "category_label_count": 2,
+    "sellers": "SEEMA",
+    "sort_tag": "ICE-BAGGY-32"
+  },
+  {
+    "print_position": 17,
+    "kind": "flipkart_label",
+    "original_label_number": 43,
+    "order_id": "OD438469959219058400",
+    "sku": "F-32-ICE-BAGGY-PLAIN-JEANS-IBP-MS8oAB",
+    "sort_tag": "ICE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 18,
+    "kind": "flipkart_label",
+    "original_label_number": 58,
+    "order_id": "OD338468248623139400",
+    "sku": "FS-32-ICE-BAGGY-PLAIN-IBP-0219898784811",
+    "sort_tag": "ICE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 19,
+    "kind": "category_separator",
+    "separator_text": "BEIGE-28",
+    "category_label_count": 14,
+    "sellers": "SEEMA",
+    "sort_tag": "BEIGE-BAGGY-28"
+  },
+  {
+    "print_position": 20,
+    "kind": "flipkart_label",
+    "original_label_number": 1,
+    "order_id": "OD438416218037618100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231309",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 21,
+    "kind": "flipkart_label",
+    "original_label_number": 2,
+    "order_id": "OD338470853259112100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231336",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 22,
+    "kind": "flipkart_label",
+    "original_label_number": 3,
+    "order_id": "OD338468388638479100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231349",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 23,
+    "kind": "flipkart_label",
+    "original_label_number": 4,
+    "order_id": "OD338466987174530100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231354",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 24,
+    "kind": "flipkart_label",
+    "original_label_number": 5,
+    "order_id": "OD438467592591970100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231354",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 25,
+    "kind": "flipkart_label",
+    "original_label_number": 6,
+    "order_id": "OD338468771811208100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231354",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 26,
+    "kind": "flipkart_label",
+    "original_label_number": 7,
+    "order_id": "OD438469112512326100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231354",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 27,
+    "kind": "flipkart_label",
+    "original_label_number": 8,
+    "order_id": "OD338469342329269100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231354",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 28,
+    "kind": "flipkart_label",
+    "original_label_number": 9,
+    "order_id": "OD338471481600061100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-BEBJ-1231354",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 29,
+    "kind": "flipkart_label",
+    "original_label_number": 10,
+    "order_id": "OD438467080038024100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-CS1134",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 30,
+    "kind": "flipkart_label",
+    "original_label_number": 11,
+    "order_id": "OD338469020218691100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-CS1134",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 31,
+    "kind": "flipkart_label",
+    "original_label_number": 12,
+    "order_id": "OD438469127926807100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-CS194",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 32,
+    "kind": "flipkart_label",
+    "original_label_number": 13,
+    "order_id": "OD438470801275892100",
+    "sku": "F-28-BEIGE-BAGGY-JEANS-CS194",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 33,
+    "kind": "flipkart_label",
+    "original_label_number": 14,
+    "order_id": "OD438474062334794100",
+    "sku": "F-28-Beige-Baggy-Plain-Jeans-BEPJ-FGV70R9",
+    "sort_tag": "BEIGE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 34,
+    "kind": "category_separator",
+    "separator_text": "BEIGE-30",
+    "category_label_count": 11,
+    "sellers": "SEEMA",
+    "sort_tag": "BEIGE-BAGGY-30"
+  },
+  {
+    "print_position": 35,
+    "kind": "flipkart_label",
+    "original_label_number": 19,
+    "order_id": "OD338472845649861100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-21-A2B530",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 36,
+    "kind": "flipkart_label",
+    "original_label_number": 20,
+    "order_id": "OD338467158463180100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-21-A2B702",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 37,
+    "kind": "flipkart_label",
+    "original_label_number": 21,
+    "order_id": "OD438470169764341400",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-516WFAAGG",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 38,
+    "kind": "flipkart_label",
+    "original_label_number": 22,
+    "order_id": "OD438474398350366100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-BEBJ-1231409",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 39,
+    "kind": "flipkart_label",
+    "original_label_number": 23,
+    "order_id": "OD438470363119498100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-BEBJ-1231434",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 40,
+    "kind": "flipkart_label",
+    "original_label_number": 24,
+    "order_id": "OD438470038718722100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-BEBJ-1231487",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 41,
+    "kind": "flipkart_label",
+    "original_label_number": 25,
+    "order_id": "OD338467240821545100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-BEBJ-1231505",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 42,
+    "kind": "flipkart_label",
+    "original_label_number": 26,
+    "order_id": "OD438468396545296100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-BEBJ-1231505",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 43,
+    "kind": "flipkart_label",
+    "original_label_number": 27,
+    "order_id": "OD438469381251044100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-BEBJ-1231505",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 44,
+    "kind": "flipkart_label",
+    "original_label_number": 28,
+    "order_id": "OD338470787254236100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-CS1168",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 45,
+    "kind": "flipkart_label",
+    "original_label_number": 29,
+    "order_id": "OD438467611894171100",
+    "sku": "F-30-BEIGE-BAGGY-JEANS-CS1214",
+    "sort_tag": "BEIGE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 46,
+    "kind": "category_separator",
+    "separator_text": "BEIGE-32",
+    "category_label_count": 11,
+    "sellers": "SEEMA",
+    "sort_tag": "BEIGE-BAGGY-32"
+  },
+  {
+    "print_position": 47,
+    "kind": "flipkart_label",
+    "original_label_number": 31,
+    "order_id": "OD438470259800709100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-21-A2B143",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 48,
+    "kind": "flipkart_label",
+    "original_label_number": 32,
+    "order_id": "OD338474082714138100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-21-A2B535",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 49,
+    "kind": "flipkart_label",
+    "original_label_number": 33,
+    "order_id": "OD438469246468959100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-BEBJ-1231596",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 50,
+    "kind": "flipkart_label",
+    "original_label_number": 34,
+    "order_id": "OD338467624118642100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-BEBJ-1231611",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 51,
+    "kind": "flipkart_label",
+    "original_label_number": 35,
+    "order_id": "OD338467929202994100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-BEBJ-1231611",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 52,
+    "kind": "flipkart_label",
+    "original_label_number": 36,
+    "order_id": "OD338468491621696100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-BEBJ-1231656",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 53,
+    "kind": "flipkart_label",
+    "original_label_number": 37,
+    "order_id": "OD438469897236211100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-BEBJ-1231656",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 54,
+    "kind": "flipkart_label",
+    "original_label_number": 38,
+    "order_id": "OD338473626135184100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-BEBJ-1231656",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 55,
+    "kind": "flipkart_label",
+    "original_label_number": 39,
+    "order_id": "OD338451829209128100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-CS1323",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 56,
+    "kind": "flipkart_label",
+    "original_label_number": 40,
+    "order_id": "OD338468299788497100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-CS1371",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 57,
+    "kind": "flipkart_label",
+    "original_label_number": 41,
+    "order_id": "OD438467062259416100",
+    "sku": "F-32-BEIGE-BAGGY-JEANS-CS1396",
+    "sort_tag": "BEIGE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 58,
+    "kind": "category_separator",
+    "separator_text": "BEIGE-34",
+    "category_label_count": 8,
+    "sellers": "SEEMA",
+    "sort_tag": "BEIGE-BAGGY-34"
+  },
+  {
+    "print_position": 59,
+    "kind": "flipkart_label",
+    "original_label_number": 44,
+    "order_id": "OD338468391038977100",
+    "sku": "F-34-BEIGE-BAGGY-JEANS-21-A2B704",
+    "sort_tag": "BEIGE-BAGGY-34",
+    "is_mix": false
+  },
+  {
+    "print_position": 60,
+    "kind": "flipkart_label",
+    "original_label_number": 45,
+    "order_id": "OD438468785447322100",
+    "sku": "F-34-BEIGE-BAGGY-JEANS-BEBJ-1231782",
+    "sort_tag": "BEIGE-BAGGY-34",
+    "is_mix": false
+  },
+  {
+    "print_position": 61,
+    "kind": "flipkart_label",
+    "original_label_number": 46,
+    "order_id": "OD338467072456824100",
+    "sku": "F-34-BEIGE-BAGGY-JEANS-BEBJ-1231789",
+    "sort_tag": "BEIGE-BAGGY-34",
+    "is_mix": false
+  },
+  {
+    "print_position": 62,
+    "kind": "flipkart_label",
+    "original_label_number": 47,
+    "order_id": "OD338471776209804100",
+    "sku": "F-34-BEIGE-BAGGY-JEANS-BEBJ-1231789",
+    "sort_tag": "BEIGE-BAGGY-34",
+    "is_mix": false
+  },
+  {
+    "print_position": 63,
+    "kind": "flipkart_label",
+    "original_label_number": 48,
+    "order_id": "OD338434228960233100",
+    "sku": "F-34-BEIGE-BAGGY-JEANS-BEBJ-1231807",
+    "sort_tag": "BEIGE-BAGGY-34",
+    "is_mix": false
+  },
+  {
+    "print_position": 64,
+    "kind": "flipkart_label",
+    "original_label_number": 49,
+    "order_id": "OD338466751698242100",
+    "sku": "F-34-BEIGE-BAGGY-JEANS-BEBJ-1231807",
+    "sort_tag": "BEIGE-BAGGY-34",
+    "is_mix": false
+  },
+  {
+    "print_position": 65,
+    "kind": "flipkart_label",
+    "original_label_number": 50,
+    "order_id": "OD438469680499976100",
+    "sku": "F-34-BEIGE-BAGGY-JEANS-CS1467",
+    "sort_tag": "BEIGE-BAGGY-34",
+    "is_mix": false
+  },
+  {
+    "print_position": 66,
+    "kind": "flipkart_label",
+    "original_label_number": 51,
+    "order_id": "OD438470079776260100",
+    "sku": "F-34-BEIGE-BAGGY-JEANS-CS1496",
+    "sort_tag": "BEIGE-BAGGY-34",
+    "is_mix": false
+  },
+  {
+    "print_position": 67,
+    "kind": "category_separator",
+    "separator_text": "BLACK-BAGGY-32",
+    "category_label_count": 1,
+    "sellers": "SEEMA",
+    "sort_tag": "BLACK-BAGGY-32"
+  },
+  {
+    "print_position": 68,
+    "kind": "flipkart_label",
+    "original_label_number": 42,
+    "order_id": "OD338470562720651100",
+    "sku": "F-32-BLACK-BAGGY-PLAIN-BBP-4191954989898734-S1201",
+    "sort_tag": "BLACK-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 69,
+    "kind": "category_separator",
+    "separator_text": "BLACK-PLAIN-28",
+    "category_label_count": 1,
+    "sellers": "SEEMA",
+    "sort_tag": "BLACK-PLAIN-28"
+  },
+  {
+    "print_position": 70,
+    "kind": "flipkart_label",
+    "original_label_number": 67,
+    "order_id": "OD438467037081742100",
+    "sku": "S-28-Plain-Black-Jeans-PBJ-09",
+    "sort_tag": "BLACK-PLAIN-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 71,
+    "kind": "category_separator",
+    "separator_text": "BLACK-PLAIN-30",
+    "category_label_count": 2,
+    "sellers": "SEEMA",
+    "sort_tag": "BLACK-PLAIN-30"
+  },
+  {
+    "print_position": 72,
+    "kind": "flipkart_label",
+    "original_label_number": 71,
+    "order_id": "OD338467733375109100",
+    "sku": "S-30-Black-Plain-Jeans-BPJ-73185624097",
+    "sort_tag": "BLACK-PLAIN-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 73,
+    "kind": "flipkart_label",
+    "original_label_number": 72,
+    "order_id": "OD438469229606987100",
+    "sku": "S-30-Black-Plain-Jeans-PBJ-546874542",
+    "sort_tag": "BLACK-PLAIN-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 74,
+    "kind": "category_separator",
+    "separator_text": "BLACK-PLAIN-32",
+    "category_label_count": 2,
+    "sellers": "SEEMA",
+    "sort_tag": "BLACK-PLAIN-32"
+  },
+  {
+    "print_position": 75,
+    "kind": "flipkart_label",
+    "original_label_number": 75,
+    "order_id": "OD438469658187313100",
+    "sku": "S-32-Black-Plain-Jeans-BPJ-1928374650",
+    "sort_tag": "BLACK-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 76,
+    "kind": "flipkart_label",
+    "original_label_number": 76,
+    "order_id": "OD438468674793857100",
+    "sku": "S-32-Black-Plain-Jeans-PBJ-47588956235",
+    "sort_tag": "BLACK-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 77,
+    "kind": "category_separator",
+    "separator_text": "WHITE-BAGGY-28",
+    "category_label_count": 1,
+    "sellers": "SEEMA",
+    "sort_tag": "WHITE-BAGGY-28"
+  },
+  {
+    "print_position": 78,
+    "kind": "flipkart_label",
+    "original_label_number": 52,
+    "order_id": "OD438469572990310100",
+    "sku": "FB-28-WHITE-Baggy-Plain-Jeans-BEPJ-7SXFDMV",
+    "sort_tag": "WHITE-BAGGY-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 79,
+    "kind": "category_separator",
+    "separator_text": "WHITE-BAGGY-32",
+    "category_label_count": 1,
+    "sellers": "SEEMA",
+    "sort_tag": "WHITE-BAGGY-32"
+  },
+  {
+    "print_position": 80,
+    "kind": "flipkart_label",
+    "original_label_number": 53,
+    "order_id": "OD338470712877629100",
+    "sku": "FB-32-WHITE-Baggy-Plain-Jeans-BEPJ-1ZX6X4D",
+    "sort_tag": "WHITE-BAGGY-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 81,
+    "kind": "category_separator",
+    "separator_text": "WHITE-PLAIN-28",
+    "category_label_count": 3,
+    "sellers": "SEEMA",
+    "sort_tag": "WHITE-PLAIN-28"
+  },
+  {
+    "print_position": 82,
+    "kind": "flipkart_label",
+    "original_label_number": 68,
+    "order_id": "OD438473766770415400",
+    "sku": "S-28-White-Plain-Jeans-WPJ-06544548745",
+    "sort_tag": "WHITE-PLAIN-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 83,
+    "kind": "flipkart_label",
+    "original_label_number": 69,
+    "order_id": "OD438471675334611100",
+    "sku": "S-28-White-Plain-Jeans-WPJ-6475018295470414",
+    "sort_tag": "WHITE-PLAIN-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 84,
+    "kind": "flipkart_label",
+    "original_label_number": 70,
+    "order_id": "OD338472170441381100",
+    "sku": "S-28-White-Plain-Jeans-WPJ-6475018295470414",
+    "sort_tag": "WHITE-PLAIN-28",
+    "is_mix": false
+  },
+  {
+    "print_position": 85,
+    "kind": "category_separator",
+    "separator_text": "WHITE-PLAIN-30",
+    "category_label_count": 4,
+    "sellers": "SEEMA",
+    "sort_tag": "WHITE-PLAIN-30"
+  },
+  {
+    "print_position": 86,
+    "kind": "flipkart_label",
+    "original_label_number": 62,
+    "order_id": "OD338469877549016100",
+    "sku": "JS-S-30-White-Plain-Jeans-WPJ-163280579547041411",
+    "sort_tag": "WHITE-PLAIN-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 87,
+    "kind": "flipkart_label",
+    "original_label_number": 63,
+    "order_id": "OD438471285245143100",
+    "sku": "JS-S-30-White-Plain-Jeans-WPJ-163280579547041411",
+    "sort_tag": "WHITE-PLAIN-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 88,
+    "kind": "flipkart_label",
+    "original_label_number": 73,
+    "order_id": "OD438470970970197100",
+    "sku": "S-30-White-Plain-Jeans-PWJ-8846561",
+    "sort_tag": "WHITE-PLAIN-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 89,
+    "kind": "flipkart_label",
+    "original_label_number": 74,
+    "order_id": "OD438471080061302100",
+    "sku": "S-30-White-Plain-Jeans-WPJ-1729640355470414",
+    "sort_tag": "WHITE-PLAIN-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 90,
+    "kind": "category_separator",
+    "separator_text": "WHITE-PLAIN-32",
+    "category_label_count": 3,
+    "sellers": "SEEMA",
+    "sort_tag": "WHITE-PLAIN-32"
+  },
+  {
+    "print_position": 91,
+    "kind": "flipkart_label",
+    "original_label_number": 59,
+    "order_id": "OD438466712209942100",
+    "sku": "JN_32_White_WPJ-12354194",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 92,
+    "kind": "flipkart_label",
+    "original_label_number": 77,
+    "order_id": "OD438467798068581100",
+    "sku": "S-32-White-jeans-plain-PWJS-401",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 93,
+    "kind": "flipkart_label",
+    "original_label_number": 78,
+    "order_id": "OD438474311114497100",
+    "sku": "S-32-White-Plain-Jeans-WPJ-8650342795470414",
+    "sort_tag": "WHITE-PLAIN-32",
+    "is_mix": false
+  },
+  {
+    "print_position": 94,
+    "kind": "category_separator",
+    "separator_text": "MIX",
+    "category_label_count": 1,
+    "sellers": "SEEMA",
+    "sort_tag": "MIX"
+  },
+  {
+    "print_position": 95,
+    "kind": "flipkart_label",
+    "original_label_number": 64,
+    "order_id": "OD338470482561444100",
+    "sku": "MV_JS-BPJ-258BGWU_30",
+    "sort_tag": "MIX",
+    "is_mix": true
+  }
+]
