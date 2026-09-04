@@ -4759,46 +4759,18 @@ def get_variant_sizes_to_create(product_input_row: ProductInputRow) -> list[str]
 
 
 def click_variant_create_button(driver: webdriver.Firefox, variant_size: str) -> None:
-    """Wait for the Size section Create button to be enabled, then JS-click it.
-
-    The button textContent includes the SVG <title> "AddCircle" so we CANNOT
-    match on full textContent === "Create".  Instead we find the <span> child
-    whose text is exactly "Create" and whose button has aria-disabled="false"
-    and no disabled attribute.  We also prefer the button whose SVG icon color
-    is "blue" (the enabled state) over the greyed-out Brand Color one.
-    """
+    """Click the enabled Create button belonging to the variant-size controls."""
     def _find_enabled(d: webdriver.Firefox) -> "WebElement | bool":
         try:
-            btn = d.execute_script("""
-                function isVisible(el) {
-                    if (!el) return false;
-                    const s = window.getComputedStyle(el);
-                    const r = el.getBoundingClientRect();
-                    return s.display!=='none' && s.visibility!=='hidden'
-                           && r.width>0 && r.height>0;
-                }
-                // Find all buttons that have a <span> child with text "Create"
-                // and are NOT disabled.
-                const candidates = Array.from(document.querySelectorAll('button')).filter(btn => {
-                    if (!isVisible(btn)) return false;
-                    if (btn.hasAttribute('disabled')) return false;
-                    if (btn.getAttribute('aria-disabled') === 'true') return false;
-                    // Check the span child text, not full textContent (which includes SVG title)
-                    const span = btn.querySelector('span');
-                    return span && span.textContent.trim() === 'Create';
-                });
-                if (!candidates.length) return null;
-                // Prefer the one whose SVG color is "blue" (the enabled Size button)
-                const blue = candidates.find(btn => {
-                    const svg = btn.querySelector('svg');
-                    return svg && (svg.getAttribute('color') === 'blue'
-                                   || window.getComputedStyle(svg).color === 'blue');
-                });
-                return blue || candidates[0];
-            """)
+            _, _, btn = get_variant_creation_controls(d)
+            is_enabled = d.execute_script(
+                "return !arguments[0].hasAttribute('disabled') "
+                "&& arguments[0].getAttribute('aria-disabled') !== 'true';",
+                btn,
+            )
         except Exception:
             return False
-        return btn if btn else False
+        return btn if is_enabled else False
 
     log_event("VARIANT", f"Waiting for enabled Create button for size {variant_size}...")
     create_button = WebDriverWait(driver, 15).until(_find_enabled)
@@ -4881,15 +4853,28 @@ def wait_for_variant_row_creation(
     timeout_seconds: float = 12,
 ) -> None:
     expected_size_text = build_variant_size_display_text(variant_size, variant_qualifier)
-    size_xpath = (
-        "//div[contains(@id,'-size') and contains(@class,'variant-table-cell')]"
-        f"//span[@title={xpath_literal(expected_size_text)}"
-        f" or contains(@title, {xpath_literal(variant_size)})"
-        f" or normalize-space()={xpath_literal(expected_size_text)}]"
-    )
-    WebDriverWait(driver, timeout_seconds).until(
-        EC.presence_of_element_located((By.XPATH, size_xpath))
-    )
+
+    def _exact_variant_row_exists(current_driver: webdriver.Firefox) -> bool:
+        for row in get_variant_rows(current_driver):
+            try:
+                if get_variant_row_size_text(row).casefold() == expected_size_text.casefold():
+                    return True
+            except StaleElementReferenceException:
+                continue
+        return False
+
+    try:
+        WebDriverWait(driver, timeout_seconds).until(_exact_variant_row_exists)
+    except TimeoutException as exc:
+        visible_sizes = [
+            get_variant_row_size_text(row)
+            for row in get_variant_rows(driver)
+            if get_variant_row_size_text(row)
+        ]
+        raise TimeoutException(
+            f"Create was clicked for '{expected_size_text}', but that exact variant row "
+            f"did not appear. Visible variant rows: {visible_sizes}"
+        ) from exc
     log_event("VARIANT", f"Detected created variant row for {expected_size_text}.")
 
 
