@@ -4779,21 +4779,6 @@ def click_variant_create_button(driver: webdriver.Firefox, variant_size: str) ->
     log_event("VARIANT", f"JS-clicking Create button for variant size {variant_size}.")
     driver.execute_script("arguments[0].click();", create_button)
     sleep(0.25)
-    try:
-        still_enabled = driver.execute_script(
-            "return !arguments[0].hasAttribute('disabled') "
-            "&& arguments[0].getAttribute('aria-disabled') !== 'true';",
-            create_button,
-        )
-    except Exception:
-        still_enabled = False
-    if still_enabled:
-        log_event("VARIANT", "JS click may have been swallowed; retrying with ActionChains.")
-        try:
-            ActionChains(driver).move_to_element(create_button).pause(0.1).click().perform()
-            sleep(0.25)
-        except Exception:
-            pass
 
 
 def wait_for_variant_create_button_enabled(
@@ -4937,11 +4922,45 @@ def click_variant_row_copy_button(
     driver: webdriver.Firefox,
     source_size_text: str,
 ) -> None:
-    row = get_variant_row_by_size_text(driver, source_size_text)
-    copy_button = row.find_element(
-        By.XPATH,
-        ".//button[.//*[local-name()='title' and normalize-space()='ContentCopy']]",
+    copy_button_xpath = (
+        ".//button[.//*[local-name()='title' and normalize-space()='ContentCopy']]"
     )
+
+    def _locate_copy_button(current_driver: webdriver.Firefox) -> WebElement | bool:
+        try:
+            row = get_variant_row_by_size_text(
+                current_driver,
+                source_size_text,
+                timeout_seconds=1,
+            )
+            buttons = row.find_elements(By.XPATH, copy_button_xpath)
+            for button in buttons:
+                if button.is_displayed() and button.is_enabled():
+                    return button
+        except (StaleElementReferenceException, TimeoutException):
+            pass
+        return False
+
+    log_event(
+        "VARIANT",
+        f"Waiting for copy control in source row {source_size_text} after table rendering...",
+    )
+    try:
+        copy_button = WebDriverWait(driver, 15).until(_locate_copy_button)
+    except TimeoutException as exc:
+        visible_sizes: list[str] = []
+        for row in get_variant_rows(driver):
+            try:
+                row_size = get_variant_row_size_text(row)
+                if row_size:
+                    visible_sizes.append(row_size)
+            except StaleElementReferenceException:
+                continue
+        raise TimeoutException(
+            f"Variant rows were created, but the ContentCopy control did not become ready "
+            f"in source row '{source_size_text}'. Visible variant rows: {visible_sizes}"
+        ) from exc
+
     click_element_via_autogui(driver, copy_button, f"Copy variant row for size {source_size_text}")
     log_event("VARIANT", f"Clicked copy for source row size: {source_size_text}")
 
@@ -5327,9 +5346,44 @@ def fill_variant_page(
             log_event("VARIANT", f"Creating size variant without qualifier and size '{variant_size}'.")
         select_combobox_option(driver, size_combobox, variant_size, "Variant Size")
         log_event("VARIANT", f"Selected Variant Size: {variant_size}")
-        click_variant_create_button(driver, variant_size)
-        log_event("VARIANT", f"Clicked Create for variant size {variant_size}.")
-        wait_for_variant_row_creation(driver, variant_qualifier, variant_size)
+        for create_attempt in range(1, 3):
+            click_variant_create_button(driver, variant_size)
+            log_event(
+                "VARIANT",
+                f"Clicked Create for variant size {variant_size} "
+                f"(attempt {create_attempt}/2).",
+            )
+            try:
+                wait_for_variant_row_creation(
+                    driver,
+                    variant_qualifier,
+                    variant_size,
+                )
+                break
+            except TimeoutException:
+                if create_attempt >= 2:
+                    raise
+                log_event(
+                    "VARIANT",
+                    f"Exact row for {build_variant_size_display_text(variant_size, variant_qualifier)} "
+                    "did not appear after the first Create click; reselecting the controls "
+                    "before one final attempt.",
+                )
+                qualifier_combobox, size_combobox, _ = get_variant_creation_controls(driver)
+                if should_select_qualifier:
+                    if qualifier_combobox is None:
+                        raise RuntimeError(
+                            f"Variant Qualifier '{variant_qualifier}' disappeared before retrying "
+                            f"variant size '{variant_size}'."
+                        )
+                    select_combobox_option(
+                        driver,
+                        qualifier_combobox,
+                        variant_qualifier,
+                        "Variant Qualifier",
+                    )
+                    _, size_combobox, _ = get_variant_creation_controls(driver)
+                select_combobox_option(driver, size_combobox, variant_size, "Variant Size")
 
     source_size_text = build_variant_size_display_text(
         product_input_row.size,
