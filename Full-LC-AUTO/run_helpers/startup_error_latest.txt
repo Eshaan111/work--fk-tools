@@ -1,13 +1,22 @@
-can't invoke "winfo" command: application has been destroyed
+[Errno 22] Invalid argument: 'C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\run_helpers\\system\\.license_cache\\licenses.json'
 
 Traceback (most recent call last):
-  File "C:\Users\ESHAAN\HAKUR\work--fk-tools\Full-LC-AUTO\main_ui_themed.py", line 6823, in main
-    start_new_batch_requested = show_batch_monitor_and_run(startup_selection)
-  File "C:\Users\ESHAAN\HAKUR\work--fk-tools\Full-LC-AUTO\main_ui_themed.py", line 2476, in show_batch_monitor_and_run
-    if overlay_window.winfo_exists():
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Python314\Lib\tkinter\__init__.py", line 1248, in winfo_exists
-    self.tk.call('winfo', 'exists', self._w))
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-_tkinter.TclError: can't invoke "winfo" command: application has been destroyed
+  File "C:\Users\ESHAAN\HAKUR\work--fk-tools\Full-LC-AUTO\main_ui_themed.py", line 7522, in main
+    enforce_runtime_license()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\ESHAAN\HAKUR\work--fk-tools\Full-LC-AUTO\main_ui_themed.py", line 348, in enforce_runtime_license
+    ACTIVE_LICENSE_RESULT = validate_license(PROJECT_ROOT, APP_CONFIG)
+  File "C:\Users\ESHAAN\HAKUR\work--fk-tools\Full-LC-AUTO\licensing\license_verifier.py", line 229, in validate_license
+    write_cached_bundle(project_root, license_config, licenses_bytes, signature_text)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ESHAAN\HAKUR\work--fk-tools\Full-LC-AUTO\licensing\license_verifier.py", line 133, in write_cached_bundle
+    cache_json_path.write_bytes(licenses_bytes)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\pathlib\__init__.py", line 796, in write_bytes
+    with self.open(mode='wb') as f:
+         ~~~~~~~~~^^^^^^^^^^^
+  File "C:\Python314\Lib\pathlib\__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 22] Invalid argument: 'C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\Full-LC-AUTO\\run_helpers\\system\\.license_cache\\licenses.json'
 

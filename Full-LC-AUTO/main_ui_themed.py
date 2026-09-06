@@ -4901,7 +4901,7 @@ def get_variant_row_by_size_text(
     def _locate_row(current_driver: webdriver.Firefox) -> WebElement | bool:
         for row in get_variant_rows(current_driver):
             try:
-                if get_variant_row_size_text(row) == size_text:
+                if row.is_displayed() and get_variant_row_size_text(row) == size_text:
                     return row
             except StaleElementReferenceException:
                 continue
@@ -4922,10 +4922,6 @@ def click_variant_row_copy_button(
     driver: webdriver.Firefox,
     source_size_text: str,
 ) -> None:
-    copy_button_xpath = (
-        ".//button[.//*[local-name()='title' and normalize-space()='ContentCopy']]"
-    )
-
     def _locate_copy_button(current_driver: webdriver.Firefox) -> WebElement | bool:
         try:
             row = get_variant_row_by_size_text(
@@ -4933,10 +4929,29 @@ def click_variant_row_copy_button(
                 source_size_text,
                 timeout_seconds=1,
             )
-            buttons = row.find_elements(By.XPATH, copy_button_xpath)
-            for button in buttons:
-                if button.is_displayed() and button.is_enabled():
-                    return button
+            copy_button = current_driver.execute_script(
+                """
+                const row = arguments[0];
+                return Array.from(row.querySelectorAll('button')).find((button) => {
+                    const iconTitles = Array.from(button.querySelectorAll('svg title, title'))
+                        .map((title) => (title.textContent || '').trim().toLowerCase());
+                    const identity = [
+                        button.getAttribute('aria-label'),
+                        button.getAttribute('title'),
+                        button.getAttribute('data-testid'),
+                        ...iconTitles,
+                    ].filter(Boolean).join(' ').replace(/[^a-z0-9]+/gi, '').toLowerCase();
+                    return (
+                        identity.includes('contentcopy') ||
+                        identity.includes('copyvariant') ||
+                        identity === 'copy'
+                    ) && !button.disabled && button.getAttribute('aria-disabled') !== 'true';
+                }) || null;
+                """,
+                row,
+            )
+            if copy_button is not None:
+                return copy_button
         except (StaleElementReferenceException, TimeoutException):
             pass
         return False
@@ -4949,16 +4964,34 @@ def click_variant_row_copy_button(
         copy_button = WebDriverWait(driver, 15).until(_locate_copy_button)
     except TimeoutException as exc:
         visible_sizes: list[str] = []
+        source_row_buttons: list[dict[str, object]] = []
         for row in get_variant_rows(driver):
             try:
                 row_size = get_variant_row_size_text(row)
                 if row_size:
                     visible_sizes.append(row_size)
+                if row.is_displayed() and row_size == source_size_text:
+                    source_row_buttons = driver.execute_script(
+                        """
+                        return Array.from(arguments[0].querySelectorAll('button')).map((button) => ({
+                            text: (button.textContent || '').trim(),
+                            ariaLabel: button.getAttribute('aria-label'),
+                            title: button.getAttribute('title'),
+                            testId: button.getAttribute('data-testid'),
+                            iconTitles: Array.from(button.querySelectorAll('title'))
+                                .map((title) => (title.textContent || '').trim()),
+                            disabled: button.disabled,
+                            ariaDisabled: button.getAttribute('aria-disabled'),
+                        }));
+                        """,
+                        row,
+                    )
             except StaleElementReferenceException:
                 continue
         raise TimeoutException(
-            f"Variant rows were created, but the ContentCopy control did not become ready "
-            f"in source row '{source_size_text}'. Visible variant rows: {visible_sizes}"
+            f"Variant rows were created, but the copy control did not become ready "
+            f"in source row '{source_size_text}'. Visible variant rows: {visible_sizes}. "
+            f"Source-row buttons: {source_row_buttons}"
         ) from exc
 
     click_element_via_autogui(driver, copy_button, f"Copy variant row for size {source_size_text}")

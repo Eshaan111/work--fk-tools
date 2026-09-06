@@ -1,6 +1,1 @@
-Run 3/5 failed: Message: 
-Stacktrace:
-RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
-WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:169:5
-NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:538:5
-dom.find/</<@chrome://remote/content/shared/DOM.sys.mjs:137:16
+Run 1/2 failed: Message: Variant rows were created, but the ContentCopy control did not become ready in source row '28 Number'. Visible variant rows: ['28 Number', '26 Number', '30 Number', '32 Number', '34 Number']
