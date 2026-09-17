@@ -4,11 +4,19 @@ import argparse
 import hashlib
 import json
 import socket
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 
-APPLICATION_DIRECTORY = Path(__file__).resolve().parent
+def get_application_directory() -> Path:
+    """Return the persistent directory containing the app or its executable."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+APPLICATION_DIRECTORY = get_application_directory()
 DEFAULT_RAW_DIRECTORY = APPLICATION_DIRECTORY / "print-jobs" / "raw"
 DEFAULT_PDF_INBOX = APPLICATION_DIRECTORY / "print-jobs" / "incoming"
 DEFAULT_LABEL_DIRECTORY = APPLICATION_DIRECTORY / "print-jobs" / "labels"

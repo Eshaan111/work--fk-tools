@@ -1,3 +1,9 @@
 @echo off
 cd /d "%~dp0"
-start "" "C:\Python314\pythonw.exe" "%~dp0print_batch_gui.pyw"
+if exist "%~dp0dist\FlipkartBatchPrinter.exe" (
+    start "" "%~dp0dist\FlipkartBatchPrinter.exe"
+) else (
+    echo FlipkartBatchPrinter.exe was not found.
+    echo Run build_exe.ps1 first.
+    pause
+)
