@@ -49,15 +49,13 @@ JEANS_KIND_OPTIONS_ASUS: dict[str, tuple[str, Path]] = {
     "1": ("Beige", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BEIGE\NEW IMAGES")),
     "2": ("Ice", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\ICE\NEW IMAGES")),
     "3": ("Black-baggy", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BLACK-BAGGY\NEW IMAGES")),
-    "4": ("Black-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BLACK-PLAIN\NEW IMAGES")),
-    "5": ("White-Plain", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\WHITE-PLAIN\NEW IMAGES")),
+    "4": ("Black-Narrow", Path(r"C:\work-mom\JEANS\PRODUCT IMAGES\BLACK-NARROW\NEW IMAGES")),
 }
 JEANS_KIND_OPTIONS_VAIO: dict[str, tuple[str, Path | None]] = {
     "1": ("Beige", Path(r"C:\LISTING IMAGES AUTOMATED\BEIGE")),
     "2": ("Ice", Path(r"C:\LISTING IMAGES AUTOMATED\ICE")),
     "3": ("Black-baggy", Path(r"C:\LISTING IMAGES AUTOMATED\Black-baggy")),
-    "4": ("Black-Plain", Path(r"C:\LISTING IMAGES AUTOMATED\Balck-Plain")),
-    "5": ("White-Plain", Path(r"C:\LISTING IMAGES AUTOMATED\White")),
+    "4": ("Black-Narrow", Path(r"C:\LISTING IMAGES AUTOMATED\Black-Narrow")),
 }
 DEFAULT_SNAPSHOT_DIRECTORY_ASUS = PROJECT_ROOT / "snapshots"
 DEFAULT_SNAPSHOT_DIRECTORY_VAIO = PROJECT_ROOT / "snapshots"
@@ -683,12 +681,11 @@ def prompt_for_listing_selection() -> ListingSelection:
         print("1. Beige")
         print("2. Ice")
         print("3. Black-baggy")
-        print("4. Black-Plain")
-        print("5. White-Plain")
+        print("4. Black-Narrow")
         kind_choice = input(f"Enter option [1]: ").strip() or "1"
         jeans_kind_options = ACTIVE_LAPTOP_CONFIG["jeans_kind_options"]
         if kind_choice not in jeans_kind_options:
-            raise ValueError("Please choose a valid jeans option from 1 to 5.")
+            raise ValueError("Please choose a valid jeans option from 1 to 4.")
         selected_kind, configured_image_directory = jeans_kind_options[kind_choice]
         image_directory = require_configured_path(
             configured_image_directory,

@@ -248,18 +248,14 @@
                             "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\BLACK-BAGGY"
                         },
                         "4": {
-                            "kind": "Black-Plain",
-                            "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\Black-Plain"
+                            "kind": "Black-Narrow",
+                            "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\Black-Narrow"
                         },
                         "5": {
-                            "kind": "White-Plain",
-                            "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\White"
-                        },
-                        "6": {
                             "kind": "White-Baggy",
                             "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\WHITE-BAGGY"
                         },
-                        "7": {
+                        "6": {
                             "kind": "White-Narrow",
                             "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\WHITE-NARROW"
                         }
@@ -315,18 +311,14 @@
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-baggy"
                         },
                         "4": {
-                            "kind": "Black-Plain",
-                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-Plain"
+                            "kind": "Black-Narrow",
+                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-Narrow"
                         },
                         "5": {
-                            "kind": "White-Plain",
-                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White"
-                        },
-                        "6": {
                             "kind": "White-Baggy",
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Baggy"
                         },
-                        "7": {
+                        "6": {
                             "kind": "White-Narrow",
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Narrow"
                         }
@@ -382,18 +374,14 @@
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-baggy"
                         },
                         "4": {
-                            "kind": "Black-Plain",
-                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-Plain"
+                            "kind": "Black-Narrow",
+                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/Black-Narrow"
                         },
                         "5": {
-                            "kind": "White-Plain",
-                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White"
-                        },
-                        "6": {
                             "kind": "White-Baggy",
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Baggy"
                         },
-                        "7": {
+                        "6": {
                             "kind": "White-Narrow",
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Narrow"
                         }
