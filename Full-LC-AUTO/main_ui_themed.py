@@ -8,6 +8,7 @@ import os
 import queue
 import random
 import re
+import stat
 import string
 import threading
 import traceback
@@ -52,6 +53,7 @@ ACTIVE_WEBDRIVERS: list[webdriver.Firefox] = []
 WEBDRIVER_SHUTDOWN_LOCK = threading.Lock()
 WEBDRIVER_SHUTDOWN_EVENTS: dict[int, threading.Event] = {}
 WEBDRIVER_SHUTDOWN_COMPLETED: set[int] = set()
+RESERVED_IMAGE_FOLDER_PATHS: set[Path] = set()
 
 
 def register_windows_job_kill_on_close(process_id: int) -> object | None:
@@ -1218,7 +1220,12 @@ def parse_exhausted_brands(folder_name: str) -> dict[str, set[str]]:
 
 
 def collect_ordered_images(folder_path: Path) -> list[Path]:
-    image_candidates = [path for path in folder_path.iterdir() if path.is_file()]
+    supported_extensions = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
+    image_candidates = [
+        path
+        for path in folder_path.iterdir()
+        if path.is_file() and path.suffix.lower() in supported_extensions
+    ]
 
     def image_sort_key(path: Path) -> tuple[int, str]:
         stem = path.stem.strip()
@@ -1260,6 +1267,8 @@ def choose_image_folder_for_brand(
     normalized_brand = normalize_brand_name(brand_name)
 
     for image_folder in load_image_folders(image_root):
+        if image_folder.folder_path.resolve() in RESERVED_IMAGE_FOLDER_PATHS:
+            continue
         exhausted_surfaces = image_folder.exhausted_brand_surfaces.get(normalized_brand, set())
         if surface_name not in exhausted_surfaces:
             return image_folder
@@ -1298,6 +1307,9 @@ def mark_image_folder_exhausted(
     image_folder: ImageFolder,
     brand_name: str,
     surface_name: str,
+    *,
+    rename_attempts: int = 3,
+    retry_delay_seconds: float = 0.25,
 ) -> Path:
     new_folder_name = build_exhausted_folder_name(image_folder, brand_name, surface_name)
     new_folder_path = image_folder.folder_path.with_name(new_folder_name)
@@ -1312,7 +1324,29 @@ def mark_image_folder_exhausted(
     if new_folder_path.exists():
         raise ValueError(f"Cannot rename folder because target already exists: {new_folder_path}")
 
-    image_folder.folder_path.rename(new_folder_path)
+    source_folder_path = image_folder.folder_path
+    last_error: OSError | None = None
+    for attempt in range(1, max(1, rename_attempts) + 1):
+        try:
+            # Copied Windows folders can inherit the ReadOnly attribute.  It does
+            # not affect image reads, but it can make a directory rename fail
+            # with WinError 5 after the listing has already been submitted.
+            source_folder_path.chmod(stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)
+            source_folder_path.rename(new_folder_path)
+            last_error = None
+            break
+        except OSError as exc:
+            last_error = exc
+            if attempt < max(1, rename_attempts):
+                log_event(
+                    "IMAGES",
+                    f"Image folder rename attempt {attempt}/{rename_attempts} failed: {exc}. Retrying...",
+                )
+                sleep(max(0.0, retry_delay_seconds))
+
+    if last_error is not None:
+        raise last_error
+
     image_folder.folder_path = new_folder_path
     image_folder.exhausted_brand_surfaces.setdefault(normalize_brand_name(brand_name), set()).add(
         surface_name
@@ -1338,17 +1372,30 @@ def queue_image_folder_exhaustion(
     )
 
 
-def commit_pending_image_folder_exhaustion(flow_state: FlowState) -> None:
+def commit_pending_image_folder_exhaustion(flow_state: FlowState) -> bool:
     pending_use = flow_state.pending_image_folder_use
     if pending_use is None:
-        return
+        return True
 
-    mark_image_folder_exhausted(
-        pending_use.image_folder,
-        pending_use.brand_name,
-        pending_use.surface_name,
-    )
-    flow_state.pending_image_folder_use = None
+    try:
+        mark_image_folder_exhausted(
+            pending_use.image_folder,
+            pending_use.brand_name,
+            pending_use.surface_name,
+        )
+    except OSError as exc:
+        RESERVED_IMAGE_FOLDER_PATHS.add(pending_use.image_folder.folder_path.resolve())
+        log_event(
+            "IMAGES",
+            "Listing action succeeded, but Windows would not rename image folder "
+            f"'{pending_use.image_folder.folder_path.name}': {exc}. "
+            "The folder is reserved and will not be reused during this app session.",
+        )
+        return False
+    finally:
+        flow_state.pending_image_folder_use = None
+
+    return True
 
 
 def resolve_profile_path(profile_name: str) -> Path:

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094601-583918",
+  "label_number": 35,
+  "order_id": "OD339001423880345100",
+  "sku": "F-30-ICE-BAGGY-PLAIN-IBP-8496342365568",
+  "product": "STARVIELLE Relaxed Fit Men Light Blue Jeans",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0946 hrs, 28/10/26",
+  "awb": "FMPC6692153433",
+  "customer_name": "Md Sajjad",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 30,
+  "sort_tag": "ICE-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094601-583918\\035-OD339001423880345100.zpl",
+  "preview_file": null
+}

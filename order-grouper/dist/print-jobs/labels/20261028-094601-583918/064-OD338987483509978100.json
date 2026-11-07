@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094601-583918",
+  "label_number": 64,
+  "order_id": "OD338987483509978100",
+  "sku": "MSKUT-F-30-BLACK-BAGGY--IBBP-KM596S",
+  "product": "PRABHUS TREND Baggy Fit Men Black Jeans",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0946 hrs, 28/10/26",
+  "awb": "FMPP4416935737",
+  "customer_name": "Nikhil",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-BAGGY-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094601-583918\\064-OD338987483509978100.zpl",
+  "preview_file": null
+}

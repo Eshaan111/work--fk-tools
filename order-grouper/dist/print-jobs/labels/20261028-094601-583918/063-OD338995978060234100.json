@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094601-583918",
+  "label_number": 63,
+  "order_id": "OD338995978060234100",
+  "sku": "FJS-S-28-White-Plain-Jeans-WPJ-8392165470",
+  "product": "JEE GENZ Regular Men White Jeans 28",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0946 hrs, 28/10/26",
+  "awb": "FMPC6689727364",
+  "customer_name": "Sudhir Kumar",
+  "fit": "PLAIN",
+  "color": "WHITE",
+  "size": 28,
+  "sort_tag": "WHITE-PLAIN-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094601-583918\\063-OD338995978060234100.zpl",
+  "preview_file": null
+}

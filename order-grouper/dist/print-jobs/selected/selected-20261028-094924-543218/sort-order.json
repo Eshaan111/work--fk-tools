@@ -1,0 +1,46 @@
+[
+  {
+    "print_position": 1,
+    "kind": "category_separator",
+    "separator_text": "WHITE-BAGGY-30",
+    "category_label_count": 4,
+    "sellers": "PRABHU",
+    "sort_tag": "WHITE-BAGGY-30"
+  },
+  {
+    "print_position": 2,
+    "kind": "flipkart_label",
+    "original_label_number": 1,
+    "order_id": "OD338998132224138100",
+    "sku": "FB-30-WHITE-Baggy-Plain-Jeans-BEPJ-JMF0H9I",
+    "sort_tag": "WHITE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 3,
+    "kind": "flipkart_label",
+    "original_label_number": 2,
+    "order_id": "OD338995075855931100",
+    "sku": "FB-30-WHITE-Baggy-Plain-Jeans-BEPJ-51JASEA",
+    "sort_tag": "WHITE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 4,
+    "kind": "flipkart_label",
+    "original_label_number": 3,
+    "order_id": "OD438992728299068100",
+    "sku": "VK224_Men_Jean_White_30",
+    "sort_tag": "WHITE-BAGGY-30",
+    "is_mix": false
+  },
+  {
+    "print_position": 5,
+    "kind": "flipkart_label",
+    "original_label_number": 4,
+    "order_id": "OD438996072494963100",
+    "sku": "VK224_Men_Jean_White_30",
+    "sort_tag": "WHITE-BAGGY-30",
+    "is_mix": false
+  }
+]

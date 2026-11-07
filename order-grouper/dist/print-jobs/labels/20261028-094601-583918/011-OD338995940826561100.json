@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094601-583918",
+  "label_number": 11,
+  "order_id": "OD338995940826561100",
+  "sku": "JS-S-32-Black-Plain-Jeans-BPJ-14820597364254870",
+  "product": "GENZ VANE Regular Men Black Jeans 32",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0946 hrs, 28/10/26",
+  "awb": "FMPP4419334008",
+  "customer_name": "Milind Gharote",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 32,
+  "sort_tag": "BLACK-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094601-583918\\011-OD338995940826561100.zpl",
+  "preview_file": null
+}

@@ -64,10 +64,15 @@ def highest_folder_number(destination: Path) -> int:
 
 
 def copy_numbered_folders(sources: list[Path], destination: Path) -> list[Path]:
-    if not destination.is_dir():
-        raise FileNotFoundError(f"Destination folder does not exist:\n{destination}")
     if not sources:
         raise ValueError("Select at least one source folder.")
+
+    # A newly configured product kind (for example White-Narrow) may not have
+    # received its first image batch yet. Create that configured destination on
+    # first use instead of requiring a manual empty-folder setup step.
+    destination.mkdir(parents=True, exist_ok=True)
+    if not destination.is_dir():
+        raise FileNotFoundError(f"Destination folder could not be created:\n{destination}")
 
     resolved_destination = destination.resolve()
     for source in sources:
@@ -101,6 +106,8 @@ class CopyUtilityApp:
         self.root = root
         self.root.title("Listing Image Folder Copier")
         self.root.minsize(720, 510)
+        # Destinations are config-driven, so newly added kinds such as
+        # White-Narrow automatically appears without a hard-coded UI list.
         self.destinations = load_destinations(get_app_root() / "config.json")
         if not self.destinations:
             raise ValueError("No laptop image destinations were found in config.json.")

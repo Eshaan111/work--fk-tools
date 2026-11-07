@@ -1507,3 +1507,343 @@ p@https://static-assets-web.flixcart.com/fk-sp-static/script/4430.0c0ed469bc4d83
 1788710394438	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
 Exiting due to channel error.
 1788710394637	webdriver::server	INFO	Shutting down
+1794028332367	geckodriver	INFO	Listening on 127.0.0.1:65183
+1794028335515	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "-profile" "C:\\Users\\ESHAAN\\AppData\\Roa ... irefox\\Profiles\\kw3a25lf.default-release" "--remote-debugging-port" "65184" "--remote-allow-hosts" "localhost" "-no-remote"
+Read port: 57282
+1794028335842	Marionette	INFO	Marionette enabled
+1794028335864	Marionette	INFO	Listening on port 65194
+WebDriver BiDi listening on ws://127.0.0.1:65184
+[ERROR shell_windows::limited_access_features] Error generating feature token: NS_ERROR_FAILURE
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+1794028336606	FirefoxAccounts	ERROR	error POSTing /oauth/token: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336606	FirefoxAccounts	ERROR	Background refresh of profile failed: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336736	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336736	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336737	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792213936722: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336737	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336741	FirefoxAccounts	ERROR	error POSTing /oauth/token: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336742	FirefoxAccounts	ERROR	FxA rejecting with error UNKNOWN_ERROR, details: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336742	Sync.SyncAuthManager	ERROR	Non-authentication error in _fetchTokenForUser: Error: UNKNOWN_ERROR(resource://gre/modules/FxAccounts.sys.mjs:1447:18) JS Stack trace: _error@FxAccounts.sys.mjs:1447:18
+_errorToErrorClass@FxAccounts.sys.mjs:1430:17
+getOAuthToken@FxAccounts.sys.mjs:505:28
+1794028336743	Sync.ErrorHandler	ERROR	Sync encountered a login error
+1794028336762	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336762	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336763	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792213936744: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336763	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336763	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336764	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336764	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336820	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336821	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+1794028336865	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336865	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336866	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336866	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336868	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336868	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+console.error: "Experiment visual-card-updates has unknown featureId: newtabRefinedCardsLayout"
+console.error: "Experiment enable-nimbus-unenrollment-synchronization has unknown featureId: nimbusStore"
+console.error: "Experiment private-window-visual-refresh-design-change-only has unknown featureId: feltPrivacy"
+1794028336955	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336955	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336971	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792213936967: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336971	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336971	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028336971	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+console.error: "Sync encountered an error - see about:sync-log for the log file."
+Read port: 65194
+1794028337701	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+1794028337745	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028337745	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028337796	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028337796	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028337796	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028337796	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028337824	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028337824	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028338151	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028338151	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 7560: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval line 1 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval line 1 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 7560 > eval line 1 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.youtube.com/s/player/a5c2aafe/player_embed_es6.vflset/en_US/base.js, line 6158: Script terminated by timeout at:
+Ja@https://www.youtube.com/s/player/a5c2aafe/player_embed_es6.vflset/en_US/base.js:6158:86
+sendAbandonmentPing@https://www.youtube.com/s/player/a5c2aafe/player_embed_es6.vflset/en_US/base.js:5238:152
+BN/a.state.j[b]@https://www.youtube.com/s/player/a5c2aafe/player_embed_es6.vflset/en_US/base.js:2692:43
+eX/<@https://www.youtube.com/s/_/ytembeds/_/js/k=ytembeds.base.en_US.ikTWNK5A8EY.2021.O/am=AAAAgA/d=1/excm=base,root/br=1/rs=AGKMywHMX0_r4eiCUuZbaEl-wJR-aMfEcg/m=root,base:814:76
+P_@https://www.youtube.com/s/_/ytembeds/_/js/k=ytembeds.base.en_US.ikTWNK5A8EY.2021.O/am=AAAAgA/d=1/excm=base,root/br=1/rs=AGKMywHMX0_r4eiCUuZbaEl-wJR-aMfEcg/m=root,base:938:46
+Eza@https://www.youtube.com/s/_/ytembeds/_/js/k=ytembeds.base.en_US.ikTWNK5A8EY.2021.O/am=AAAAgA/d=1/excm=base,root/br=1/rs=AGKMywHMX0_r4eiCUuZbaEl-wJR-aMfEcg/m=root,base:938:348
+_.xk/<@https://www.youtube.com/s/_/ytembeds/_/js/k=ytembeds.base.en_US.ikTWNK5A8EY.2021.O/am=AAAAgA/d=1/excm=base,root/br=1/rs=AGKMywHMX0_r4eiCUuZbaEl-wJR-aMfEcg/m=root,base:237:413
+
+1794028341373	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028341984	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028342488	RemoteAgent	WARN	PollPromise timed out after 0 ms
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval, line 3211: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval line 1 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval line 1 > eval line 1 > eval, line 1: unreachable code after return statement
+JavaScript warning: https://www.google.com/js/th/vDHXfwLklOGBA29eJTGPChyKGuyg0c4xxy4REdrgFBs.js line 2 > eval line 3211 > eval line 1 > eval line 1 > eval, line 1: unreachable code after return statement
+1794028347496	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028349001	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360114	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360216	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360319	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360424	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360527	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360630	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360735	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360839	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028360942	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794028361047	RemoteAgent	WARN	PollPromise timed out after 0 ms
+JavaScript warning: https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js, line 1885: Script terminated by timeout at:
+nrWrapper@https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js:1885:33
+
+1794028361142	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794028361142	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+JavaScript warning: https://www.youtube.com/s/_/ytembeds/_/js/k=ytembeds.base.en_US.ikTWNK5A8EY.2021.O/am=AAAAgA/d=1/excm=base,root/br=1/rs=AGKMywHMX0_r4eiCUuZbaEl-wJR-aMfEcg/m=root,base, line 237: Script terminated by timeout at:
+_.xk/<@https://www.youtube.com/s/_/ytembeds/_/js/k=ytembeds.base.en_US.ikTWNK5A8EY.2021.O/am=AAAAgA/d=1/excm=base,root/br=1/rs=AGKMywHMX0_r4eiCUuZbaEl-wJR-aMfEcg/m=root,base:237:393
+
+1794028361226	Marionette	INFO	Stopped listening on port 65194
+[GFX1-]: VideoBridgeParent receives IPC close with reason=AbnormalShutdown
+1794029032410	geckodriver	INFO	Listening on 127.0.0.1:57211
+1794029035488	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "-profile" "C:\\Users\\ESHAAN\\AppData\\Roa ... irefox\\Profiles\\kw3a25lf.default-release" "--remote-debugging-port" "57212" "--remote-allow-hosts" "localhost" "-no-remote"
+Dynamically enable window occlusion 0
+1794029035794	Marionette	INFO	Marionette enabled
+1794029035812	Marionette	INFO	Listening on port 57219
+WebDriver BiDi listening on ws://127.0.0.1:57212
+Read port: 57219
+1794029035930	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[ERROR shell_windows::limited_access_features] Error generating feature token: NS_ERROR_FAILURE
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+1794029036675	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036675	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036723	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036723	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036726	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036726	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036730	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036730	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+console.error: "Experiment visual-card-updates has unknown featureId: newtabRefinedCardsLayout"
+console.error: "Experiment enable-nimbus-unenrollment-synchronization has unknown featureId: nimbusStore"
+console.error: "Experiment private-window-visual-refresh-design-change-only has unknown featureId: feltPrivacy"
+1794029036828	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036828	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+1794029036896	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036896	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036896	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214636894: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036896	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+1794029036994	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036994	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036995	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214636993: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029036995	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037113	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037113	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037151	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037151	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037152	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037152	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037175	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037175	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037476	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029037476	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029038410	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029038410	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029038411	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214638408: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029038412	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029039189	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214639188: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029039189	Sync.Engine.Clients	ERROR	Could not refresh the FxA device list: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029039854	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029040357	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029040860	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029041075	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029041075	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029041075	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214641073: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029041076	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+console.error: "Sync encountered an error - see about:sync-log for the log file."
+1794029041363	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029041868	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029042371	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029042876	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029043380	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029043887	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029044394	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029044905	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029045216	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029045830	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029046338	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029046846	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029047350	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029047855	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029048360	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029048865	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029049368	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029049872	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029050375	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029050882	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029053430	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029053436	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029053941	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029054445	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029054448	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029054951	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029055453	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029055468	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029055976	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029056480	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029056485	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029056987	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029057069	Marionette	INFO	Stopped listening on port 57219
+JavaScript warning: https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js, line 1885: Script terminated by timeout at:
+nrWrapper@https://img1a.flixcart.com/fk-sp-static/scripts/nr-script.js:1885:33
+
+1794029086468	geckodriver	INFO	Listening on 127.0.0.1:57336
+1794029089568	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "--marionette" "-profile" "C:\\Users\\ESHAAN\\AppData\\Roa ... irefox\\Profiles\\kw3a25lf.default-release" "--remote-debugging-port" "57337" "--remote-allow-hosts" "localhost" "-no-remote"
+Dynamically enable window occlusion 0
+1794029089822	Marionette	INFO	Marionette enabled
+1794029089838	Marionette	INFO	Listening on port 57347
+WebDriver BiDi listening on ws://127.0.0.1:57337
+Read port: 57347
+1794029089925	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[ERROR shell_windows::limited_access_features] Error generating feature token: NS_ERROR_FAILURE
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+1794029090622	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090622	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090682	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090682	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090685	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090686	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090688	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090688	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+console.error: "Experiment visual-card-updates has unknown featureId: newtabRefinedCardsLayout"
+console.error: "Experiment enable-nimbus-unenrollment-synchronization has unknown featureId: nimbusStore"
+console.error: "Experiment private-window-visual-refresh-design-change-only has unknown featureId: feltPrivacy"
+1794029090770	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090770	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+1794029090924	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090924	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090925	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214690923: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090925	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+[ERROR shell_windows::taskbar::shortcut] Error matching shortcut: Error { code: HRESULT(0x80004005), message: "Unspecified error" }
+1794029090985	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029090985	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091028	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091028	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091029	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091029	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091045	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091045	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091121	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091121	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091121	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214691120: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091121	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091335	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029091335	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029092771	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029092772	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029092772	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214692769: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029092772	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029093466	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029093592	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214693591: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029093592	Sync.Engine.Clients	ERROR	Could not refresh the FxA device list: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029093971	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029094474	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029094551	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029094551	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029094551	FirefoxAccounts	ERROR	error GETing /account/devices?filterIdleDevicesTimestamp=1792214694550: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029094551	Sync.Browser	ERROR	Refreshing device list failed.: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+console.error: "Sync encountered an error - see about:sync-log for the log file."
+1794029094978	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029095481	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029095985	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029096489	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029096995	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029097500	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029098005	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029098509	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029098806	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029099429	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029099934	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029100437	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029100946	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029101451	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029101957	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029102463	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029102969	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029103472	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029103977	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029104481	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029108749	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029110264	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029129973	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029139038	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029140549	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029184208	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029185717	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029192846	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029192854	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029192861	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029192869	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029192876	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029197893	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029199414	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029199415	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029221208	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029223179	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794029225049	RemoteAgent	WARN	PollPromise timed out after 0 ms
+JavaScript warning: https://static-assets-web.flixcart.com/fk-sp-static/script/8087.8d6af5b7e554432127a1.js, line 2: Script terminated by timeout at:
+p@https://static-assets-web.flixcart.com/fk-sp-static/script/8087.8d6af5b7e554432127a1.js:2:2357015
+
+1794029225992	FirefoxAccounts	ERROR	error GETing /account/attached_clients: {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+1794029225992	FirefoxAccounts	ERROR	Could not update attached clients list : {"error":{},"errorString":"[Exception... \"NS_ERROR_UNKNOWN_HOST\"  nsresult: \"0x804b001e (NS_ERROR_UNKNOWN_HOST)\"  location: \"JS frame :: resource://services-common/rest.sys.mjs :: onStopRequest :: line 478\"  data: no]","message":null,"code":null,"errno":null}
+JavaScript error: https://static-assets-web.flixcart.com/fk-sp-static/script/5639.4a0209cddcd8dfd73c75.js, line 1: NS_ERROR_FAILURE
+1794029226065	Marionette	INFO	Stopped listening on port 57347

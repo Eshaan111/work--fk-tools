@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094601-583918",
+  "label_number": 44,
+  "order_id": "OD339001245365404100",
+  "sku": "BUY/DENIM/JEANS/BAGGY/BLACK/30",
+  "product": "NMCONSULTANTS Loose Fit Men Black Jeans 30",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0946 hrs, 28/10/26",
+  "awb": "FMPC6691898975",
+  "customer_name": "Pawan Kumar",
+  "fit": "BAGGY",
+  "color": "BLACK",
+  "size": null,
+  "sort_tag": "MIX",
+  "is_mix": true,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094601-583918\\044-OD339001245365404100.zpl",
+  "preview_file": null
+}

@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094601-583918",
+  "label_number": 25,
+  "order_id": "OD338995687517837100",
+  "sku": "FB-XL-TRACK-PANT-BLACk-01-B9IF961",
+  "product": "STARVIELLE Striped Men Black Track Pants NYC",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0946 hrs, 28/10/26",
+  "awb": "FMPC6689567171",
+  "customer_name": "Jesung Thakor",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": null,
+  "sort_tag": "MIX",
+  "is_mix": true,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094601-583918\\025-OD338995687517837100.zpl",
+  "preview_file": null
+}

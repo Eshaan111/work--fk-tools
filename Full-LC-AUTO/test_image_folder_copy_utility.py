@@ -27,3 +27,15 @@ def test_copy_multiple_folders_consecutively(tmp_path: Path) -> None:
     assert (destination / "3" / "one.jpg").read_bytes() == b"one"
     assert (destination / "4" / "two.jpg").read_bytes() == b"two"
     assert first.exists() and second.exists()
+
+
+def test_copy_creates_new_configured_destination(tmp_path: Path) -> None:
+    destination = tmp_path / "WHITE-NARROW"
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "one.jpg").write_bytes(b"one")
+
+    copied = copy_numbered_folders([source], destination)
+
+    assert [path.name for path in copied] == ["0"]
+    assert (destination / "0" / "one.jpg").read_bytes() == b"one"

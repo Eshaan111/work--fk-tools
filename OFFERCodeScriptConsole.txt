@@ -1,0 +1,161 @@
+
+/* Flipkart Seller Dashboard — Offers Applied extractor
+   Run this entire script in the browser DevTools Console while logged in.
+   It adds a small panel. Use Scan current page, change page, scan again, Export CSV.
+   Runs locally in your browser; does not send data elsewhere.
+*/
+(() => {
+  const PREFIX = '__fk_offers_extractor_v1__';
+  if (window[`${PREFIX}installed`]) {
+    alert('Offers extractor is already running on this tab.');
+    return;
+  }
+  window[`${PREFIX}installed`] = true;
+  const STORAGE_KEY = `${PREFIX}rows`;
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const money = text => {
+    const v = (text || '').match(/-?\s*₹\s*([\d,]+(?:\.\d+)?)/);
+    return v ? Number(v[1].replace(/,/g, '')) : null;
+  };
+  const saved = () => {
+    try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}'); }
+    catch { return {}; }
+  };
+  const store = data => sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  const getRows = () => [...document.querySelectorAll('tr')].filter(tr =>
+    tr.querySelector('#offers-applied-accordion') && /\bOD\d{10,}\b/.test(tr.innerText || ''));
+  const findOrderId = tr => (tr.innerText.match(/\bOD\d{10,}\b/) || [])[0] || '';
+  const getSku = tr => (tr.innerText.match(/SKU\s*ID:\s*([^\s|]+)/i) || [])[1] || '';
+  const setStatus = value => { status.textContent = value; };
+  let scanning = false;
+
+  // Popovers can be mounted outside the table, so search the entire document.
+  function offerPanel() {
+    const headings = [...document.querySelectorAll('[class*="PopoverTitle"]')]
+      .filter(el => /Offers Applied/i.test(el.textContent || ''));
+    return headings.map(el => el.closest('[class*="PopoverHeader"]')?.parentElement)
+      .find(el => el && el.querySelector('[class*="PopoverBody"]')) || null;
+  }
+  async function waitForPanel(timeout = 2500) {
+    const stop = Date.now() + timeout;
+    while (Date.now() < stop) {
+      const panel = offerPanel();
+      if (panel) return panel;
+      await sleep(90);
+    }
+    return null;
+  }
+  function extractOffers(panel, orderId, sku) {
+    return [...panel.querySelectorAll('[class*="OfferRow"]')].map((row, i) => {
+      const desc = row.querySelector('[class*="OfferDescriptionText"]');
+      const anchor = desc?.querySelector('a');
+      const lines = [...row.querySelectorAll('[class*="OfferMetaLine"]')].map(x => x.textContent.trim());
+      const totalLine = lines.find(x => /Total Discount:/i.test(x)) || '';
+      const sellerLine = lines.find(x => /Your Contribution:/i.test(x)) || '';
+      const discount = row.querySelector('[class*="OfferDiscount"]')?.textContent.trim() || '';
+      const url = anchor?.href || '';
+      const offerId = new URL(url || location.href, location.href).searchParams.get('offerId') || '';
+      return {
+        order_id: orderId, sku, offer_index: i + 1, offer_id: offerId,
+        offer_name: (anchor?.textContent || desc?.textContent || '').replace(/OpenInNew/g, '').trim(),
+        shown_discount: money(discount), total_discount: money(totalLine),
+        seller_contribution: money(sellerLine), offer_url: url, status: 'OK'
+      };
+    });
+  }
+  function keyOf(r) { return `${r.order_id}|${r.sku}|${r.offer_index}`; }
+
+  const panel = document.createElement('div');
+  panel.id = 'fk-offers-extractor-panel';
+  Object.assign(panel.style, {
+    position: 'fixed', right: '16px', bottom: '16px', zIndex: '2147483647',
+    width: '300px', background: '#fff', color: '#17212b', border: '1px solid #bccbd9',
+    borderRadius: '12px', boxShadow: '0 6px 24px rgba(0,0,0,.25)',
+    padding: '14px', font: '13px Arial,sans-serif'
+  });
+  panel.innerHTML = `<b style="font-size:15px">Flipkart Offers Extractor</b>
+    <p style="margin:8px 0">Scan each orders page, then export all collected data.</p>
+    <div id="fk-extractor-status" style="margin-bottom:9px;word-wrap:break-word">Ready</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button id="fk-scan">Scan current page</button>
+      <button id="fk-export">Export CSV</button>
+      <button id="fk-clear">Clear saved data</button>
+      <button id="fk-close">Close panel</button>
+    </div>`;
+  document.body.appendChild(panel);
+  panel.querySelectorAll('button').forEach(b => Object.assign(b.style, {
+    background: '#edf5fc', padding: '7px', border: '1px solid #9db9cf', borderRadius: '6px', cursor: 'pointer'
+  }));
+  const status = panel.querySelector('#fk-extractor-status');
+
+  panel.querySelector('#fk-scan').onclick = async () => {
+    if (scanning) return;
+    scanning = true;
+    const btn = panel.querySelector('#fk-scan'); btn.disabled = true;
+    const data = saved();
+    const rows = getRows();
+    if (!rows.length) setStatus('No order rows with offer accordions found on this page.');
+    for (let idx = 0; idx < rows.length; idx++) {
+      if (!panel.isConnected) break;
+      const tr = rows[idx], orderId = findOrderId(tr), sku = getSku(tr);
+      setStatus(`Scanning ${idx + 1}/${rows.length}: ${orderId}`);
+      const header = tr.querySelector('#offers-applied-accordion [data-testid="accordion-header"]');
+      if (!header || !orderId) continue;
+      const existing = Object.values(data).filter(r => r.order_id === orderId && r.sku === sku);
+      if (existing.length && existing.every(r => r.status === 'OK' || r.status === 'NO_OFFERS')) continue;
+      // Ensure any prior popover closes before opening another.
+      if (offerPanel()) {
+        document.body.click();
+        await sleep(130);
+      }
+      header.scrollIntoView({ block: 'center', behavior: 'instant' });
+      await sleep(80);
+      header.click();
+      const livePanel = await waitForPanel();
+      let offers;
+      if (!livePanel) {
+        offers = [{ order_id: orderId, sku, offer_index: 0, offer_id: '',
+          offer_name: '', shown_discount: null, total_discount: null,
+          seller_contribution: null, offer_url: '', status: 'NOT_LOADED' }];
+      } else {
+        offers = extractOffers(livePanel, orderId, sku);
+        if (!offers.length) offers = [{ order_id: orderId, sku, offer_index: 0,
+          offer_id: '', offer_name: '', shown_discount: null, total_discount: null,
+          seller_contribution: null, offer_url: '', status: 'NO_OFFERS' }];
+      }
+      for (const key of Object.keys(data)) {
+        if (data[key].order_id === orderId && data[key].sku === sku) delete data[key];
+      }
+      for (const offer of offers) data[keyOf(offer)] = offer;
+      store(data);
+      header.click();
+      await sleep(120);
+    }
+    scanning = false; btn.disabled = false;
+    const records = Object.values(saved());
+    setStatus(`Done. ${records.filter(r => r.status === 'OK').length} offers from ${new Set(records.map(r => r.order_id)).size} unique orders. Change orders page and scan again; then export.`);
+  };
+  panel.querySelector('#fk-export').onclick = () => {
+    const rows = Object.values(saved());
+    if (!rows.length) { setStatus('Nothing saved. Scan a page first.'); return; }
+    const columns = ['order_id','sku','offer_index','offer_id','offer_name',
+      'shown_discount','total_discount','seller_contribution','offer_url','status'];
+    const csvCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    // BOM helps Excel recognize UTF-8/rupee characters.
+    const csv = '\uFEFF' + [columns.join(','), ...rows.map(r => columns.map(k => csvCell(r[k])).join(','))].join('\r\n');
+    const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+    const a = document.createElement('a'); a.href = url;
+    a.download = `flipkart_offers_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setStatus(`Exported ${rows.length} records. Inspect NOT_LOADED statuses and retry those orders.`);
+  };
+  panel.querySelector('#fk-clear').onclick = () => {
+    if (confirm('Clear all collected offer data in this tab session?')) {
+      sessionStorage.removeItem(STORAGE_KEY); setStatus('Saved data cleared.');
+    }
+  };
+  panel.querySelector('#fk-close').onclick = () => {
+    panel.remove(); window[`${PREFIX}installed`] = false;
+  };
+})();

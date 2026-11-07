@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094601-583918",
+  "label_number": 60,
+  "order_id": "OD438979805699539100",
+  "sku": "JS-F-28-ICE-BAGGY-PLAIN-IBP-56565056121",
+  "product": "GENZ VANE Relaxed Fit Men Light Blue",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0946 hrs, 28/10/26",
+  "awb": "FMPP4414571237",
+  "customer_name": "Ambika Singh",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 28,
+  "sort_tag": "ICE-BAGGY-28",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094601-583918\\060-OD438979805699539100.zpl",
+  "preview_file": null
+}

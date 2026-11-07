@@ -1,1 +1,1 @@
-Run 1/2 failed: Message: Variant rows were created, but the ContentCopy control did not become ready in source row '28 Number'. Visible variant rows: ['28 Number', '26 Number', '30 Number', '32 Number', '34 Number']
+Run 1/1 failed: [WinError 5] Access is denied: 'C:\\work-mom\\LISTING IMAGES AUTOMATED\\WHITE-NARROW\\0' -> "C:\\work-mom\\LISTING IMAGES AUTOMATED\\WHITE-NARROW\\0-STAR'f"

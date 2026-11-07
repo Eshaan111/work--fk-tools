@@ -1,0 +1,2 @@
+﻿batch_id,label_number,order_id,sku,product,quantity,payment_type,service_type,carrier,packaging_instruction,seller,printed_at,awb,customer_name,fit,color,size,sort_tag,is_mix,zpl_file,preview_file
+20261028-095237-193676,1,OD338996730680966100,F-26-Beige-Baggy-Plain-Jeans-BEPJ-RCNVXHY,FADEVIELLE Relaxed Fit Men Beige Jeans 26,1,COD,STD,,,SEEMA ENTERPRISES,"0952 hrs, 28/10/26",SF3695280017N,Anuj Kumar Sharma,BAGGY,BEIGE,26,BEIGE-BAGGY-26,False,C:\Users\ESHAAN\HAKUR\work--fk-tools\order-grouper\dist\print-jobs\labels\20261028-095237-193676\001-OD338996730680966100.zpl,

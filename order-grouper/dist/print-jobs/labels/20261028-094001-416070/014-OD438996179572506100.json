@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094001-416070",
+  "label_number": 14,
+  "order_id": "OD438996179572506100",
+  "sku": "MJ-32-Black-Plain-Jeans-PBJ-01123",
+  "product": "FLIECRAINE Regular Men Black Jeans 32 WBJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": "Use Transparent Packaging",
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0939 hrs, 28/10/26",
+  "awb": "FMPC6689827497",
+  "customer_name": "Raju Bhai",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 32,
+  "sort_tag": "BLACK-PLAIN-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094001-416070\\014-OD438996179572506100.zpl",
+  "preview_file": null
+}

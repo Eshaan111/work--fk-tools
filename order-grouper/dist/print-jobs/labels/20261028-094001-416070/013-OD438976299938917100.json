@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094001-416070",
+  "label_number": 13,
+  "order_id": "OD438976299938917100",
+  "sku": "S-30-Black-Plain-Jeans-BPJ-9056273184",
+  "product": "FADEVIELLE Regular Men Black Jeans 30 BPJ",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0939 hrs, 28/10/26",
+  "awb": "5965828110292",
+  "customer_name": "Sanish Vaisah",
+  "fit": "PLAIN",
+  "color": "BLACK",
+  "size": 30,
+  "sort_tag": "BLACK-PLAIN-30",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094001-416070\\013-OD438976299938917100.zpl",
+  "preview_file": null
+}

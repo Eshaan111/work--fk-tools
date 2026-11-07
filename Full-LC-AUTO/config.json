@@ -258,6 +258,10 @@
                         "6": {
                             "kind": "White-Baggy",
                             "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\WHITE-BAGGY"
+                        },
+                        "7": {
+                            "kind": "White-Narrow",
+                            "image_directory": "C:\\work-mom\\LISTING IMAGES AUTOMATED\\WHITE-NARROW"
                         }
                     }
                 },
@@ -321,6 +325,10 @@
                         "6": {
                             "kind": "White-Baggy",
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Baggy"
+                        },
+                        "7": {
+                            "kind": "White-Narrow",
+                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Narrow"
                         }
                     }
                 },
@@ -384,6 +392,10 @@
                         "6": {
                             "kind": "White-Baggy",
                             "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Baggy"
+                        },
+                        "7": {
+                            "kind": "White-Narrow",
+                            "image_directory": "G:/Other computers/My Laptop/work-mom/LISTING IMAGES AUTOMATED/White-Narrow"
                         }
                     }
                 },

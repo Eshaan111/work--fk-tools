@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094001-416070",
+  "label_number": 74,
+  "order_id": "OD338996199997259100",
+  "sku": "F-32-BEIGE-BAGGY-JEANS-21-516GGAW",
+  "product": "JSSV Loose Fit Men Beige Jeans 32",
+  "quantity": 1,
+  "payment_type": "COD",
+  "service_type": "STD",
+  "carrier": null,
+  "packaging_instruction": null,
+  "seller": "SEEMA ENTERPRISES",
+  "printed_at": "0939 hrs, 28/10/26",
+  "awb": "1344864579957",
+  "customer_name": "Santosh Prakash Kshateriya",
+  "fit": "BAGGY",
+  "color": "BEIGE",
+  "size": 32,
+  "sort_tag": "BEIGE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094001-416070\\074-OD338996199997259100.zpl",
+  "preview_file": null
+}

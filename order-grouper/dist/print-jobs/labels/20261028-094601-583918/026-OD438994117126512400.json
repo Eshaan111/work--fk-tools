@@ -1,0 +1,23 @@
+{
+  "batch_id": "20261028-094601-583918",
+  "label_number": 26,
+  "order_id": "OD438994117126512400",
+  "sku": "SPYJ-F-32-ICE-BAGGY-PLAIN-IBP-JHS66SD",
+  "product": "GENZ VANE Loose Fit Men Light Blue",
+  "quantity": 1,
+  "payment_type": null,
+  "service_type": "STD",
+  "carrier": "E-Kart Logistics",
+  "packaging_instruction": null,
+  "seller": "PRABHU ENTERPRISES",
+  "printed_at": "0946 hrs, 28/10/26",
+  "awb": "FMPP4418480954",
+  "customer_name": "Lavakusha",
+  "fit": "BAGGY",
+  "color": "ICE",
+  "size": 32,
+  "sort_tag": "ICE-BAGGY-32",
+  "is_mix": false,
+  "zpl_file": "C:\\Users\\ESHAAN\\HAKUR\\work--fk-tools\\order-grouper\\dist\\print-jobs\\labels\\20261028-094601-583918\\026-OD438994117126512400.zpl",
+  "preview_file": null
+}
